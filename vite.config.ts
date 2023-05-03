@@ -47,7 +47,7 @@ export default defineConfig({
   },
   server: {
     // hmr: { overlay: false },
-    port: 80,
+    port: 3088,
     open: false,
     cors: false,
     host: '0.0.0.0',
