@@ -7,8 +7,9 @@
 
 <template>
   <div class="flex items-center h-12 px-2">
-    <div class="flex-1 flex">
+    <div class="flex-1 flex items-center">
       <Tool />
+      <a-divider direction="vertical" />
       <Zoom />
     </div>
     <div class="truncate">

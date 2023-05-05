@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import SvgIcon from '@/components/svgIcon.vue'
+  import SvgIcon from '@/components/svgIcon'
   const buttonList = [
     {
       name: 'square',
@@ -17,15 +17,13 @@
 </script>
 
 <template>
-  <div>
-    <a-space>
-      <a-button v-for="button in buttonList" :key="button.name">
-        <template #icon>
-          <SvgIcon :name="button.icon" />
-        </template>
-      </a-button>
-    </a-space>
-  </div>
+  <a-space>
+    <a-button v-for="button in buttonList" :key="button.name">
+      <template #icon>
+        <SvgIcon :name="button.icon" />
+      </template>
+    </a-button>
+  </a-space>
 </template>
 
 <style scoped lang="less"></style>

@@ -13,7 +13,7 @@ export default defineConfig({
   base: './',
   plugins: [
     vue(),
-    vueJsx({}),
+    vueJsx(),
     // 自动按需引入组件
     AutoImport({
       resolvers: [ArcoResolver()],
@@ -43,6 +43,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
   server: {

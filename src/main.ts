@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from '@/router'
 import pinia from '@/store'
 
+import '@unocss/reset/tailwind-compat.css'
 import '@/assets/style/global.less'
 import 'virtual:uno.css'
 import 'virtual:svg-icons-register'
