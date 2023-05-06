@@ -1,7 +1,7 @@
 import { useCanvasStore } from '@/store'
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
-import type { fabric } from 'editor'
+import { fabric } from '@/types'
 
 type TEventCallback<T = any> = (options: T) => any
 type IEvent = fabric.CanvasEvents & fabric.ObjectEvents

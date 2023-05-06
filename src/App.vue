@@ -1,5 +1,10 @@
 <script setup lang="ts">
-  // This starter template is using Vue 3 <script setup> SFCs
+  import { initMousetrap } from '@/lib/mousetrap'
+
+  onMounted(() => {
+    // 快捷键 初始化
+    initMousetrap()
+  })
 </script>
 
 <template>
