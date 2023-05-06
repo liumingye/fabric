@@ -1,4 +1,3 @@
-import { defineStore } from 'pinia'
 import { Canvas, Rect, Circle } from '@/lib/fabric'
 
 export const useCanvasStore = defineStore('canvas', () => {
@@ -11,8 +10,11 @@ export const useCanvasStore = defineStore('canvas', () => {
         preserveObjectStacking: true,
         selectionBorderColor: 'rgba(42,130,228,0.8)',
         selectionColor: 'rgba(42,130,228,0.2)',
+        uniformScaling: false,
       }),
   )
+
+  const activeObject = computed(() => canvas.value.activeObject.value)
 
   // test
   const rect = new Rect({
@@ -20,17 +22,19 @@ export const useCanvasStore = defineStore('canvas', () => {
     left: 100,
     width: 200,
     height: 200,
-    fill: '#4499ff',
+    fill: '#dd14ab',
+    // strokeWidth: 20,
   })
   const circle = new Circle({
-    top: 100,
-    left: 100,
+    top: 0,
+    left: 0,
     radius: 50,
-    fill: '#ddd',
+    fill: '#f78058',
   })
   canvas.value.add(circle, rect)
 
   return {
     canvas,
+    activeObject,
   }
 })

@@ -107,5 +107,7 @@ module.exports = defineConfig({
     'vue/multi-word-component-names': 'off',
     // 关闭禁止不必要的分号的规则。
     'no-extra-semi': 'off',
+    // 可以使用重新声明相同的变量名
+    'no-redeclare': 'off',
   },
 })

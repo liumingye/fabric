@@ -19,10 +19,27 @@
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: number | undefined): void
-    (e: 'change' | 'input', value: number | undefined, ev: Event): void
+    (e: 'change', value: number | undefined, ev: Event): void
   }>()
 
   const numberValue = useVModel(props, 'modelValue', emit)
+
+  const toFixed = (v: number) => Number(v.toFixed(2))
+
+  watch(
+    numberValue,
+    (value) => {
+      if (!value) return
+      numberValue.value = toFixed(value)
+    },
+    {
+      immediate: true,
+    },
+  )
+
+  const change = (value: number | undefined, ev: Event) => {
+    emit('change', value, ev)
+  }
 
   // Swipe
   const labelRef = ref<HTMLElement>()
@@ -37,8 +54,9 @@
       let value = startValue.value + Math.round(posEnd.x - posStart.x) * props.step
       if (isDefined(props.min) && value < props.min) value = props.min
       if (isDefined(props.max) && value > props.max) value = props.max
+      value = toFixed(value)
       numberValue.value = value
-      emit(props.modelEvent, numberValue.value, e)
+      change(value, e)
     },
   })
 </script>
@@ -54,6 +72,7 @@
     :class="{
       hasLabel: label,
     }"
+    @change="change"
   >
     <template #prefix v-if="label">
       <div ref="labelRef" class="w-7.5 text-center cursor-ew-resize">{{ label }}</div>
@@ -63,6 +82,7 @@
 
 <style scoped lang="less">
   .arco-input-wrapper.hasLabel {
+    align-items: baseline;
     padding-left: 0;
     :deep(.arco-input-prefix) {
       padding-right: 0;
