@@ -1,4 +1,2 @@
-export { Canvas } from './canvas'
-export * from './object'
+export * from './fabric'
 export type * from './types'
-export * from 'fabric'

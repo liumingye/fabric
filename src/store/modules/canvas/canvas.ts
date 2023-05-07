@@ -1,6 +1,9 @@
-import { Canvas, Rect, Point } from '@/types/fabric'
+import { Canvas, Rect, Point, Board } from '@/types/fabric'
 import { random } from 'lodash'
 import { clamp, useMagicKeys } from '@vueuse/core'
+import { useFabricSwipe } from '@/hooks/useFabricSwipe'
+
+type EditTool = 'select' | 'move' | 'brush'
 
 export const useCanvasStore = defineStore('canvas', () => {
   const createCanvasElement = () => document.createElement('canvas')
@@ -13,14 +16,17 @@ export const useCanvasStore = defineStore('canvas', () => {
         selectionBorderColor: 'rgba(42,130,228,0.8)',
         selectionColor: 'rgba(42,130,228,0.2)',
         uniformScaling: false,
+        stopContextMenu: true,
+        fireMiddleClick: true,
       }),
   )
 
   const activeObject = computed(() => canvas.value.activeObject.value)
 
-  const { shift, ctrl } = useMagicKeys()
+  const activeTool = ref<EditTool>('select')
 
   // 默认纵向滚动 shift横向滚动 ctrl缩放
+  const { shift, ctrl } = useMagicKeys()
   canvas.value.on('mouse:wheel', (e) => {
     e.e.preventDefault()
     e.e.stopPropagation()
@@ -34,18 +40,69 @@ export const useCanvasStore = defineStore('canvas', () => {
       return
     }
     // 滚动画布
-    const delta = shift.value ? deltaX : deltaY > 0 ? -20 : 20
-    canvas.value.relativePan(shift.value ? new Point(-delta, 0) : new Point(0, delta))
+    const deltaPoint = new Point()
+    if (shift.value) {
+      deltaPoint.x = deltaX > 0 ? -20 : 20
+    } else {
+      deltaPoint.y = deltaY > 0 ? -20 : 20
+    }
+    canvas.value.relativePan(deltaPoint)
   })
 
-  // test
-  for (let index = 0; index < 10; index++) {
-    canvas.value.add(
+  // 鼠标中键拖动视窗
+  nextTick(() => {
+    let vpt = canvas.value.viewportTransform
+    let lastTool: EditTool
+    const { lengthX, lengthY } = useFabricSwipe({
+      onSwipeStart: (e) => {
+        vpt = canvas.value.viewportTransform
+        if (e.button === 2) {
+          lastTool = activeTool.value
+          activeTool.value = 'move'
+        }
+      },
+      onSwipe: (_e) => {
+        if (activeTool.value === 'move') {
+          canvas.value.setCursor('grabbing')
+          const deltaPoint = new Point(lengthX.value, lengthY.value)
+            .scalarDivide(canvas.value.getZoom())
+            .transform(vpt)
+            .scalarMultiply(-1)
+          canvas.value.absolutePan(deltaPoint)
+        }
+      },
+      onSwipeEnd: (_e) => {
+        if (lastTool) {
+          activeTool.value = lastTool
+        }
+        canvas.value.setCursor(canvas.value.defaultCursor)
+      },
+    })
+  })
+
+  // debug code
+  const board1 = new Board([], {
+    top: 0,
+    left: 0,
+    width: 300,
+    height: 300,
+    backgroundColor: '#ffff33',
+  })
+  const board2 = new Board([], {
+    top: 400,
+    left: 50,
+    width: 300,
+    height: 300,
+    backgroundColor: '#f2b8ca',
+  })
+  canvas.value.add(board1, board2)
+  for (let index = 0; index < 5; index++) {
+    board1.add(
       new Rect({
-        top: random(0, 500),
-        left: random(0, 600),
-        width: random(50, 300),
-        height: random(50, 300),
+        top: random(0, 200),
+        left: random(0, 200),
+        width: random(50, 100),
+        height: random(50, 100),
         fill: '#' + Math.random().toString(16).substring(2, 8),
         strokeWidth: random(0, 10),
         stroke: '#fff',

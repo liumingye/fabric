@@ -13,9 +13,9 @@ export function useFabricEvent<E extends keyof IEvent>(handlers: Record<E, TEven
 export function useFabricEvent(eventName: any, handler?: any) {
   const { canvas } = storeToRefs(useCanvasStore())
 
-  onMounted(() => {
-    canvas.value.on(eventName, handler)
-  })
+  // onMounted(() => {
+  canvas.value.on(eventName, handler)
+  // })
 
   const stop = () => {
     canvas.value.off(eventName, handler)

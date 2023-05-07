@@ -57,7 +57,6 @@ export function useFabricObject<T extends fabric.Object>(object: MaybeRef<T>) {
           break
       }
     })
-    target.value.calcOCoords()
     target.value.canvas?.requestRenderAll()
   }
 

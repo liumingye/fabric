@@ -6,16 +6,16 @@ import { isDefined } from '@vueuse/core'
 export function initMousetrap() {
   const { activeObject } = storeToRefs(useCanvasStore())
 
-  const object = () => {
+  const object = computed(() => {
     if (isDefined(activeObject)) {
       return useFabricObject(activeObject)
     }
-  }
+  })
 
-  mousetrap.bind('alt+a', () => object()?.alignLeft())
-  mousetrap.bind('alt+d', () => object()?.alignRight())
-  mousetrap.bind('alt+h', () => object()?.alignCenter())
-  mousetrap.bind('alt+w', () => object()?.verticalTop())
-  mousetrap.bind('alt+s', () => object()?.verticalBottom())
-  mousetrap.bind('alt+v', () => object()?.verticalMiddle())
+  mousetrap.bind('alt+a', () => object.value?.alignLeft())
+  mousetrap.bind('alt+d', () => object.value?.alignRight())
+  mousetrap.bind('alt+h', () => object.value?.alignCenter())
+  mousetrap.bind('alt+w', () => object.value?.verticalTop())
+  mousetrap.bind('alt+s', () => object.value?.verticalBottom())
+  mousetrap.bind('alt+v', () => object.value?.verticalMiddle())
 }

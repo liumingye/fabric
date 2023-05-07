@@ -1,6 +1,6 @@
-import { Object as ObjectOrigin } from 'fabric'
+import { Object as FabricObject } from 'fabric'
 
-Object.assign(ObjectOrigin.ownDefaults, {
+Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
   strokeWidth: 0,
   fill: '#CCC',
@@ -10,6 +10,6 @@ Object.assign(ObjectOrigin.ownDefaults, {
   borderColor: '#2A82E4',
   cornerStrokeColor: '#2A82E4',
   borderOpacityWhenMoving: 0,
-  // originX: 'left',
-  // originY: 'top',
-} as ObjectOrigin)
+} as FabricObject)
+
+export { FabricObject }
