@@ -2,8 +2,6 @@ import { useCanvasStore } from '@/store'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import type { TPointerEventInfo, TPointerEvent } from '@/lib/fabric'
 
-export type UseSwipeDirection = 'up' | 'down' | 'left' | 'right' | 'none'
-
 export interface UseSwipeOptions {
   onSwipeStart?: (e: TPointerEventInfo<TPointerEvent>) => void
   onSwipe?: (e: TPointerEventInfo<TPointerEvent>) => void
@@ -20,7 +18,15 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
   const diffX = computed(() => coordsEnd.x - coordsStart.x)
   const diffY = computed(() => coordsEnd.y - coordsStart.y)
 
-  const getTouchEventCoords = (e: MouseEvent) => [e.clientX, e.clientY]
+  const getTouchEventCoords = (e: TPointerEvent) => {
+    if (e instanceof PointerEvent) {
+      return [e.x, e.y]
+    }
+    if (e instanceof TouchEvent) {
+      return [e.touches[0].clientX, e.touches[0].clientY]
+    }
+    return [e.clientX, e.clientY]
+  }
 
   const updateCoordsStart = (x: number, y: number) => {
     coordsStart.x = x
@@ -35,13 +41,15 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
   const { canvas } = storeToRefs(useCanvasStore())
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
-    const [x, y] = getTouchEventCoords(e.e as MouseEvent)
+    if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
+    const [x, y] = getTouchEventCoords(e.e)
     updateCoordsStart(x, y)
     updateCoordsEnd(x, y)
     onSwipeStart?.(e)
   }
   const mouseMove = (e: TPointerEventInfo<TPointerEvent>) => {
-    const [x, y] = getTouchEventCoords(e.e as MouseEvent)
+    if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
+    const [x, y] = getTouchEventCoords(e.e)
     updateCoordsEnd(x, y)
     if (!isSwiping.value) {
       isSwiping.value = true

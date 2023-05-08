@@ -2,7 +2,7 @@ import { Group, Rect, classRegistry, FabricObject, Text, Point } from '../fabric
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
 export const boardDefaultValues = {
-  // padding: 5,
+  padding: 5,
   selectable: false,
   subTargetCheck: true,
   interactive: true,
@@ -10,8 +10,6 @@ export const boardDefaultValues = {
 }
 
 export class Board extends Group {
-  private text: Text
-
   static ownDefaults: Record<string, any> = boardDefaultValues
 
   static getDefaults(): Record<string, any> {
@@ -27,20 +25,14 @@ export class Board extends Group {
     objectsRelativeToGroup?: boolean,
   ) {
     super(objects, options as any, objectsRelativeToGroup)
-    // this.lockScalingX = true
+    // this.setRelativeX
     // this.lockScalingY = true
-
-    this.text = new Text('画板', {
-      fontSize: 14,
-      originX: 'left',
-      originY: 'bottom',
-    })
 
     this.on('rotating', this.setClipPath)
     this.on('added', this.setClipPath)
     this.on('modified', () => {
       this.setClipPath()
-      this._scaling = false
+      // this._scaling = false
     })
     this.on('scaling', () => {
       this.set({
@@ -52,13 +44,11 @@ export class Board extends Group {
         scaleY: 1,
       })
       this.setClipPath()
-      this._scaling = true
+      // this._scaling = true
     })
 
     this.setCoords()
   }
-
-  // getLayoutStrategyResult() {}
 
   setClipPath() {
     this.clipPath = new Rect({
@@ -78,19 +68,24 @@ export class Board extends Group {
 
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx)
-    const { x, y } = this.aCoords.tl
-    this.text
-      .set({
-        left: x,
-        top: y - 2,
-        angle: this.angle,
-      })
-      .render(ctx)
+
+    // 左上角文字
+    const { x, y } = this.oCoords.tl
+    const retinaScaling = this.getCanvasRetinaScaling()
+    const angle = this.getTotalAngle()
+    ctx.save()
+    ctx.setTransform(retinaScaling, 0, 0, retinaScaling, 0, 0)
+    ctx.translate(x, y)
+    ctx.rotate((angle * Math.PI) / 180)
+    ctx.font = '12px Helvetica'
+    ctx.fillStyle = '#888'
+    ctx.textBaseline = 'bottom'
+    ctx.fillText('画板', 4, -2)
+    ctx.restore()
   }
 
   shouldCache() {
-    if (this._scaling) return false
-    const ownCache = super.shouldCache()
+    const ownCache = FabricObject.prototype.shouldCache.call(this)
     if (ownCache) {
       for (let i = 0; i < this._objects.length; i++) {
         if (this._objects[i].shouldCache()) {

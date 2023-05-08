@@ -2255,10 +2255,10 @@ extglob@^2.0.2:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-fabric@^6.0.0-beta4:
-  version "6.0.0-beta4"
-  resolved "https://registry.npmmirror.com/fabric/-/fabric-6.0.0-beta4.tgz#423efdeac1bd7ee7e9ae3dfbb62c81b0e9877a43"
-  integrity sha512-uyLL6D6iuw1UdqWeTZorgfJQfP+p95XNp0O6Ldr/zkogsWPyPMVFXnV6VwPiP0iRvwejjwrCdKJaPscwspXklA==
+fabric@^6.0.0-beta5:
+  version "6.0.0-beta5"
+  resolved "https://registry.npmmirror.com/fabric/-/fabric-6.0.0-beta5.tgz#84686526007d87b56e4dbe5137da72a3847e76d6"
+  integrity sha512-qyrbKcIVTvTBvXoKl3DFvLwzwYQs8mZqY8wPv4rtpiqdIsgBuJ86yyiVv+qiBJ/gTQSmGsKcDII0NAg8g4HfjQ==
   optionalDependencies:
     canvas "^2.8.0"
     jsdom "^20.0.1"

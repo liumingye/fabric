@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { usePointerSwipe, useVModel, isDefined, useMagicKeys } from '@vueuse/core'
   import { isNumber } from 'lodash'
-  import { toFixed } from '@/utils'
+  import { toFixed } from '@/utils/math'
 
   const props = withDefaults(
     defineProps<{

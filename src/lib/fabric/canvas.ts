@@ -1,14 +1,27 @@
 import { Canvas as FabricCanvas } from 'fabric'
-import type { fabric } from '@/types'
+import type { FabricObject, Point } from './fabric'
+import type { TPointerEvent, Transform } from './types'
 
 export class Canvas extends FabricCanvas {
-  public activeObject = ref<fabric.Object>()
+  public activeObject = ref<FabricObject>()
 
-  override _setActiveObject(object: fabric.Object, e?: fabric.TPointerEvent) {
+  // constructor(el: string | HTMLCanvasElement, options = {}) {
+  //   super(el, options)
+  // }
+
+  override _setActiveObject(object: FabricObject, e?: TPointerEvent) {
     return super._setActiveObject(object, e), (this.activeObject.value = this._activeObject)
   }
 
-  override _discardActiveObject(e?: fabric.TPointerEvent, object?: fabric.Object) {
+  override _discardActiveObject(e?: TPointerEvent, object?: FabricObject) {
     return super._discardActiveObject(e, object), (this.activeObject.value = this._activeObject)
   }
+
+  // _transformObject(e) {
+  //   super._transformObject(e)
+  //   console.log('_transformObject')
+  //   nextTick(() => {
+  //     this.setViewportTransform(this.viewportTransform)
+  //   })
+  // }
 }

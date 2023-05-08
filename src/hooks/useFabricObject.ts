@@ -1,7 +1,7 @@
 import { fabric } from '@/types'
 import { toRef } from '@vueuse/core'
 import type { MaybeRef } from '@vueuse/core'
-import { toFixed } from '@/utils'
+import { toFixed } from '@/utils/math'
 
 type AlignMethod =
   | 'alignLeft'

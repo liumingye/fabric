@@ -6,7 +6,7 @@
   import { fabric } from '@/types'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
-  import { clampAngle, toFixed } from '@/utils'
+  import { clampAngle, toFixed } from '@/utils/math'
 
   const { canvas, activeObject } = storeToRefs(useCanvasStore())
 
@@ -54,7 +54,9 @@
 
   useFabricEvent({
     'object:moving': () => triggerRef(attrs),
+    'object:skewing': () => scale.effect.scheduler?.(),
     'object:scaling': () => scale.effect.scheduler?.(),
+    'object:resizing': () => scale.effect.scheduler?.(),
     'object:rotating': () => triggerRef(attrs),
     'object:modified': () => triggerRef(attrs),
   })
