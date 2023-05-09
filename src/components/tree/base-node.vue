@@ -39,11 +39,11 @@
         >
           <template v-if="$slots['switcher-icon']" #switcher-icon>
             <!-- @slot 定制 switcher 图标，会覆盖 Tree 的配置 -->
-            <slot name="switcher-icon" />
+            <slot name="switcher-icon"></slot>
           </template>
           <template v-if="$slots['loading-icon']" #loading-icon>
             <!-- @slot 定制 loading 图标，会覆盖 Tree 的配置 -->
-            <slot name="loading-icon" />
+            <slot name="loading-icon"></slot>
           </template>
         </NodeSwitcher>
       </span>
@@ -79,7 +79,7 @@
         :class="[`${prefixCls}-icon`, `${prefixCls}-custom-icon`]"
       >
         <!-- 节点图标 -->
-        <slot v-if="$slots.icon" name="icon" v-bind="nodeStatus" />
+        <slot v-if="$slots.icon" name="icon" v-bind="nodeStatus"></slot>
         <RenderFunction v-else-if="icon" :render-func="icon" v-bind="nodeStatus" />
         <RenderFunction
           v-else-if="treeNodeIcon"
@@ -95,7 +95,7 @@
 
         <span v-if="draggable" :class="[`${prefixCls}-icon`, `${prefixCls}-drag-icon`]">
           <!-- 拖拽图标 -->
-          <slot v-if="$slots['drag-icon']" name="drag-icon" v-bind="nodeStatus" />
+          <slot v-if="$slots['drag-icon']" name="drag-icon" v-bind="nodeStatus"></slot>
           <RenderFunction v-else-if="dragIcon" :render-func="dragIcon" v-bind="nodeStatus" />
           <RenderFunction
             v-else-if="treeDragIcon"
@@ -237,10 +237,8 @@
         `${prefixCls}-title`,
         {
           [`${prefixCls}-title-draggable`]: draggable.value,
-          [`${prefixCls}-title-gap-top`]:
-            isDragOver.value && isAllowDrop.value && dropPosition.value < 0,
-          [`${prefixCls}-title-gap-bottom`]:
-            isDragOver.value && isAllowDrop.value && dropPosition.value > 0,
+          [`${prefixCls}-title-gap-top`]: isDragOver.value && dropPosition.value < 0,
+          [`${prefixCls}-title-gap-bottom`]: isDragOver.value && dropPosition.value > 0,
           [`${prefixCls}-title-highlight`]:
             !isDragging.value && isDragOver.value && isAllowDrop.value && dropPosition.value === 0,
           [`${prefixCls}-title-dragging`]: isDragging.value,
@@ -349,7 +347,7 @@
           setDragStatus('dragEnd', e)
         },
         onDragOver(e: DragEvent) {
-          if (!draggable) return
+          if (!draggable.value) return
 
           e.stopPropagation()
           e.preventDefault()
@@ -364,7 +362,7 @@
           setDragStatus('dragLeave', e)
         },
         onDrop(e: DragEvent) {
-          if (!draggable.value || !isAllowDrop.value) return
+          if (!draggable.value) return
 
           e.stopPropagation()
           e.preventDefault()

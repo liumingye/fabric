@@ -1,4 +1,4 @@
-import { useCanvasStore } from '@/store'
+import { useAppStore } from '@/store'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import type { TPointerEventInfo, TPointerEvent } from '@/lib/fabric'
 
@@ -38,7 +38,7 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
     coordsEnd.y = y
   }
 
-  const { canvas } = storeToRefs(useCanvasStore())
+  const { canvas } = storeToRefs(useAppStore())
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return

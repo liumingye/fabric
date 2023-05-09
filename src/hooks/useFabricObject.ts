@@ -1,7 +1,7 @@
 import { fabric } from '@/types'
-import { toRef } from '@vueuse/core'
-import type { MaybeRef } from '@vueuse/core'
+import { MaybeRef, toRef } from '@vueuse/core'
 import { toFixed } from '@/utils/math'
+import { useAppStore } from '@/store'
 
 type AlignMethod =
   | 'alignLeft'
@@ -11,7 +11,9 @@ type AlignMethod =
   | 'verticalMiddle'
   | 'verticalBottom'
 
-export function useFabricObject<T extends fabric.Object>(object: MaybeRef<T>) {
+export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<T>) {
+  const { canvas } = useAppStore()
+
   const target = toRef(object)
 
   const getHeight = () => {
@@ -35,7 +37,7 @@ export function useFabricObject<T extends fabric.Object>(object: MaybeRef<T>) {
   const align = (method: AlignMethod) => {
     const { left, top, width, height } = target.value
     if (!(target.value instanceof fabric.ActiveSelection)) return
-    target.value.forEachObject((obj) => {
+    target.value._objects.forEach((obj) => {
       switch (method) {
         case 'alignLeft':
           obj.setX(left)

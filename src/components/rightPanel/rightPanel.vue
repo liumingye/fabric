@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
-  import { useCanvasStore } from '@/store'
+  import { useAppStore } from '@/store'
   import { isDefined } from '@vueuse/core'
 
-  const { activeObject } = storeToRefs(useCanvasStore())
+  const { activeObject } = storeToRefs(useAppStore())
 
   const componentList = computed(() => [
     {

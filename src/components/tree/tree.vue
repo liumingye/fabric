@@ -902,7 +902,7 @@
             emit('dragLeave', e, node.treeNodeData)
           }
         },
-        onDrop(key: TreeNodeKey, dropPosition: number, e: DragEvent) {
+        onDrop(key: TreeNodeKey, dropPosition: DropPosition, e: DragEvent) {
           const node = key2TreeNode.value.get(key)
           if (
             dragNode.value &&
@@ -910,8 +910,10 @@
             !(
               node.key === dragNode.value.key ||
               node.pathParentKeys.includes(dragNode.value.key || '')
-            )
+            ) &&
+            (treeContext.allowDrop(key, dropPosition) || dropPosition !== 0)
           ) {
+            console.log(treeContext.allowDrop)
             emit('drop', {
               e,
               dragNode: dragNode.value.treeNodeData,

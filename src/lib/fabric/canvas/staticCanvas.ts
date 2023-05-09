@@ -1,6 +1,6 @@
 import { StaticCanvas } from 'fabric'
-import { Point, FabricObject, util } from './fabric'
-import type { TBBox } from './types'
+import { Point, FabricObject, util } from '../fabric'
+import type { TBBox } from '../types'
 
 type IFabricObject = FabricObject & {
   subTargetCheck?: boolean
@@ -8,7 +8,11 @@ type IFabricObject = FabricObject & {
 }
 
 // 收集box内的元素
-const _collectObjects = (_objects: any[], box: TBBox, opt: { includeIntersecting?: boolean }) => {
+const _collectObjects = (
+  _objects: FabricObject[] | undefined,
+  box: TBBox,
+  opt: { includeIntersecting?: boolean },
+) => {
   const { left, top, width, height } = box
   const { includeIntersecting } = opt
 
@@ -17,7 +21,7 @@ const _collectObjects = (_objects: any[], box: TBBox, opt: { includeIntersecting
   const tl = new Point(left, top)
   const br = tl.add(new Point(width, height))
 
-  _objects.forEach((object: IFabricObject) => {
+  _objects?.forEach((object: IFabricObject) => {
     if (
       // 包含子元素
       object.subTargetCheck &&
@@ -49,11 +53,16 @@ const _collectObjects = (_objects: any[], box: TBBox, opt: { includeIntersecting
       collected.push(object)
     }
   })
+
   return collected
 }
 
-StaticCanvas.prototype.collectObjects = function collectObjects(box: TBBox, opt = {}) {
-  return _collectObjects(this._objects, box, opt)
-}
+Object.assign<StaticCanvas, Partial<StaticCanvas>>(StaticCanvas.prototype, {
+  collectObjects: function (box: TBBox, opt = {}) {
+    return _collectObjects(this._objects as FabricObject[] | undefined, box, opt)
+  },
+})
 
-export { StaticCanvas }
+// StaticCanvas.prototype.collectObjects = function collectObjects(box: TBBox, opt = {}) {
+//   return _collectObjects(this._objects, box, opt)
+// }

@@ -3,7 +3,7 @@
   import mousetrap from 'mousetrap'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
   import { fabric } from '@/types'
-  import { useCanvasStore } from '@/store'
+  import { useAppStore } from '@/store'
 
   const alignList = [
     {
@@ -54,7 +54,7 @@
     // },
   ]
 
-  const { activeObject } = storeToRefs(useCanvasStore())
+  const { activeObject } = storeToRefs(useAppStore())
 
   const disabled = computed(() => !(activeObject.value instanceof fabric.ActiveSelection))
 </script>

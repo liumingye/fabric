@@ -21,13 +21,13 @@ export default function useDraggable(props: {
     const rect = refTitle.value.getBoundingClientRect()
     const offsetY = window.pageYOffset + rect.top
     const { pageY } = e
-    const gapHeight = rect.height / 4
     const diff = pageY - offsetY
 
-    dropPosition.value = diff < gapHeight ? -1 : diff < rect.height - gapHeight ? 0 : 1
     isAllowDrop.value = treeContext.allowDrop
       ? treeContext.allowDrop(key.value, dropPosition.value)
       : true
+    const gapHeight = isAllowDrop.value ? rect.height / 4 : rect.height
+    dropPosition.value = diff < gapHeight ? -1 : diff < rect.height - gapHeight ? 0 : 1
   })
 
   return {

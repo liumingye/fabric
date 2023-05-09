@@ -1,6 +1,6 @@
 import { Slot, VNode } from 'vue'
-import { VirtualListProps } from '../_components/virtual-list-v2/interface'
-import { Size } from '../_utils/constant'
+import type { VirtualListProps } from '@arco-design/web-vue/es/_components/virtual-list-v2/interface'
+import type { Size } from '@arco-design/web-vue/es/_utils/constant'
 
 export type TreeNodeKey = number | string
 

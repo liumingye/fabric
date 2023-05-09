@@ -1,10 +1,10 @@
 <script setup lang="ts">
-  import { initMousetrap } from '@/lib/mousetrap'
+  // import { initMousetrap } from '@/lib/mousetrap'
 
-  onMounted(() => {
-    // 快捷键 初始化
-    initMousetrap()
-  })
+  // onMounted(() => {
+  //   // 快捷键 初始化
+  //   initMousetrap()
+  // })
 </script>
 
 <template>

@@ -1,33 +1,35 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
-  import { useFabricEvent } from '@/hooks/useFabricEvent'
-  import { useCanvasStore } from '@/store'
-  import type { TreeNodeData } from '@arco-design/web-vue'
-  import type { FabricObject, Group, ActiveSelection } from '@/lib/fabric'
+  // import { useFabricEvent } from '@/hooks/useFabricEvent'
+  import { useAppStore } from '@/store'
+  import type { TreeNodeData } from '@/components/tree'
+  import { util } from '@/lib/fabric'
+  import type { FabricObject } from '@/lib/fabric'
 
-  const { canvas } = storeToRefs(useCanvasStore())
-
-  const treeData = ref<TreeNodeData[]>([])
-
-  const isCollection = (fabricObject?: FabricObject): fabricObject is Group | ActiveSelection => {
-    return !!fabricObject && Array.isArray((fabricObject as Group)._objects)
+  type ITreeNodeData = TreeNodeData & {
+    canDragEnter: boolean
   }
 
+  const { objects } = storeToRefs(useAppStore())
+
+  const treeData = computed(() => {
+    return getTreeData(objects.value)
+  })
+
   const getTreeData = (_objects: FabricObject[]) => {
-    const objs: TreeNodeData[] = []
+    const objs: ITreeNodeData[] = []
     _objects.forEach((object) => {
-      objs.push({
+      objs.unshift({
+        canDragEnter: util.isCollection(object) ? true : false,
         title: object.get('name') || object.constructor.name,
         key: object.get('id'),
-        children: isCollection(object) ? getTreeData(object._objects as FabricObject[]) : undefined,
+        children: util.isCollection(object)
+          ? getTreeData(object._objects as FabricObject[])
+          : undefined,
       })
     })
     return objs
   }
-
-  onMounted(() => {
-    treeData.value = getTreeData(canvas.value.getObjects() as FabricObject[])
-  })
 
   // useFabricEvent({
   // })
@@ -38,6 +40,10 @@
       key: '0-0',
     },
   ]
+
+  const allowDrop = (options: { dropNode: TreeNodeData; dropPosition: -1 | 0 | 1 }) => {
+    return (options.dropNode as ITreeNodeData).canDragEnter
+  }
 </script>
 
 <template>
@@ -47,7 +53,7 @@
     </template>
     <template #second>
       <a-input-search style="margin-bottom: 8px; max-width: 240px" />
-      <Tree blockNode :data="treeData" draggable size="small" />
+      <Tree blockNode :data="treeData" draggable size="small" :allowDrop="allowDrop" />
     </template>
     <template #resize-trigger>
       <div class="h4 flex items-center">

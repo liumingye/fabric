@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import { useFabricObject } from '@/hooks/useFabricObject'
-  import { useCanvasStore } from '@/store'
+  import { useAppStore } from '@/store'
   import { isDefined } from '@vueuse/core'
   import { fabric } from '@/types'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
   import { clampAngle, toFixed } from '@/utils/math'
 
-  const { canvas, activeObject } = storeToRefs(useCanvasStore())
+  const { canvas, activeObject } = storeToRefs(useAppStore())
 
   const attrs = computed(() => {
     if (!activeObject.value) return {} as fabric.Object

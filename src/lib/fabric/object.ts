@@ -1,6 +1,6 @@
 import { Object as FabricObject, ActiveSelection } from 'fabric'
 import type { Control } from './fabric'
-import { createObjectDefaultControls } from './commonControls'
+import { createObjectDefaultControls } from './controls/commonControls'
 
 type TControlSet = Record<string, Control>
 
@@ -26,5 +26,3 @@ ActiveSelection.prototype.exitGroup = function (
   // 修复移动视窗后选中对象后无法点击对象的问题
   object.setCoords()
 }
-
-export { FabricObject }

@@ -1,7 +1,7 @@
-import { useCanvasStore } from './modules/canvas/canvas'
+import { useAppStore } from './modules/app/app'
 
 const pinia = createPinia()
 
 export default pinia
 
-export { useCanvasStore }
+export { useAppStore }

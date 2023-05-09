@@ -1,4 +1,4 @@
-import { useCanvasStore } from '@/store'
+import { useAppStore } from '@/store'
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import { fabric } from '@/types'
@@ -16,7 +16,7 @@ export function useFabricEvent<K extends keyof IEvent, E extends IEvent[K]>(
 ): Fn
 
 export function useFabricEvent(eventName: any, handler?: any) {
-  const { canvas } = storeToRefs(useCanvasStore())
+  const { canvas } = storeToRefs(useAppStore())
 
   canvas.value.on(eventName, handler)
 
