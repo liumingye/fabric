@@ -1,6 +1,7 @@
 import { useAppStore } from '@/store'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import type { TPointerEventInfo, TPointerEvent } from '@/lib/fabric'
+import { useEditorModules } from '@/editor'
 
 export interface UseSwipeOptions {
   onSwipeStart?: (e: TPointerEventInfo<TPointerEvent>) => void
@@ -38,7 +39,7 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
     coordsEnd.y = y
   }
 
-  const { canvas } = storeToRefs(useAppStore())
+  const { canvas } = useEditorModules()
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
@@ -65,14 +66,14 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
     isSwiping.value = false
   }
 
-  canvas.value.on('mouse:down', mouseDown)
-  canvas.value.on('mouse:move', mouseMove)
-  canvas.value.on('mouse:up', mouseUp)
+  canvas.on('mouse:down', mouseDown)
+  canvas.on('mouse:move', mouseMove)
+  canvas.on('mouse:up', mouseUp)
 
   const stop = () => {
-    canvas.value.off('mouse:down', mouseDown)
-    canvas.value.off('mouse:move', mouseMove)
-    canvas.value.off('mouse:up', mouseUp)
+    canvas.off('mouse:down', mouseDown)
+    canvas.off('mouse:move', mouseMove)
+    canvas.off('mouse:up', mouseUp)
   }
 
   tryOnScopeDispose(stop)

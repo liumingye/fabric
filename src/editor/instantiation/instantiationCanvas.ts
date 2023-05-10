@@ -27,26 +27,25 @@ class InstantiationCanvas extends Canvas {
     )
 
     this.on({
-      'object:added': () => triggerRef(this.objects),
-      'object:removed': () => triggerRef(this.objects),
-    })
-
-    // 元素创建后事件
-    this.on('object:added', ({ target }) => {
-      // 添加名称
-      // todo 临时方法
-      if (!target.get('name')) {
-        const className = target.constructor.name
-        const id = this.uniqueIds.get(className) || 1
+      'object:added': ({ target }) => {
+        // 添加名称
+        // todo 临时方法 findFirstMissingPositive
+        if (!target.get('name')) {
+          const className = target.constructor.name
+          const id = this.uniqueIds.get(className) || 1
+          target.set({
+            name: `${className} ${id}`,
+          })
+          this.uniqueIds.set(className, id + 1)
+        }
+        // 添加id
         target.set({
-          name: `${className} ${id}`,
+          id: randomText(),
         })
-        this.uniqueIds.set(className, id + 1)
-      }
-      // 添加id
-      target.set({
-        id: randomText(),
-      })
+
+        triggerRef(this.objects)
+      },
+      'object:removed': () => triggerRef(this.objects),
     })
 
     this.magicKeys = useMagicKeys()

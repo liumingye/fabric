@@ -3,15 +3,12 @@ import { random } from 'lodash'
 import { useMagicKeys } from '@vueuse/core'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
-// import { canvas as _canvas } from '@/editor'
-import { InstantiationCanvas } from '@/editor/instantiation/instantiationCanvas'
-import { InstantiationMousetrap } from '@/editor/instantiation/instantiationMousetrap'
+import { useEditorModules } from '@/editor'
 
 type EditTool = 'move' | 'handMove'
 
 export const useAppStore = defineStore('canvas', () => {
-  const instantiationCanvas = new InstantiationCanvas()
-  const instantiationMousetrap = new InstantiationMousetrap(instantiationCanvas)
+  const { canvas } = useEditorModules()
 
   /** 当前激活的工具 */
   const activeTool = ref<EditTool>('move')
@@ -20,12 +17,12 @@ export const useAppStore = defineStore('canvas', () => {
   watch(activeTool, (newValue, oldValue) => {
     // 移动工具关闭元素选中
     if (newValue === 'handMove') {
-      instantiationCanvas.skipTargetFind = true
-      instantiationCanvas.selection = false
+      canvas.skipTargetFind = true
+      canvas.selection = false
     }
     if (oldValue === 'handMove') {
-      instantiationCanvas.skipTargetFind = false
-      instantiationCanvas.selection = true
+      canvas.skipTargetFind = false
+      canvas.selection = true
     }
   })
 
@@ -33,35 +30,35 @@ export const useAppStore = defineStore('canvas', () => {
 
   nextTick(() => {
     // 鼠标中键拖动视窗
-    let vpt = instantiationCanvas.viewportTransform
+    let vpt = canvas.viewportTransform
     let lastTool: EditTool | undefined
     let mouseDown = false
     const { lengthX, lengthY, isSwiping } = useFabricSwipe({
       onSwipeStart: (e) => {
         // 判断isSwiping.value，修复双击中键卡在move工具上
         if (!isSwiping.value) return
-        vpt = instantiationCanvas.viewportTransform
+        vpt = canvas.viewportTransform
         if (e.button === 2 && activeTool.value !== 'handMove') {
           lastTool = activeTool.value
           activeTool.value = 'handMove'
-          instantiationCanvas.setCursor('grabbing')
+          canvas.setCursor('grabbing')
         }
         if (e.button === 1 && activeTool.value === 'handMove') {
-          instantiationCanvas.setCursor('grabbing')
+          canvas.setCursor('grabbing')
         }
         mouseDown = true
       },
       onSwipe: () => {
         if (activeTool.value === 'handMove') {
           if (mouseDown) {
-            instantiationCanvas.setCursor('grabbing')
+            canvas.setCursor('grabbing')
             const deltaPoint = new Point(lengthX.value, lengthY.value)
-              .scalarDivide(instantiationCanvas.getZoom())
+              .scalarDivide(canvas.getZoom())
               .transform(vpt)
               .scalarMultiply(-1)
-            instantiationCanvas.absolutePan(deltaPoint)
+            canvas.absolutePan(deltaPoint)
           } else {
-            instantiationCanvas.setCursor('grab')
+            canvas.setCursor('grab')
           }
         }
       },
@@ -70,7 +67,7 @@ export const useAppStore = defineStore('canvas', () => {
           if (!space.value) {
             activeTool.value = lastTool
           }
-          instantiationCanvas.setCursor(instantiationCanvas.defaultCursor)
+          canvas.setCursor(canvas.defaultCursor)
           lastTool = undefined
         }
         mouseDown = false
@@ -83,13 +80,13 @@ export const useAppStore = defineStore('canvas', () => {
       if (value) {
         _lastTool = activeTool.value
         activeTool.value = 'handMove'
-        instantiationCanvas.defaultCursor = 'grab'
-        instantiationCanvas.setCursor(instantiationCanvas.defaultCursor)
+        canvas.defaultCursor = 'grab'
+        canvas.setCursor(canvas.defaultCursor)
       } else if (_lastTool) {
         activeTool.value = _lastTool
         _lastTool = undefined
-        instantiationCanvas.defaultCursor = 'default'
-        instantiationCanvas.setCursor(instantiationCanvas.defaultCursor)
+        canvas.defaultCursor = 'default'
+        canvas.setCursor(canvas.defaultCursor)
       }
     })
   })
@@ -110,7 +107,7 @@ export const useAppStore = defineStore('canvas', () => {
       height: 300,
       backgroundColor: '#f2b8ca',
     })
-    instantiationCanvas.add(board1, board2)
+    canvas.add(board1, board2)
 
     const group = new Group(
       [
@@ -138,10 +135,10 @@ export const useAppStore = defineStore('canvas', () => {
         interactive: true,
       },
     )
-    instantiationCanvas.add(group)
+    canvas.add(group)
 
     for (let index = 0; index < 3; index++) {
-      instantiationCanvas.add(
+      canvas.add(
         new Rect({
           top: random(200, 300),
           left: random(400, 600),
@@ -178,17 +175,16 @@ export const useAppStore = defineStore('canvas', () => {
   })
 
   /** 画布 */
-  const canvas = computed(() => instantiationCanvas)
-  const { activeObject, objects } = instantiationCanvas
+  const activeObject = computed(() => canvas.activeObject.value)
+
+  const { objects } = canvas
 
   return {
-    instantiationCanvas,
-    instantiationMousetrap,
     /** 画布 */
-    canvas,
+    // canvas,
     /** 当前选中的对象 */
     // activeObject,
-    activeObject: computed(() => activeObject.value),
+    activeObject,
     /** 全部的对象 */
     objects,
     /** 当前激活的工具 */

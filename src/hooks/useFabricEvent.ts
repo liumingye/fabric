@@ -2,6 +2,7 @@ import { useAppStore } from '@/store'
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import { fabric } from '@/types'
+import { useEditorModules } from '@/editor'
 
 type TEventCallback<T = any> = (options: T) => any
 type IEvent = fabric.CanvasEvents & fabric.ObjectEvents
@@ -16,12 +17,12 @@ export function useFabricEvent<K extends keyof IEvent, E extends IEvent[K]>(
 ): Fn
 
 export function useFabricEvent(eventName: any, handler?: any) {
-  const { canvas } = storeToRefs(useAppStore())
+  const { canvas } = useEditorModules()
 
-  canvas.value.on(eventName, handler)
+  canvas.on(eventName, handler)
 
   const stop = () => {
-    canvas.value.off(eventName, handler)
+    canvas.off(eventName, handler)
   }
 
   tryOnScopeDispose(stop)

@@ -1,7 +1,7 @@
 import { fabric } from '@/types'
 import { MaybeRef, toRef } from '@vueuse/core'
 import { toFixed } from '@/utils/math'
-import { useAppStore } from '@/store'
+// import { useEditorModules } from '@/editor'
 
 type AlignMethod =
   | 'alignLeft'
@@ -12,7 +12,7 @@ type AlignMethod =
   | 'verticalBottom'
 
 export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<T>) {
-  const { canvas } = useAppStore()
+  // const { canvas } = useEditorModules()
 
   const target = toRef(object)
 
@@ -26,12 +26,10 @@ export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<
 
   const setHeight = (value: number) => {
     target.value.set('scaleY', (value - target.value.strokeWidth) / target.value.height)
-    target.value.setCoords()
   }
 
   const setWidth = (value: number) => {
     target.value.set('scaleX', (value - target.value.strokeWidth) / target.value.width)
-    target.value.setCoords()
   }
 
   const align = (method: AlignMethod) => {

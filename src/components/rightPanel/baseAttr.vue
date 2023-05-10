@@ -1,18 +1,18 @@
 <script setup lang="ts">
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import { useFabricObject } from '@/hooks/useFabricObject'
-  import { useAppStore } from '@/store'
   import { isDefined } from '@vueuse/core'
   import { fabric } from '@/types'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
   import { clampAngle, toFixed } from '@/utils/math'
+  import { useEditorModules } from '@/editor'
 
-  const { canvas, activeObject } = storeToRefs(useAppStore())
+  const { canvas } = useEditorModules()
 
   const attrs = computed(() => {
-    if (!activeObject.value) return {} as fabric.Object
-    return new Proxy(activeObject.value, {
+    if (!isDefined(canvas.activeObject)) return {} as fabric.Object
+    return new Proxy(canvas.activeObject.value, {
       get(target, key) {
         return Reflect.get(target, key)
       },
@@ -26,15 +26,16 @@
             result = Reflect.set(target, key, value, receiver)
             break
         }
-        canvas.value.requestRenderAll()
+        triggerRef(attrs)
+        canvas.requestRenderAll()
         return result
       },
     })
   })
 
   const useScale = (xy: 'x' | 'y') => {
-    if (!isDefined(activeObject)) return
-    const { getHeight, getWidth, setHeight, setWidth } = useFabricObject(activeObject)
+    if (!isDefined(canvas.activeObject)) return
+    const { getHeight, getWidth, setHeight, setWidth } = useFabricObject(canvas.activeObject)
     const model = computed(() => {
       return xy === 'x' ? getWidth() : getHeight()
     })
@@ -42,7 +43,8 @@
       if (!isDefined(value)) return
       const fn = xy === 'x' ? setWidth : setHeight
       fn(value)
-      canvas.value.requestRenderAll()
+      scale.effect.scheduler?.()
+      canvas.requestRenderAll()
     }
     return { model, change }
   }
@@ -53,17 +55,17 @@
   }))
 
   useFabricEvent({
-    'object:moving': () => triggerRef(attrs),
     'object:skewing': () => scale.effect.scheduler?.(),
     'object:scaling': () => scale.effect.scheduler?.(),
     'object:resizing': () => scale.effect.scheduler?.(),
+    'object:moving': () => triggerRef(attrs),
     'object:rotating': () => triggerRef(attrs),
     'object:modified': () => triggerRef(attrs),
   })
 </script>
 
 <template>
-  <div class="p2" v-if="activeObject">
+  <div class="p2" v-if="canvas.activeObject">
     <a-row :gutter="[4, 4]">
       <a-col :span="10">
         <SwipeNumber label="X" v-model="attrs.left" />

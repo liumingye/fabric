@@ -913,7 +913,6 @@
             ) &&
             (treeContext.allowDrop(key, dropPosition) || dropPosition !== 0)
           ) {
-            console.log(treeContext.allowDrop)
             emit('drop', {
               e,
               dragNode: dragNode.value.treeNodeData,
