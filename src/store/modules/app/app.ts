@@ -3,12 +3,12 @@ import { random } from 'lodash'
 import { useMagicKeys } from '@vueuse/core'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
-import { useEditorModules } from '@/editor'
+import { useEditorServices } from '@/editor'
 
 type EditTool = 'move' | 'handMove'
 
 export const useAppStore = defineStore('canvas', () => {
-  const { canvas } = useEditorModules()
+  const { canvas } = useEditorServices()
 
   /** 当前激活的工具 */
   const activeTool = ref<EditTool>('move')

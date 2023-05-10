@@ -1,4 +1,4 @@
-import { computed, ref, toRefs, watchEffect } from 'vue';
+import { computed, ref, toRefs, watchEffect } from 'vue'
 import {
   TreeFieldNames,
   TreeNodeData,
@@ -6,19 +6,19 @@ import {
   LoadMore,
   CheckableType,
   SelectableType,
-} from '../interface';
-import { getFlattenTreeData, getKey2TreeNode } from '../utils';
-import { generateTreeData } from '../utils/tree-data';
+} from '../interface'
+import { getFlattenTreeData, getKey2TreeNode } from '../utils'
+import { generateTreeData } from '../utils/tree-data'
 
 export default function useTreeData(props: {
-  treeData: TreeNodeData[];
-  fieldNames?: TreeFieldNames;
-  selectable?: SelectableType;
-  showLine?: boolean;
-  blockNode?: boolean;
-  checkable?: CheckableType;
-  loadMore?: LoadMore;
-  draggable?: boolean;
+  treeData: TreeNodeData[]
+  fieldNames?: TreeFieldNames
+  selectable?: SelectableType
+  showLine?: boolean
+  blockNode?: boolean
+  checkable?: CheckableType
+  loadMore?: LoadMore
+  draggable?: boolean
 }) {
   const {
     treeData: propTreeData,
@@ -29,9 +29,9 @@ export default function useTreeData(props: {
     checkable,
     loadMore,
     draggable,
-  } = toRefs(props);
+  } = toRefs(props)
 
-  const treeData = ref<Node[]>([]);
+  const treeData = ref<Node[]>([])
 
   watchEffect(() => {
     treeData.value = generateTreeData(propTreeData.value || [], {
@@ -42,11 +42,11 @@ export default function useTreeData(props: {
       fieldNames: fieldNames?.value,
       loadMore: !!loadMore?.value,
       draggable: !!draggable?.value,
-    });
-  });
+    })
+  })
 
-  const flattenTreeData = computed(() => getFlattenTreeData(treeData.value));
-  const key2TreeNode = computed(() => getKey2TreeNode(flattenTreeData.value));
+  const flattenTreeData = computed(() => getFlattenTreeData(treeData.value))
+  const key2TreeNode = computed(() => getKey2TreeNode(flattenTreeData.value))
 
-  return { treeData, flattenTreeData, key2TreeNode };
+  return { treeData, flattenTreeData, key2TreeNode }
 }

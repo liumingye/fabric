@@ -119,7 +119,7 @@
   import NodeSwitcher from './node-switcher.vue'
   import useNodeKey from './hooks/use-node-key'
   import { Checkbox } from '@arco-design/web-vue'
-  import RenderFunction from '@arco-design/web-vue/es/_components/render-function'
+  import RenderFunction, { RenderFunc } from '@arco-design/web-vue/es/_components/render-function'
   import { isFunction } from '@arco-design/web-vue/es/_utils/is'
   import { Node } from './interface'
   import useDraggable from './hooks/use-draggable'
@@ -373,3 +373,13 @@
     },
   })
 </script>
+
+<style lang="less" scoped>
+  @transfer-item-draggable-height-gap: 1px;
+  .arco-tree-node-title-gap-bottom::before {
+    bottom: -@transfer-item-draggable-height-gap;
+  }
+  .arco-tree-node-title-gap-top::before {
+    top: -@transfer-item-draggable-height-gap;
+  }
+</style>

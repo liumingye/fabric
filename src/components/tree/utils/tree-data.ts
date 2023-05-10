@@ -39,7 +39,10 @@ function getBoolean(val1: boolean | undefined, val2: boolean | undefined) {
   return !!(isUndefined(val1) ? val2 : val1)
 }
 
-function mapObject<K, T = any>(obj: T, nameMap?: Partial<Record<keyof K, string>>): K {
+function mapObject<K, T extends Record<string, any> = any>(
+  obj: T,
+  nameMap?: Partial<Record<keyof K, string>>,
+): K {
   const _obj: Record<string, any> = { ...obj }
 
   if (nameMap) {

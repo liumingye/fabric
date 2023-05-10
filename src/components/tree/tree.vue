@@ -216,7 +216,7 @@
        * */
       allowDrop: {
         type: Function as PropType<
-          (options: { dropNode: TreeNodeData; dropPosition: -1 | 0 | 1 }) => boolean
+          (options: { dropNode: TreeNodeData; dropPosition: DropPosition }) => boolean
         >,
       },
       filterTreeNode: {

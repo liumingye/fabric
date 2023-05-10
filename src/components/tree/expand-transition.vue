@@ -5,7 +5,7 @@
     @after-enter="onAfterEnter"
     @before-leave="onBeforeLeave"
   >
-    <slot />
+    <slot></slot>
   </transition>
 </template>
 

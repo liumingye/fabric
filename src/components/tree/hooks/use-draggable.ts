@@ -26,7 +26,9 @@ export default function useDraggable(props: {
     isAllowDrop.value = treeContext.allowDrop
       ? treeContext.allowDrop(key.value, dropPosition.value)
       : true
-    const gapHeight = isAllowDrop.value ? rect.height / 4 : rect.height
+
+    const gapHeight = isAllowDrop.value ? rect.height / 4 : rect.height / 2
+
     dropPosition.value = diff < gapHeight ? -1 : diff < rect.height - gapHeight ? 0 : 1
   })
 

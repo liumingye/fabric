@@ -2,7 +2,7 @@ import { useAppStore } from '@/store'
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import { fabric } from '@/types'
-import { useEditorModules } from '@/editor'
+import { useEditorServices } from '@/editor'
 
 type TEventCallback<T = any> = (options: T) => any
 type IEvent = fabric.CanvasEvents & fabric.ObjectEvents
@@ -17,7 +17,7 @@ export function useFabricEvent<K extends keyof IEvent, E extends IEvent[K]>(
 ): Fn
 
 export function useFabricEvent(eventName: any, handler?: any) {
-  const { canvas } = useEditorModules()
+  const { canvas } = useEditorServices()
 
   canvas.on(eventName, handler)
 

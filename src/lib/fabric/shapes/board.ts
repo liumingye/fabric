@@ -1,4 +1,5 @@
-import { Group, Rect, classRegistry, FabricObject, Text, Point } from '../fabric'
+import { Rect, classRegistry, FabricObject, Text, Point } from '../fabric'
+import { Group } from '../group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
 export const boardDefaultValues = {

@@ -1,11 +1,11 @@
-import { useAppStore } from '@/store'
 import { useResizeObserver, useThrottleFn } from '@vueuse/core'
-import { useEditorModules } from '@/editor'
+import { useEditorServices } from '@/editor'
 import { h } from 'vue'
 
 export default defineComponent({
   setup() {
-    const { canvas } = useEditorModules()
+    const { canvas } = useEditorServices()
+    // console.log(useEditorServices())
 
     const divRef = ref<HTMLDivElement>()
     onMounted(() => {

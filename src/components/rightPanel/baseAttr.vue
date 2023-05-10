@@ -6,9 +6,9 @@
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
   import { clampAngle, toFixed } from '@/utils/math'
-  import { useEditorModules } from '@/editor'
+  import { useEditorServices } from '@/editor'
 
-  const { canvas } = useEditorModules()
+  const { canvas } = useEditorServices()
 
   const attrs = computed(() => {
     if (!isDefined(canvas.activeObject)) return {} as fabric.Object

@@ -4,6 +4,6 @@ export const useEditor = () => {
   return getActiveEditor()
 }
 
-export const useEditorModules = () => {
-  return getActiveEditor().loadedModules
+export const useEditorServices = () => {
+  return getActiveEditor().service
 }

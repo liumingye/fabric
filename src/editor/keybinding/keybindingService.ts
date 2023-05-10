@@ -1,13 +1,13 @@
 import mousetrap from 'mousetrap'
 import { FabricObject } from '@/lib/fabric'
 import { useFabricObject } from '@/hooks/useFabricObject'
+import { FabricCanvas } from '../canvas/canvas'
 import { isDefined } from '@vueuse/core'
-import { InstantiationCanvas } from './instantiationCanvas'
 
-class InstantiationMousetrap extends mousetrap {
+class KeybindingService extends mousetrap {
   private activeObject: ComputedRef<FabricObject | undefined>
 
-  constructor(canvas: InstantiationCanvas) {
+  constructor(canvas: FabricCanvas) {
     super()
 
     this.activeObject = computed(() => canvas.activeObject.value)
@@ -61,4 +61,4 @@ class InstantiationMousetrap extends mousetrap {
   }
 }
 
-export { InstantiationMousetrap }
+export { KeybindingService }

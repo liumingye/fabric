@@ -1,8 +1,8 @@
 import { useMagicKeys, clamp, UseMagicKeysReturn } from '@vueuse/core'
-import { Canvas, Object as FabricObject, Point } from 'fabric'
+import { Canvas, Object as FabricObject, Point, util } from '@/lib/fabric'
 import { randomText } from '@/utils/strings'
 
-class InstantiationCanvas extends Canvas {
+class FabricCanvas extends Canvas {
   public activeObject = shallowRef<FabricObject>()
   public objects = computed(() => this._objects)
   private magicKeys: UseMagicKeysReturn<false>
@@ -26,25 +26,36 @@ class InstantiationCanvas extends Canvas {
       ),
     )
 
-    this.on({
-      'object:added': ({ target }) => {
-        // 添加名称
-        // todo 临时方法 findFirstMissingPositive
-        if (!target.get('name')) {
-          const className = target.constructor.name
-          const id = this.uniqueIds.get(className) || 1
-          target.set({
-            name: `${className} ${id}`,
-          })
-          this.uniqueIds.set(className, id + 1)
-        }
-        // 添加id
+    const setDefaultAttr = (target: FabricObject) => {
+      // 添加名称
+      // todo 临时方法 findFirstMissingPositive
+      if (!target.get('name')) {
+        const className = target.constructor.name
+        const id = this.uniqueIds.get(className) || 1
         target.set({
-          id: randomText(),
+          name: `${className} ${id}`,
         })
+        this.uniqueIds.set(className, id + 1)
+      }
+      // 添加id
+      target.set({
+        id: randomText(),
+      })
+    }
 
-        triggerRef(this.objects)
-      },
+    const objectAdded = ({ target }: { target: FabricObject }) => {
+      setDefaultAttr(target)
+      if (util.isCollection(target)) {
+        target._objects.forEach((obj) => {
+          setDefaultAttr(obj as FabricObject)
+        })
+        target.on('object:added', objectAdded)
+      }
+      triggerRef(this.objects)
+    }
+
+    this.on({
+      'object:added': objectAdded,
       'object:removed': () => triggerRef(this.objects),
     })
 
@@ -100,4 +111,4 @@ class InstantiationCanvas extends Canvas {
   }
 }
 
-export { InstantiationCanvas }
+export { FabricCanvas }
