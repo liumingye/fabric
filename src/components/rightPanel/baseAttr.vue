@@ -2,36 +2,12 @@
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import { useFabricObject } from '@/hooks/useFabricObject'
   import { isDefined } from '@vueuse/core'
-  import { fabric } from '@/types'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
-  import { clampAngle, toFixed } from '@/utils/math'
   import { useEditorServices } from '@/editor'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
 
   const { canvas } = useEditorServices()
-
-  const attrs = computed(() => {
-    if (!isDefined(canvas.activeObject)) return {} as fabric.Object
-    return new Proxy(canvas.activeObject.value, {
-      get(target, key) {
-        return Reflect.get(target, key)
-      },
-      set(target, key: keyof fabric.Object, value, receiver) {
-        let result = true
-        switch (key) {
-          case 'angle':
-            target.rotate(toFixed(clampAngle(value)))
-            break
-          default:
-            result = Reflect.set(target, key, value, receiver)
-            break
-        }
-        triggerRef(attrs)
-        canvas.requestRenderAll()
-        return result
-      },
-    })
-  })
 
   const useScale = (xy: 'x' | 'y') => {
     if (!isDefined(canvas.activeObject)) return
@@ -40,7 +16,7 @@
       return xy === 'x' ? getWidth() : getHeight()
     })
     const change = (value?: number) => {
-      if (!isDefined(value)) return
+      if (!isDefined(value) || !isDefined(canvas.activeObject)) return
       const fn = xy === 'x' ? setWidth : setHeight
       fn(value)
       scale.effect.scheduler?.()
@@ -58,20 +34,21 @@
     'object:skewing': () => scale.effect.scheduler?.(),
     'object:scaling': () => scale.effect.scheduler?.(),
     'object:resizing': () => scale.effect.scheduler?.(),
-    'object:moving': () => triggerRef(attrs),
-    'object:rotating': () => triggerRef(attrs),
-    'object:modified': () => triggerRef(attrs),
   })
+
+  const left = useActiveObjectModel('left')
+  const top = useActiveObjectModel('top')
+  const angle = useActiveObjectModel('angle')
 </script>
 
 <template>
-  <div class="p2" v-if="canvas.activeObject">
+  <div class="p2" v-if="canvas.activeObject.value">
     <a-row :gutter="[4, 4]">
       <a-col :span="10">
-        <SwipeNumber label="X" v-model="attrs.left" />
+        <SwipeNumber label="X" v-model="left" @change="canvas.requestRenderAll()" />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber label="Y" v-model="attrs.top" />
+        <SwipeNumber label="Y" v-model="top" @change="canvas.requestRenderAll()" />
       </a-col>
       <a-col :span="10" v-if="scale.x">
         <SwipeNumber
@@ -90,7 +67,7 @@
         />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber v-model="attrs.angle">
+        <SwipeNumber v-model="angle" @change="canvas.requestRenderAll()">
           <template #label>
             <SvgIcon name="bx-revision" />
           </template>

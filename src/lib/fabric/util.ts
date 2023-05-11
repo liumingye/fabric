@@ -1,6 +1,6 @@
 import { util as utilOrgin } from 'fabric'
 import type { FabricObject, Group, ActiveSelection } from './fabric'
-import { Board } from './shapes/board'
+import { Board } from '@/editor/canvas/shapes/board'
 
 const isBoard = (object: any): object is Board => {
   return object instanceof Board

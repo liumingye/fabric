@@ -1,13 +1,17 @@
-import { Editor, EditorPluginContext } from '../types'
+import { createEditorPlugin } from '@/editor'
 
-const myPlugin = (editor: Editor): EditorPluginContext => {
-  const setup = () => {
-    console.log('myPlugin 插件安装')
-    console.log(editor)
-  }
+const myPlugin = createEditorPlugin((editor) => {
+  const a = 1 + 1
+
   return {
-    setup,
+    setup() {
+      console.log('myPlugin setup' + a)
+      console.log(editor)
+    },
+    dispose() {
+      console.log('myPlugin dispose' + a)
+    },
   }
-}
+})
 
 export { myPlugin }

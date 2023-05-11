@@ -1,7 +1,7 @@
-import { Editor } from './types'
+import { IEditor } from './types'
 
-export let activeEditor: Editor
+export let activeEditor: IEditor
 
-export const setActiveEditor = (editor: Editor) => (activeEditor = editor)
+export const setActiveEditor = (editor: IEditor) => (activeEditor = editor)
 
 export const getActiveEditor = () => activeEditor

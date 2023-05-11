@@ -1,5 +1,5 @@
-import { Rect, classRegistry, FabricObject, Text, Point } from '../fabric'
-import { Group } from '../group'
+import { Rect, classRegistry, FabricObject, Text, Point } from '../../../lib/fabric/fabric'
+import { Group } from './group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
 export const boardDefaultValues = {
@@ -81,7 +81,7 @@ export class Board extends Group {
     ctx.font = '12px Helvetica'
     ctx.fillStyle = '#888'
     ctx.textBaseline = 'bottom'
-    ctx.fillText('画板', 4, -2)
+    ctx.fillText(this.name, 4, -2)
     ctx.restore()
   }
 

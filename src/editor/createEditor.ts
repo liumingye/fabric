@@ -1,30 +1,35 @@
-import { FabricCanvas } from './canvas/canvas'
+import { FabricCanvas, IFabricCanvas } from './canvas/fabricCanvas'
 import { KeybindingService } from './keybinding/keybindingService'
 import { setActiveEditor } from './rootEditor'
-import { Editor, IEditorPluginContext } from './types'
-import { Container } from './container'
+import { IEditor, IEditorPluginContext } from './types'
 import { App } from 'vue'
-import { myPlugin } from './testPlugin/index'
+import { ServiceCollection } from '@/editor/instantiation/serviceCollection'
+import { InstantiationService } from '@/editor/instantiation/instantiationService'
+import { IInstantiationService } from '@/editor/instantiation/instantiation'
+import { SyncDescriptor } from './instantiation/descriptors'
 
-export const registerService = (container: Container) => {
-  container.register('canvas', FabricCanvas)
-  container.register('keybinding', KeybindingService, ['canvas'])
+const createServices = (): [IInstantiationService, FabricCanvas] => {
+  const services = new ServiceCollection()
+  const canvas = new FabricCanvas()
+  services.set(IFabricCanvas, canvas)
+  return [new InstantiationService(services, true), canvas]
 }
 
-export const createEditor = (): Editor => {
+export const createEditor = (): IEditor => {
   const _p = new Map<symbol, IEditorPluginContext>()
 
-  const container = new Container()
+  const [mainInstantiationService, canvas] = createServices()
+  const keybinding = mainInstantiationService.createInstance<KeybindingService>(
+    new SyncDescriptor(KeybindingService),
+  )
 
-  const editor: Editor = markRaw({
+  const editor: IEditor = markRaw({
     install(app: App) {
       setActiveEditor(editor)
       editor._a = app
-      registerService(container)
       _p.forEach((extender) => {
-        extender.setup()
+        extender.setup?.()
       })
-      // app.provide('editor', editor.service)
     },
     use(plugin) {
       const pluginInstance = plugin(this) as IEditorPluginContext
@@ -34,8 +39,8 @@ export const createEditor = (): Editor => {
     },
     get service() {
       return {
-        canvas: container.resolve('canvas'),
-        keybinding: container.resolve('keybinding'),
+        canvas,
+        keybinding,
       }
     },
     _p,
@@ -43,8 +48,13 @@ export const createEditor = (): Editor => {
     _a: null,
   })
 
-  // debug code
-  editor.use(myPlugin)
-
   return editor
 }
+
+// const a = mainInstantiationService.invokeFunction(function (accessor, b) {
+//   console.log(accessor.get(IFabricCanvas), b)
+//   return accessor.get(IFabricCanvas)
+// }, 12)
+// console.log(a)
+// export class StandaloneKeybindingService {}
+// registerSingleton(IKeybindingServices, StandaloneKeybindingService)

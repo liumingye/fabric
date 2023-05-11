@@ -382,7 +382,7 @@
         e: DragEvent
         dragNode: TreeNodeData
         dropNode: TreeNodeData
-        dropPosition: number
+        dropPosition: DropPosition
       }) => true,
     },
     /**

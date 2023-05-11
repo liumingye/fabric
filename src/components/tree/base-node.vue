@@ -21,9 +21,10 @@
           `${prefixCls}-switcher`,
           {
             [`${prefixCls}-switcher-expanded`]: expanded,
-            'px1.5': blockNode,
+            'pl1.5 pr4.5 mr-0': blockNode,
           },
         ]"
+        @click="onSwitcherClick"
       >
         <NodeSwitcher
           :prefix-cls="prefixCls"
@@ -35,7 +36,6 @@
             loadingIcon,
           }"
           :node-status="nodeStatus"
-          @click="onSwitcherClick"
         >
           <template v-if="$slots['switcher-icon']" #switcher-icon>
             <!-- @slot 定制 switcher 图标，会覆盖 Tree 的配置 -->
@@ -63,6 +63,7 @@
     <!-- 内容 -->
     <span
       ref="refTitle"
+      class="truncate"
       :class="titleClassNames"
       :draggable="draggable"
       @dragstart="onDragStart"
@@ -88,27 +89,26 @@
           v-bind="nodeStatus"
         />
       </span>
-      <span :class="`${prefixCls}-title-text`">
+      <span :class="`${prefixCls}-title-text truncate flex-1`">
         <RenderFunction v-if="treeTitle" :render-func="treeTitle" />
         <!-- 标题，treeTitle 优先级高于节点的 title -->
         <slot v-else name="title">{{ title }}</slot>
-
-        <span v-if="draggable" :class="[`${prefixCls}-icon`, `${prefixCls}-drag-icon`]">
-          <!-- 拖拽图标 -->
-          <slot v-if="$slots['drag-icon']" name="drag-icon" v-bind="nodeStatus"></slot>
-          <RenderFunction v-else-if="dragIcon" :render-func="dragIcon" v-bind="nodeStatus" />
-          <RenderFunction
-            v-else-if="treeDragIcon"
-            :render-func="treeDragIcon"
-            :node="treeNodeData"
-            v-bind="nodeStatus"
-          />
-          <IconDragDotVertical v-else />
-        </span>
       </span>
+      <!-- 拖拽图标 -->
+      <span v-if="draggable" :class="[`${prefixCls}-icon`, `${prefixCls}-drag-icon`]">
+        <slot v-if="$slots['drag-icon']" name="drag-icon" v-bind="nodeStatus"></slot>
+        <RenderFunction v-else-if="dragIcon" :render-func="dragIcon" v-bind="nodeStatus" />
+        <RenderFunction
+          v-else-if="treeDragIcon"
+          :render-func="treeDragIcon"
+          :node="treeNodeData"
+          v-bind="nodeStatus"
+        />
+        <IconDragDotVertical v-else />
+      </span>
+      <!-- 额外 -->
+      <RenderFunction v-if="extra" :render-func="extra" />
     </span>
-    <!-- 额外 -->
-    <RenderFunction v-if="extra" :render-func="extra" />
   </div>
 </template>
 
@@ -376,10 +376,65 @@
 
 <style lang="less" scoped>
   @transfer-item-draggable-height-gap: 1px;
-  .arco-tree-node-title-gap-bottom::before {
-    bottom: -@transfer-item-draggable-height-gap;
-  }
-  .arco-tree-node-title-gap-top::before {
-    top: -@transfer-item-draggable-height-gap;
+  @prefix: ~'arco-tree-node';
+
+  .@{prefix} {
+    border: 1px solid transparent;
+
+    &:hover {
+      border-color: rgb(var(--primary-6));
+    }
+
+    &-title {
+      border-radius: 0;
+
+      &-gap-bottom::before {
+        bottom: -@transfer-item-draggable-height-gap;
+      }
+
+      &-title-gap-top::before {
+        top: -@transfer-item-draggable-height-gap;
+      }
+
+      &-indent-block {
+        width: 4px;
+      }
+
+      &:hover {
+        background-color: transparent;
+
+        .@{prefix}-drag-icon {
+          display: inline-block;
+        }
+
+        .@{prefix}-title-text {
+          color: var(--color-text-2);
+        }
+      }
+
+      .@{prefix}-drag-icon {
+        display: none;
+        opacity: 1;
+        margin-left: 1rem;
+        position: relative;
+        color: var(--color-text-1);
+        right: 4px;
+      }
+
+      &-text {
+        color: var(--color-text-2);
+      }
+    }
+
+    &-selected {
+      background-color: rgba(var(--primary-6), 0.2);
+
+      .@{prefix}-title,
+      .@{prefix}-title:hover {
+        .@{prefix}-title-text {
+          color: var(--color-text-1);
+        }
+      }
+    }
   }
 </style>

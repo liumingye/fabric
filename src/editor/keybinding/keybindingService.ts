@@ -1,13 +1,17 @@
 import mousetrap from 'mousetrap'
 import { FabricObject } from '@/lib/fabric'
 import { useFabricObject } from '@/hooks/useFabricObject'
-import { FabricCanvas } from '../canvas/canvas'
+import { FabricCanvas } from '../canvas/fabricCanvas'
 import { isDefined } from '@vueuse/core'
+import { createDecorator } from '@/editor/instantiation/instantiation'
+import { IFabricCanvas } from '@/editor/canvas/fabricCanvas'
+
+export const IKeybindingServices = createDecorator<KeybindingService>('keybindingServices')
 
 class KeybindingService extends mousetrap {
   private activeObject: ComputedRef<FabricObject | undefined>
 
-  constructor(canvas: FabricCanvas) {
+  constructor(@IFabricCanvas canvas: FabricCanvas) {
     super()
 
     this.activeObject = computed(() => canvas.activeObject.value)

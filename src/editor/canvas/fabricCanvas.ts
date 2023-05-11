@@ -1,6 +1,10 @@
 import { useMagicKeys, clamp, UseMagicKeysReturn } from '@vueuse/core'
 import { Canvas, Object as FabricObject, Point, util } from '@/lib/fabric'
 import { randomText } from '@/utils/strings'
+import { createDecorator } from '@/editor/instantiation/instantiation'
+import { toRefObject } from '@/editor/canvas/toRefObject'
+
+export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
 class FabricCanvas extends Canvas {
   public activeObject = shallowRef<FabricObject>()
@@ -62,6 +66,9 @@ class FabricCanvas extends Canvas {
     this.magicKeys = useMagicKeys()
 
     this.initMouseWheel()
+
+    // @ts-ignore
+    this._activeSelection = toRefObject(this._activeSelection)
   }
 
   /**
@@ -108,6 +115,11 @@ class FabricCanvas extends Canvas {
 
   override set _activeObject(value) {
     this.activeObject.value = value
+  }
+
+  override add(...objects: FabricObject[]): number {
+    const newObjects = objects.map((obj) => toRefObject(obj))
+    return super.add(...(newObjects as any[]))
   }
 }
 

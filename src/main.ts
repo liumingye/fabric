@@ -9,6 +9,11 @@ import '@/assets/style/global.less'
 import 'virtual:uno.css'
 import 'virtual:svg-icons-register'
 
-createApp(App).use(pinia).use(router).use(createEditor()).mount('#app')
+const editor = createEditor()
+// debug code
+import { myPlugin } from '@/editor/testPlugin'
+editor.use(myPlugin)
+
+createApp(App).use(pinia).use(router).use(editor).mount('#app')
 
 document.body.setAttribute('arco-theme', 'dark')
