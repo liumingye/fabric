@@ -25,6 +25,7 @@ const _collectObjects = (
     if (
       // 包含子元素
       object.subTargetCheck &&
+      object.visible &&
       object._objects &&
       // 与box相交
       (object.intersectsWithRect(tl, br, true) ||

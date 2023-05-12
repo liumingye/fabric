@@ -1,7 +1,6 @@
-import { useAppStore } from '@/store'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import type { TPointerEventInfo, TPointerEvent } from '@/lib/fabric'
-import { useEditorServices } from '@/editor'
+import { useEditorServices } from '@/core'
 
 export interface UseSwipeOptions {
   onSwipeStart?: (e: TPointerEventInfo<TPointerEvent>) => void

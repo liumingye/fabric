@@ -1,15 +1,14 @@
 import { useResizeObserver, useThrottleFn } from '@vueuse/core'
-import { useEditorServices } from '@/editor'
+import { useEditorServices } from '@/core'
 import { h } from 'vue'
 
 export default defineComponent({
   setup() {
     const { canvas } = useEditorServices()
-    // console.log(useEditorServices())
 
     const divRef = ref<HTMLDivElement>()
     onMounted(() => {
-      divRef.value?.append(canvas.wrapperEl)
+      divRef.value?.append(canvas.lowerCanvasEl, canvas.upperCanvasEl)
 
       // Set the dimensions of the canvas based on the size of the div element
       const throttledFn = useThrottleFn((entries) => {
@@ -23,6 +22,6 @@ export default defineComponent({
     return { divRef }
   },
   render() {
-    return h('div', { ref: 'divRef', class: 'h-full bg-$color-fill-1' })
+    return h('div', { ref: 'divRef', class: 'relative h-full bg-$color-fill-1' })
   },
 })

@@ -1,21 +1,21 @@
 <script setup lang="ts">
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
-  import { useAppStore } from '@/store'
   import { isDefined } from '@vueuse/core'
+  import { useEditorServices } from '@/core'
 
-  const { activeObject } = storeToRefs(useAppStore())
+  const { canvas } = useEditorServices()
 
   const componentList = computed(() => [
     {
       name: 'LayoutAlign',
       component: LayoutAlign,
-      visual: isDefined(activeObject),
+      visual: isDefined(canvas.activeObject),
     },
     {
       name: 'BaseAttr',
       component: BaseAttr,
-      visual: isDefined(activeObject),
+      visual: isDefined(canvas.activeObject),
     },
   ])
 </script>

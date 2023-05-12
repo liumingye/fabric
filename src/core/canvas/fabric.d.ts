@@ -1,8 +1,8 @@
 export declare module 'fabric' {
-  import { Object as ObjectOrgin, Group as GroupOrgin } from 'fabric'
+  import { Object as FabricObject } from 'fabric'
 
   export type ObjectRef = Pick<
-    ObjectOrgin,
+    FabricObject,
     | 'originX'
     | 'originY'
     | 'top'
@@ -74,13 +74,22 @@ export declare module 'fabric' {
     | 'absolutePositioned'
   >
 
-  export class Object extends ObjectOrgin {
+  export class Canvas {
+    forEachObject(
+      callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
+    ): void
+  }
+
+  export class Object {
     id: string
     name: string
     ref: ObjectRef
   }
 
-  export class Group extends GroupOrgin {
+  export class Group {
     updateLayoutStrategy(): void
+    forEachObject(
+      callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
+    ): void
   }
 }

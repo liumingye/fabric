@@ -1,14 +1,14 @@
 import mousetrap from 'mousetrap'
-import { FabricObject } from '@/lib/fabric'
+import { ActiveSelection, FabricObject, util } from '@/lib/fabric'
 import { useFabricObject } from '@/hooks/useFabricObject'
 import { FabricCanvas } from '../canvas/fabricCanvas'
 import { isDefined } from '@vueuse/core'
-import { createDecorator } from '@/editor/instantiation/instantiation'
-import { IFabricCanvas } from '@/editor/canvas/fabricCanvas'
+import { createDecorator } from '@/core/instantiation/instantiation'
+import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 
 export const IKeybindingServices = createDecorator<KeybindingService>('keybindingServices')
 
-class KeybindingService extends mousetrap {
+export class KeybindingService extends mousetrap {
   private activeObject: ComputedRef<FabricObject | undefined>
 
   constructor(@IFabricCanvas canvas: FabricCanvas) {
@@ -16,9 +16,30 @@ class KeybindingService extends mousetrap {
 
     this.activeObject = computed(() => canvas.activeObject.value)
 
+    const removeObject = (obj: FabricObject) => {
+      if (obj instanceof ActiveSelection) {
+        // 多个在ActiveSelection里
+        obj.forEachObject((obj) => {
+          // 第一个group是ActiveSelection，要删除俩次
+          if (obj.group instanceof ActiveSelection) {
+            obj.group.remove(obj)
+          }
+          removeObject(obj)
+        })
+      } else if (obj.group) {
+        // 单个在Group里
+        obj.group?.remove(obj)
+      } else {
+        // 单个在canvas里
+        canvas.remove(obj)
+      }
+    }
+
     this.bind(['delete', 'backspace'], () => {
       if (!isDefined(this.activeObject)) return
-      canvas.remove(this.activeObject.value)
+      removeObject(this.activeObject.value)
+      canvas.discardActiveObject()
+      canvas.requestRenderAll()
     })
 
     // 移至底层
@@ -64,5 +85,3 @@ class KeybindingService extends mousetrap {
     this.bind('alt+v', () => object()?.verticalMiddle())
   }
 }
-
-export { KeybindingService }

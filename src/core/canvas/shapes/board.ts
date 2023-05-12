@@ -70,19 +70,21 @@ export class Board extends Group {
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx)
 
-    // 左上角文字
-    const { x, y } = this.oCoords.tl
-    const retinaScaling = this.getCanvasRetinaScaling()
-    const angle = this.getTotalAngle()
-    ctx.save()
-    ctx.setTransform(retinaScaling, 0, 0, retinaScaling, 0, 0)
-    ctx.translate(x, y)
-    ctx.rotate((angle * Math.PI) / 180)
-    ctx.font = '12px Helvetica'
-    ctx.fillStyle = '#888'
-    ctx.textBaseline = 'bottom'
-    ctx.fillText(this.name, 4, -2)
-    ctx.restore()
+    if (this.visible) {
+      // 左上角文字
+      const { x, y } = this.oCoords.tl
+      const retinaScaling = this.getCanvasRetinaScaling()
+      const angle = this.getTotalAngle()
+      ctx.save()
+      ctx.setTransform(retinaScaling, 0, 0, retinaScaling, 0, 0)
+      ctx.translate(x, y)
+      ctx.rotate((angle * Math.PI) / 180)
+      ctx.font = '12px Helvetica'
+      ctx.fillStyle = '#888'
+      ctx.textBaseline = 'bottom'
+      ctx.fillText(this.name, 4, -2)
+      ctx.restore()
+    }
   }
 
   shouldCache() {

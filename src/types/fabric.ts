@@ -1,2 +1,2 @@
-export { FabricCanvas as Canvas } from '@/editor/canvas/fabricCanvas'
+export { FabricCanvas as Canvas } from '@/core/canvas/fabricCanvas'
 export * from '@/lib/fabric'

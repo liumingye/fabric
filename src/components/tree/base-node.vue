@@ -63,7 +63,6 @@
     <!-- 内容 -->
     <span
       ref="refTitle"
-      class="truncate"
       :class="titleClassNames"
       :draggable="draggable"
       @dragstart="onDragStart"
@@ -210,11 +209,13 @@
         return action ? toArray(action) : []
       })
 
-      const { isLeaf, isTail, selectable, disabled, disableCheckbox, draggable } = toRefs(props)
+      const { isLeaf, isTail, selectable, disabled, disableCheckbox, draggable, blockNode } =
+        toRefs(props)
 
       const classNames = computed(() => [
         `${prefixCls}`,
         {
+          [`${prefixCls}-block`]: blockNode.value,
           [`${prefixCls}-selected`]: selected.value,
           [`${prefixCls}-is-leaf`]: isLeaf.value,
           [`${prefixCls}-is-tail`]: isTail.value,
@@ -378,14 +379,15 @@
   @transfer-item-draggable-height-gap: 1px;
   @prefix: ~'arco-tree-node';
 
-  .@{prefix} {
+  .@{prefix}-block {
     border: 1px solid transparent;
 
     &:hover {
       border-color: rgb(var(--primary-6));
     }
 
-    &-title {
+    .@{prefix}-title {
+      width: 100%;
       border-radius: 0;
 
       &-gap-bottom::before {
@@ -394,10 +396,6 @@
 
       &-title-gap-top::before {
         top: -@transfer-item-draggable-height-gap;
-      }
-
-      &-indent-block {
-        width: 4px;
       }
 
       &:hover {
@@ -426,7 +424,11 @@
       }
     }
 
-    &-selected {
+    .@{prefix}-indent-block {
+      width: 4px;
+    }
+
+    &.@{prefix}-selected {
       background-color: rgba(var(--primary-6), 0.2);
 
       .@{prefix}-title,

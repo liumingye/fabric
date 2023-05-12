@@ -1,17 +1,9 @@
 import type { App } from 'vue'
-import type { FabricCanvas } from './canvas/fabricCanvas'
-import type { KeybindingService } from './keybinding/keybindingService'
+import type { IInstantiationService } from './instantiation/instantiation'
 
 // 内部类型
-export interface IEditorService {
-  canvas: FabricCanvas
-  keybinding: KeybindingService
-}
-
 export interface IEditor extends Editor {
   install: (app: App) => void
-  _p: Map<symbol, IEditorPluginContext>
-  _a: App
 }
 
 export interface IEditorPluginContext extends EditorPluginContext {
@@ -20,8 +12,10 @@ export interface IEditorPluginContext extends EditorPluginContext {
 
 // 插件用类型
 export type Editor = {
-  service: IEditorService
   use: (plugin: EditorPlugin) => Editor
+  service: IInstantiationService
+  _p: Map<symbol, IEditorPluginContext>
+  _a: App
 }
 
 export interface EditorPluginContext {

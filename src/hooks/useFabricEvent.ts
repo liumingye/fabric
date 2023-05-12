@@ -1,8 +1,7 @@
-import { useAppStore } from '@/store'
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
 import { fabric } from '@/types'
-import { useEditorServices } from '@/editor'
+import { useEditorServices } from '@/core'
 
 type TEventCallback<T = any> = (options: T) => any
 type IEvent = fabric.CanvasEvents & fabric.ObjectEvents

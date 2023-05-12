@@ -1,15 +1,13 @@
-import { useMagicKeys, clamp, UseMagicKeysReturn } from '@vueuse/core'
-import { Canvas, Object as FabricObject, Point, util } from '@/lib/fabric'
+import { Canvas, Object as FabricObject, util } from '@/lib/fabric'
 import { randomText } from '@/utils/strings'
-import { createDecorator } from '@/editor/instantiation/instantiation'
-import { toRefObject } from '@/editor/canvas/toRefObject'
+import { createDecorator } from '@/core/instantiation/instantiation'
+import { toRefObject } from '@/core/canvas/toRefObject'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
 class FabricCanvas extends Canvas {
   public activeObject = shallowRef<FabricObject>()
   public objects = computed(() => this._objects)
-  private magicKeys: UseMagicKeysReturn<false>
   private uniqueIds = new Map<string, number>()
 
   constructor(el?: string | HTMLCanvasElement, options?: Partial<Canvas>) {
@@ -63,40 +61,8 @@ class FabricCanvas extends Canvas {
       'object:removed': () => triggerRef(this.objects),
     })
 
-    this.magicKeys = useMagicKeys()
-
-    this.initMouseWheel()
-
     // @ts-ignore
     this._activeSelection = toRefObject(this._activeSelection)
-  }
-
-  /**
-   * 初始化滚动和缩放
-   */
-  private initMouseWheel() {
-    // 默认纵向滚动 shift横向滚动 ctrl缩放
-    this.on('mouse:wheel', (e) => {
-      e.e.preventDefault()
-      e.e.stopPropagation()
-      const { deltaX, deltaY, offsetX, offsetY } = e.e
-      // 缩放视窗
-      if (this.magicKeys.ctrl.value) {
-        const zoomFactor = Math.abs(deltaY) < 10 ? deltaY * 2 : deltaY / 3
-        let newZoom = this.getZoom() * (1 - zoomFactor / 200)
-        newZoom = clamp(newZoom, 0.01, 20)
-        this.zoomToPoint(new Point(offsetX, offsetY), newZoom)
-        return
-      }
-      // 滚动画布
-      const deltaPoint = new Point()
-      if (this.magicKeys.shift.value) {
-        deltaPoint.x = deltaX > 0 ? -20 : 20
-      } else {
-        deltaPoint.y = deltaY > 0 ? -20 : 20
-      }
-      this.relativePan(deltaPoint)
-    })
   }
 
   /**

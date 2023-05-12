@@ -1,8 +1,8 @@
 import { Group as GroupOrign } from 'fabric'
 import { FabricObject } from '@/lib/fabric/fabric'
 import { GroupProps } from 'fabric/src/shapes/Group'
-import { FabricCanvas } from '@/editor/canvas/fabricCanvas'
-import { toRefObject } from '@/editor/canvas/toRefObject'
+import { FabricCanvas } from '@/core/canvas/fabricCanvas'
+import { toRefObject } from '@/core/canvas/toRefObject'
 
 class Group extends GroupOrign {
   public objects = computed(() => this._objects)

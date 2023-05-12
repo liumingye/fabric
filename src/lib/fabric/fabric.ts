@@ -8,7 +8,7 @@ import './canvas/staticCanvas'
 import './object'
 
 // 元素
-export { Group } from '@/editor/canvas/shapes/group'
-export { Board } from '@/editor/canvas/shapes/board'
+export { Group } from '@/core/canvas/shapes/group'
+export { Board } from '@/core/canvas/shapes/board'
 
 export type * from './types'

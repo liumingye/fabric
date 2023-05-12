@@ -4,7 +4,7 @@
   import { isDefined } from '@vueuse/core'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
-  import { useEditorServices } from '@/editor'
+  import { useEditorServices } from '@/core'
   import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
 
   const { canvas } = useEditorServices()
