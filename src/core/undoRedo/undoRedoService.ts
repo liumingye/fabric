@@ -5,7 +5,7 @@ export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoServic
 
 class UndoQueue {
   private inner_: any[] = []
-  private size_ = 20
+  private size_ = 50
 
   pop() {
     return this.inner_.pop()

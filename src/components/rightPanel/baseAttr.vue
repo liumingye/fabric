@@ -5,7 +5,7 @@
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
   import { useEditorServices } from '@/core'
-  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
+  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
 
   const { canvas } = useEditorServices()
 
@@ -45,10 +45,10 @@
   <div class="p2" v-if="canvas.activeObject.value">
     <a-row :gutter="[4, 4]">
       <a-col :span="10">
-        <SwipeNumber label="X" v-model="left" @change="canvas.requestRenderAll()" />
+        <SwipeNumber label="X" v-bind="left" />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber label="Y" v-model="top" @change="canvas.requestRenderAll()" />
+        <SwipeNumber label="Y" v-bind="top" />
       </a-col>
       <a-col :span="10" v-if="scale.x">
         <SwipeNumber
@@ -67,7 +67,7 @@
         />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber v-model="angle" @change="canvas.requestRenderAll()">
+        <SwipeNumber v-bind="angle">
           <template #label>
             <SvgIcon name="bx-revision" />
           </template>

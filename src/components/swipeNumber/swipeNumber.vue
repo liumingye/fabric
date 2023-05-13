@@ -107,7 +107,7 @@
   .arco-input-wrapper.hasLabel {
     align-items: baseline;
     padding-left: 0;
-    padding-right: 6px;
+    padding-right: 4px;
 
     :deep(.arco-input-prefix) {
       padding-right: 0;

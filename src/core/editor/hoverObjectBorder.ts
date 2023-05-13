@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { FabricObject, util, CanvasEvents } from '@/lib/fabric'
+import { FabricObject, util, CanvasEvents, Rect } from '@/lib/fabric'
 import { cloneDeep } from 'lodash'
 
 /**
@@ -48,34 +48,32 @@ export class HoverObjectBorder {
     if (!ctx) return
     // ctx.save()
 
-    const retinaScaling = target.getCanvasRetinaScaling()
+    const object = cloneDeep(target)
 
-    if (util.isCollection(target)) {
-      const vpt = target.getViewportTransform()
-      const matrix = util.multiplyTransformMatrices(vpt, target.calcTransformMatrix())
-      const options = util.qrDecompose(matrix)
-      ctx.setTransform(retinaScaling, 0, 0, retinaScaling, options.translateX, options.translateY)
-      ctx.lineWidth = this.lineWidth
-      target.drawBorders(ctx, options, {})
-    } else {
-      const object = cloneDeep(target)
-      object.set({
-        width: object.width + object.strokeWidth / object.scaleX,
-        height: object.height + object.strokeWidth / object.scaleY,
-        stroke: this.canvas.selectionBorderColor,
-        strokeWidth: this.lineWidth,
-        strokeDashArray: null,
-        strokeDashOffset: 0,
-        strokeLineCap: 'butt',
-        strokeLineJoin: 'miter',
-        strokeMiterLimit: 4,
-        strokeUniform: true,
-      })
-      object._renderPaintInOrder = () => {
-        object._renderStroke(ctx)
-      }
-      object._render(ctx)
+    if (util.isCollection(object)) {
+      object._render = Rect.prototype._render
     }
+
+    const { width, height, strokeWidth, scaleX, scaleY, strokeUniform } = object
+
+    object.set({
+      width: width + strokeWidth / (strokeUniform ? scaleX * (object.group?.scaleX ?? 1) : 1),
+      height: height + strokeWidth / (strokeUniform ? scaleY * (object.group?.scaleY ?? 1) : 1),
+      stroke: this.canvas.selectionBorderColor,
+      strokeWidth: this.lineWidth,
+      strokeDashArray: null,
+      strokeDashOffset: 0,
+      strokeLineCap: 'butt',
+      strokeLineJoin: 'miter',
+      strokeMiterLimit: 4,
+      strokeUniform: true,
+    })
+
+    object._renderPaintInOrder = () => {
+      object._renderStroke(ctx)
+    }
+
+    object._render(ctx)
 
     ctx.restore()
     this.canvas.contextTopDirty = true

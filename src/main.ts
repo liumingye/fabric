@@ -14,6 +14,6 @@ createApp(App).use(pinia).use(router).use(createEditor()).mount('#app')
 // debug code
 import { myPlugin } from './core/testPlugin'
 const editor = useEditor()
-// editor.use(myPlugin)
+editor.use(myPlugin)
 
 document.body.setAttribute('arco-theme', 'dark')
