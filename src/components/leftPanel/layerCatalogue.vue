@@ -16,16 +16,16 @@
   }
 
   const { canvas } = useEditorServices()
-  // const { objects } = storeToRefs(useAppStore())
 
   const searchKey = ref('')
 
   const treeData = computed(() => {
-    return getTreeData(canvas.objects.value, searchKey.value)
+    return getTreeData(canvas.computed.objects.value, searchKey.value)
   })
 
   const getTreeData = (objects: FabricObject[], searchKey?: string): ITreeNodeData[] => {
     const objs: ITreeNodeData[] = []
+    if (!objects) return objs
     for (const object of objects) {
       const isCollection = util.isCollection(object)
       const children = isCollection ? getTreeData(object._objects as FabricObject[], searchKey) : []

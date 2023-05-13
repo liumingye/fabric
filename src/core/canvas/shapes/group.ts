@@ -1,11 +1,14 @@
-import { Group as GroupOrign } from 'fabric'
+import { Group as GroupOrign, classRegistry } from 'fabric'
 import { FabricObject } from '@/lib/fabric/fabric'
 import { GroupProps } from 'fabric/src/shapes/Group'
 import { FabricCanvas } from '@/core/canvas/fabricCanvas'
 import { toRefObject } from '@/core/canvas/toRefObject'
 
-class Group extends GroupOrign {
-  public objects = computed(() => this._objects)
+export class Group extends GroupOrign {
+  public computed = {
+    objects: computed(() => this._objects),
+  }
+  // public objectsRef = computed(() => this._objects)
   public declare canvas: FabricCanvas | undefined
 
   constructor(
@@ -19,12 +22,12 @@ class Group extends GroupOrign {
 
     this.on({
       'object:added': () => {
-        triggerRef(this.objects)
-        this.canvas && triggerRef(this.canvas.objects)
+        triggerRef(this.computed.objects)
+        this.canvas && triggerRef(this.canvas.computed.objects)
       },
       'object:removed': () => {
-        triggerRef(this.objects)
-        this.canvas && triggerRef(this.canvas.objects)
+        triggerRef(this.computed.objects)
+        this.canvas && triggerRef(this.canvas.computed.objects)
       },
     })
   }
@@ -35,7 +38,8 @@ class Group extends GroupOrign {
   override _onStackOrderChanged() {
     super._onStackOrderChanged()
     // 更新objects
-    this.canvas && triggerRef(this.canvas.objects)
+    triggerRef(this.computed.objects)
+    this.canvas && triggerRef(this.canvas.computed.objects)
   }
 
   override add(...objects: FabricObject[]): number {
@@ -48,6 +52,13 @@ class Group extends GroupOrign {
     this._applyLayoutStrategy({ type: 'object_modified' })
     this._set('dirty', true)
   }
+
+  override _onObjectAdded(obj: FabricObject) {
+    if (!obj.get('noEventObjectAdded')) {
+      super._onObjectAdded(obj)
+    }
+  }
 }
 
-export { Group }
+classRegistry.setClass(Group)
+classRegistry.setClass(Group, 'group')

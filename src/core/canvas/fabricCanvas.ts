@@ -1,4 +1,4 @@
-import { Canvas, Object as FabricObject, util } from '@/lib/fabric'
+import { Canvas, Object as FabricObject, ObjectEvents, util } from '@/lib/fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
@@ -7,7 +7,11 @@ export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
 class FabricCanvas extends Canvas {
   public activeObject = shallowRef<FabricObject>()
-  public objects = computed(() => this._objects)
+  public computed = {
+    objects: computed(() => this._objects),
+  }
+
+  // public objectsRef = computed(() => this._objects)
   private uniqueIds = new Map<string, number>()
 
   constructor(el?: string | HTMLCanvasElement, options?: Partial<Canvas>) {
@@ -23,6 +27,7 @@ class FabricCanvas extends Canvas {
           uniformScaling: false,
           stopContextMenu: true,
           fireMiddleClick: true,
+          includeDefaultValues: false,
         },
         options,
       ),
@@ -53,12 +58,13 @@ class FabricCanvas extends Canvas {
         })
         target.on('object:added', objectAdded)
       }
-      triggerRef(this.objects)
+      // this.ref.objects = this._objects
+      triggerRef(this.computed.objects)
     }
 
     this.on({
       'object:added': objectAdded,
-      'object:removed': () => triggerRef(this.objects),
+      'object:removed': () => triggerRef(this.computed.objects),
     })
 
     // @ts-ignore
@@ -71,7 +77,8 @@ class FabricCanvas extends Canvas {
   override _onStackOrderChanged() {
     super._onStackOrderChanged()
     // 更新objects
-    triggerRef(this.objects)
+    triggerRef(this.computed.objects)
+    // this.ref.objects = this._objects
   }
 
   // @ts-ignore
@@ -84,8 +91,13 @@ class FabricCanvas extends Canvas {
   }
 
   override add(...objects: FabricObject[]): number {
-    const newObjects = objects.map((obj) => toRefObject(obj))
-    return super.add(...(newObjects as any[]))
+    return super.add(...objects.map((obj) => toRefObject(obj)))
+  }
+
+  override _onObjectAdded(obj: FabricObject) {
+    if (!obj.get('noEventObjectAdded')) {
+      super._onObjectAdded(obj)
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { KeybindingService, IKeybindingServices } from '@/core/keybinding/keybindingService'
+import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { Ellipse, FabricObject, Point, Rect } from '@/lib/fabric'
 import { useAppStore } from '@/store'
@@ -9,7 +9,7 @@ import { useMagicKeys } from '@vueuse/core'
 export class FabricTool {
   constructor(
     @IFabricCanvas private canvas: FabricCanvas,
-    @IKeybindingServices private keybinding: KeybindingService,
+    @IKeybindingService private keybinding: KeybindingService,
   ) {
     this.initWatch()
     this.initHandMove()
@@ -73,7 +73,9 @@ export class FabricTool {
                 break
             }
 
+            tempObject.set('noEventObjectAdded', true)
             canvas.add(tempObject)
+            tempObject.set('noEventObjectAdded', false)
             canvas.setActiveObject(tempObject)
           },
           onSwipe() {
@@ -98,7 +100,13 @@ export class FabricTool {
             })
           },
           onSwipeEnd() {
-            tempObject?.setCoords()
+            if (tempObject) {
+              if (tempObject.group) {
+                tempObject.group._onObjectAdded(tempObject)
+              } else {
+                canvas._onObjectAdded(tempObject)
+              }
+            }
             tempObject = undefined
             activeTool.value = 'move'
           },

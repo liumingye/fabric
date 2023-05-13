@@ -1,12 +1,12 @@
 import mousetrap from 'mousetrap'
-import { ActiveSelection, FabricObject, util } from '@/lib/fabric'
+import { ActiveSelection, FabricObject } from '@/lib/fabric'
 import { useFabricObject } from '@/hooks/useFabricObject'
 import { FabricCanvas } from '../canvas/fabricCanvas'
 import { isDefined } from '@vueuse/core'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 
-export const IKeybindingServices = createDecorator<KeybindingService>('keybindingServices')
+export const IKeybindingService = createDecorator<KeybindingService>('keybindingServices')
 
 export class KeybindingService extends mousetrap {
   private activeObject: ComputedRef<FabricObject | undefined>

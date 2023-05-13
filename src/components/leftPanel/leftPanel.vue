@@ -7,7 +7,9 @@
     <a-tab-pane key="1" title="图层" class="h-full">
       <layerCatalogue class="h-full" />
     </a-tab-pane>
-    <a-tab-pane key="2" title="资源">资源</a-tab-pane>
+    <a-tab-pane key="2" title="资源">
+      <div class="p2">资源</div>
+    </a-tab-pane>
   </a-tabs>
 </template>
 
@@ -24,6 +26,18 @@
 
       &-pane {
         height: 100%;
+      }
+
+      &-tab-active,
+      &-tab-active:hover {
+        color: rgb(var(--color-text-1));
+      }
+
+      &-nav-ink {
+        background-color: var(--color-text-1);
+        box-sizing: content-box;
+        padding: 0 10px;
+        margin: 0 -10px;
       }
     }
   }

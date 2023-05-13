@@ -1,24 +1,33 @@
+import { EditorMain } from '@/core/editor/editorMain'
+import { getSingletonServiceDescriptors } from '@/core/instantiation/extensions'
+import { IInstantiationService, ServiceIdentifier } from '@/core/instantiation/instantiation'
+import { InstantiationService } from '@/core/instantiation/instantiationService'
+import { ServiceCollection } from '@/core/instantiation/serviceCollection'
+import { App } from 'vue'
 import { FabricCanvas, IFabricCanvas } from './canvas/fabricCanvas'
-import { HoverObjectBorder } from './canvas/enhancements/hoverObjectBorder'
-import { HandleWheelScroll } from './canvas/enhancements/handleWheelScroll'
-import { FabricTool } from './canvas/fabricTool'
-import { KeybindingService, IKeybindingServices } from './keybinding/keybindingService'
+import { SyncDescriptor } from './instantiation/descriptors'
+import { IKeybindingService, KeybindingService } from './keybinding/keybindingService'
 import { setActiveEditor } from './rootEditor'
 import { IEditor, IEditorPluginContext } from './types'
-import { App } from 'vue'
-import { ServiceCollection } from '@/core/instantiation/serviceCollection'
-import { InstantiationService } from '@/core/instantiation/instantiationService'
-import { IInstantiationService } from '@/core/instantiation/instantiation'
-import { SyncDescriptor } from './instantiation/descriptors'
 
-const createServices = (): [IInstantiationService, FabricCanvas, KeybindingService] => {
+const createServices = (): [IInstantiationService] => {
   const services = new ServiceCollection()
-  // 收集依赖
-  const canvas = new FabricCanvas()
-  services.set(IFabricCanvas, canvas)
-  const keybinding = new KeybindingService(canvas)
-  services.set(IKeybindingServices, keybinding)
-  return [new InstantiationService(services, true), canvas, keybinding]
+
+  // 收集依赖服务
+  for (const [id, descriptor] of getSingletonServiceDescriptors()) {
+    services.set(id, descriptor)
+  }
+
+  // 收集依赖服务
+  const define = <T>(id: ServiceIdentifier<T>, ctor: new (...args: any[]) => T) => {
+    if (!services.has(id)) {
+      services.set(id, new SyncDescriptor(ctor))
+    }
+  }
+  define(IFabricCanvas, FabricCanvas)
+  define(IKeybindingService, KeybindingService)
+
+  return [new InstantiationService(services, true)]
 }
 
 export const createEditor = (): IEditor => {
@@ -30,15 +39,10 @@ export const createEditor = (): IEditor => {
     install(app: App) {
       setActiveEditor(editor)
       editor._a = app
-
-      // 注册实例
-      mainInstantiationService.createInstance(new SyncDescriptor(FabricTool))
-      mainInstantiationService.createInstance(new SyncDescriptor(HoverObjectBorder))
-      mainInstantiationService.createInstance(new SyncDescriptor(HandleWheelScroll))
-      console.log(2)
+      // 创建编辑器实例
+      mainInstantiationService.createInstance(new SyncDescriptor(EditorMain))
     },
     use(plugin) {
-      console.log(1)
       const pluginInstance = plugin(this) as IEditorPluginContext
       pluginInstance._id = Symbol()
       _p.set(pluginInstance._id, pluginInstance)
@@ -54,11 +58,3 @@ export const createEditor = (): IEditor => {
 
   return editor
 }
-
-// const a = mainInstantiationService.invokeFunction(function (accessor, b) {
-//   console.log(accessor.get(IFabricCanvas), b)
-//   return accessor.get(IFabricCanvas)
-// }, 12)
-// console.log(a)
-// export class StandaloneKeybindingService {}
-// registerSingleton(IKeybindingServices, StandaloneKeybindingService)
