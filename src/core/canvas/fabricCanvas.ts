@@ -22,8 +22,8 @@ class FabricCanvas extends Canvas {
         {
           hoverCursor: 'default',
           preserveObjectStacking: true,
-          selectionBorderColor: 'rgba(42,130,228,0.8)',
-          selectionColor: 'rgba(42,130,228,0.2)',
+          selectionBorderColor: 'rgba(60,126,255,0.8)',
+          selectionColor: 'rgba(60,126,255,0.2)',
           uniformScaling: false,
           stopContextMenu: true,
           fireMiddleClick: true,

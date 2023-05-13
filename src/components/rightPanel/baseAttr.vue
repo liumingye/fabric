@@ -42,16 +42,17 @@
 </script>
 
 <template>
-  <div class="p2" v-if="canvas.activeObject.value">
-    <a-row :gutter="[4, 4]">
+  <div class="p2">
+    <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
-        <SwipeNumber label="X" v-bind="left" />
+        <SwipeNumber size="small" label="X" v-bind="left" />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber label="Y" v-bind="top" />
+        <SwipeNumber size="small" label="Y" v-bind="top" />
       </a-col>
       <a-col :span="10" v-if="scale.x">
         <SwipeNumber
+          size="small"
           label="W"
           :modelValue="scale.x.model.value"
           :min="1"
@@ -60,6 +61,7 @@
       </a-col>
       <a-col :span="10" v-if="scale.y">
         <SwipeNumber
+          size="small"
           label="H"
           :modelValue="scale.y.model.value"
           :min="1"
@@ -67,12 +69,12 @@
         />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber v-bind="angle">
+        <SwipeNumber size="small" v-bind="angle">
           <template #label>
             <SvgIcon name="bx-revision" />
           </template>
           <template #suffix>
-            <div class="absolute top-0 right-1">°</div>
+            <div class="absolute top-1 right-1">°</div>
           </template>
         </SwipeNumber>
       </a-col>

@@ -105,7 +105,7 @@
 
 <style scoped lang="less">
   .arco-input-wrapper.hasLabel {
-    align-items: baseline;
+    line-height: 1;
     padding-left: 0;
     padding-right: 4px;
 

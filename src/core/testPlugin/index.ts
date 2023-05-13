@@ -65,6 +65,7 @@ const myPlugin = createEditorPlugin((editor) => {
             fill: '#' + Math.random().toString(16).substring(2, 8),
             strokeWidth: random(0, 10),
             stroke: '#' + Math.random().toString(16).substring(2, 8),
+            // globalCompositeOperation: 'luminosity',
           }),
         )
         board1.add(

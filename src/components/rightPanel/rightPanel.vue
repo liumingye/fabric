@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
+  import LayerAttr from './layerAttr.vue'
   import { isDefined } from '@vueuse/core'
   import { useEditorServices } from '@/core'
 
@@ -17,6 +18,11 @@
       component: BaseAttr,
       visual: isDefined(canvas.activeObject),
     },
+    {
+      name: 'LayerAttr',
+      component: LayerAttr,
+      visual: isDefined(canvas.activeObject),
+    },
   ])
 </script>
 
@@ -26,10 +32,19 @@
       <template v-if="com.visual">
         <component :is="com.component" />
         <!-- arco bug 无法设置为0, 等待修复, https://github.com/arco-design/arco-design-vue/pull/2390 -->
-        <a-divider v-if="index !== componentList.length - 1" :margin="0.01" />
+        <a-divider v-if="index !== componentList.length - 1" :margin="4" />
       </template>
     </template>
   </div>
 </template>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  :deep(.arco-input-wrapper) {
+    // font-size: 12px !important;
+    height: 28px;
+  }
+  :deep(.arco-select-view-value) {
+    line-height: initial !important;
+    font-size: 12px !important;
+  }
+</style>

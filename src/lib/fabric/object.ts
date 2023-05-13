@@ -17,6 +17,14 @@ Object.assign(FabricObject.ownDefaults, {
   controls: createObjectDefaultControls() as TControlSet,
 } as FabricObject)
 
+// Object.assign<FabricObject, Partial<FabricObject>>(FabricObject.prototype, {
+//   _setupCompositeOperation(ctx: CanvasRenderingContext2D) {
+//     if (this.globalCompositeOperation) {
+//       ctx.globalCompositeOperation = this.globalCompositeOperation
+//     }
+//   },
+// })
+
 const exitGroupOrgin = ActiveSelection.prototype.exitGroup
 ActiveSelection.prototype.exitGroup = function (
   object: FabricObject,

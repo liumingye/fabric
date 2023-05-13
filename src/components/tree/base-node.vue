@@ -429,7 +429,7 @@
     }
 
     &.@{prefix}-selected {
-      background-color: rgba(var(--primary-6), 0.2);
+      background-color: rgba(var(--primary-6), 0.23);
 
       .@{prefix}-title,
       .@{prefix}-title:hover {
@@ -438,5 +438,10 @@
         }
       }
     }
+  }
+
+  .arco-tree-size-small .@{prefix}-block .@{prefix}-title {
+    padding-top: 1px;
+    padding-bottom: 1px;
   }
 </style>

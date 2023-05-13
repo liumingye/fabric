@@ -4,12 +4,13 @@ import { ObjectRef } from 'fabric'
 import type { WritableComputedRef } from 'vue'
 import { clampAngle, toFixed } from '@/utils/math'
 import { isNumber } from 'lodash'
+import { FabricObject, util } from '@/lib/fabric'
 
-export const useActiveObjectModel = <K extends keyof ObjectRef, T extends ObjectRef[K]>(
+export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K] | undefined>(
   key: K,
 ): WritableComputedRef<{
   modelValue: T
-  onChange: (value: T | undefined) => void
+  onChange: (value: T) => void
 }> => {
   const { canvas } = useEditorServices()
 
@@ -18,8 +19,10 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T extends Object
   watchEffect(() => {
     if (canvas.activeObject.value) {
       let value
-      if (canvas.activeObject.value.group && (key === 'left' || key === 'top')) {
+      if ((key === 'left' || key === 'top') && canvas.activeObject.value.group) {
         value = canvas.activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
+      } else if (key === 'opacity') {
+        value = (canvas.activeObject.value[key] as number) * 100
       } else {
         value = canvas.activeObject.value[key]
       }
@@ -29,19 +32,44 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T extends Object
 
   return computed(() => ({
     modelValue: modelValue.value as T,
-    onChange: (newValue: T | undefined) => {
+    onChange: (newValue: T) => {
       if (!isDefined(canvas.activeObject)) return
       modelValue.value = newValue
       if (key === 'angle') {
         canvas.activeObject.value.rotate(toFixed(clampAngle(Number(modelValue.value))))
-      } else if (canvas.activeObject.value.group && (key === 'left' || key === 'top')) {
+        canvas.requestRenderAll()
+        return
+      } else if ((key === 'left' || key === 'top') && canvas.activeObject.value.group) {
         canvas.activeObject.value[key === 'left' ? 'setX' : 'setY'](
           toFixed(Number(modelValue.value)),
         )
         canvas.activeObject.value.setCoords()
-      } else {
-        canvas.activeObject.value.set(key, modelValue.value)
+        canvas.requestRenderAll()
+        return
       }
+
+      // console.log(123)
+
+      const setValue = (obj: FabricObject | undefined) => {
+        if (!isDefined(obj)) return
+        if (key === 'opacity') {
+          obj.set(key, modelValue.value / 100)
+        } else {
+          obj.set(key, modelValue.value)
+        }
+      }
+
+      if (
+        !['width', 'height', 'left', 'top'].includes(key) &&
+        util.isCollection(canvas.activeObject.value)
+      ) {
+        canvas.activeObject.value.forEachObject((obj) => {
+          setValue(obj)
+        })
+      } else {
+        setValue(canvas.activeObject.value)
+      }
+
       canvas.requestRenderAll()
     },
   }))

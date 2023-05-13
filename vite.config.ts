@@ -16,7 +16,11 @@ export default defineConfig({
     vueJsx(),
     // 自动按需引入组件
     AutoImport({
-      resolvers: [ArcoResolver()],
+      resolvers: [
+        ArcoResolver({
+          // importStyle: 'less',
+        }),
+      ],
       imports: ['vue', 'vue-router', 'pinia'],
       eslintrc: {
         enabled: true,
@@ -27,8 +31,8 @@ export default defineConfig({
       resolvers: [
         // 自动引入arco
         ArcoResolver({
+          // importStyle: 'less',
           resolveIcons: true,
-          sideEffect: true,
         }),
       ],
     }),
@@ -52,5 +56,17 @@ export default defineConfig({
     open: false,
     cors: false,
     host: '0.0.0.0',
+  },
+  css: {
+    preprocessorOptions: {
+      less: {
+        modifyVars: {
+          'font-size-body-1': '12px',
+          'font-size-body-2': '12px',
+          'font-size-body-3': '12px',
+        },
+        javascriptEnabled: true,
+      },
+    },
   },
 })
