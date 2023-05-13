@@ -32,6 +32,11 @@ export class Group extends GroupOrign {
     })
   }
 
+  public updateLayoutStrategy() {
+    this._applyLayoutStrategy({ type: 'object_modified' })
+    this._set('dirty', true)
+  }
+
   /**
    * 图层位置改变
    */
@@ -48,14 +53,11 @@ export class Group extends GroupOrign {
     return super.add(...newObjects)
   }
 
-  public updateLayoutStrategy() {
-    this._applyLayoutStrategy({ type: 'object_modified' })
-    this._set('dirty', true)
-  }
-
   override _onObjectAdded(obj: FabricObject) {
     if (!obj.get('noEventObjectAdded')) {
       super._onObjectAdded(obj)
+    } else {
+      obj._set('canvas', this)
     }
   }
 }

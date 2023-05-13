@@ -72,7 +72,6 @@ export class FabricTool {
                 })
                 break
             }
-
             tempObject.set('noEventObjectAdded', true)
             canvas.add(tempObject)
             tempObject.set('noEventObjectAdded', false)

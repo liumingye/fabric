@@ -97,6 +97,8 @@ class FabricCanvas extends Canvas {
   override _onObjectAdded(obj: FabricObject) {
     if (!obj.get('noEventObjectAdded')) {
       super._onObjectAdded(obj)
+    } else {
+      obj._set('canvas', this)
     }
   }
 }
