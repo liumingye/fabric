@@ -1,15 +1,14 @@
 import { Group as GroupOrign, classRegistry } from 'fabric'
 import { FabricObject } from '@/lib/fabric/fabric'
 import { GroupProps } from 'fabric/src/shapes/Group'
-import { FabricCanvas } from '@/core/canvas/fabricCanvas'
+// import { FabricCanvas } from '@/core/canvas/fabricCanvas'
 import { toRefObject } from '@/core/canvas/toRefObject'
 
 export class Group extends GroupOrign {
   public computed = {
     objects: computed(() => this._objects),
   }
-  // public objectsRef = computed(() => this._objects)
-  public declare canvas: FabricCanvas | undefined
+  // public declare canvas: FabricCanvas | undefined
 
   constructor(
     objects?: FabricObject[],

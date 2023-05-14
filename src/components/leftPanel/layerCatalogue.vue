@@ -297,7 +297,11 @@
       <Tree blockNode :data="treeData2" draggable size="small" />
     </template>
     <template #second>
-      <a-input-search v-model="searchKey" />
+      <a-input-search
+        v-model="searchKey"
+        placeholder="Search..."
+        class="bg-transparent! border-none!"
+      />
       <Tree
         size="small"
         blockNode
@@ -360,7 +364,7 @@
       </Tree>
     </template>
     <template #resize-trigger>
-      <div class="h4 flex items-center">
+      <div class="pt4">
         <a-divider :margin="0.01" />
       </div>
     </template>

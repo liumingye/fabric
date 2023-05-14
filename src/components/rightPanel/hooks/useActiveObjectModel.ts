@@ -13,61 +13,64 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   onChange: (value: T) => void
 }> => {
   const { canvas } = useEditorServices()
+  const { activeObject } = canvas
 
   const modelValue = ref()
 
+  // input组件在修改后不回车确定,切换object时,会触发onChange,导致修改错object值
+  let lockChange = false
+
   watchEffect(() => {
-    if (canvas.activeObject.value) {
+    if (isDefined(activeObject)) {
+      lockChange = true
       let value
-      if ((key === 'left' || key === 'top') && canvas.activeObject.value.group) {
-        value = canvas.activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
+      if ((key === 'left' || key === 'top') && activeObject.value.group) {
+        value = activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
       } else if (key === 'opacity') {
-        value = (canvas.activeObject.value[key] as number) * 100
+        value = (activeObject.value[key] as number) * 100
       } else {
-        value = canvas.activeObject.value[key]
+        value = activeObject.value[key]
       }
       modelValue.value = isNumber(value) ? toFixed(value) : value
+      requestAnimationFrame(() => (lockChange = false))
     }
   })
+
+  const setValue = (obj: FabricObject, newValue: T) => {
+    let value
+    if (key === 'opacity') {
+      value = Number(newValue) / 100
+    } else {
+      value = newValue
+    }
+    if (obj.get(key) !== value) {
+      obj.set(key, value)
+    }
+  }
 
   return computed(() => ({
     modelValue: modelValue.value as T,
     onChange: (newValue: T) => {
-      if (!isDefined(canvas.activeObject)) return
-      modelValue.value = newValue
+      if (lockChange || !isDefined(activeObject)) return
+
       if (key === 'angle') {
-        canvas.activeObject.value.rotate(toFixed(clampAngle(Number(modelValue.value))))
-        canvas.requestRenderAll()
-        return
-      } else if ((key === 'left' || key === 'top') && canvas.activeObject.value.group) {
-        canvas.activeObject.value[key === 'left' ? 'setX' : 'setY'](
-          toFixed(Number(modelValue.value)),
-        )
-        canvas.activeObject.value.setCoords()
-        canvas.requestRenderAll()
-        return
-      }
-
-      // console.log(123)
-
-      const setValue = (obj: FabricObject | undefined) => {
-        if (!isDefined(obj)) return
-        if (key === 'opacity') {
-          obj.set(key, modelValue.value / 100)
-        } else {
-          obj.set(key, modelValue.value)
-        }
-      }
-
-      if (
+        // 旋转
+        activeObject.value.rotate(toFixed(clampAngle(Number(newValue))))
+      } else if ((key === 'left' || key === 'top') && activeObject.value.group) {
+        // 单个 组内 左和上
+        activeObject.value[key === 'left' ? 'setX' : 'setY'](toFixed(Number(newValue)))
+        activeObject.value.setCoords()
+      } else if (
         !['width', 'height', 'left', 'top'].includes(key) &&
-        util.isCollection(canvas.activeObject.value)
+        util.isCollection(activeObject.value)
       ) {
-        canvas.activeObject.value.forEachObject((obj) => {
-          setValue(obj)
+        // 多个 组内
+        activeObject.value.forEachObject((obj) => {
+          setValue(obj, newValue)
         })
       } else {
-        setValue(canvas.activeObject.value)
+        // 组外
+        setValue(activeObject.value, newValue)
       }
 
       canvas.requestRenderAll()

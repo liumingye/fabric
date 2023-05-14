@@ -37,7 +37,7 @@
     <template v-for="(com, index) in componentList" :key="com.name">
       <template v-if="com.visual">
         <component :is="com.component" />
-        <a-divider v-if="index !== componentList.length - 1" :margin="4" />
+        <a-divider v-if="index !== componentList.length - 1" :margin="0.01" />
       </template>
     </template>
   </div>
@@ -60,5 +60,16 @@
   :deep(.arco-select-view-value) {
     line-height: initial !important;
     font-size: 12px !important;
+  }
+
+  :deep(.arco-input-prefix) {
+    margin-left: -1px;
+    margin-right: 4px;
+    justify-content: center;
+
+    .arco-btn {
+      height: 28px;
+      width: 30px;
+    }
   }
 </style>

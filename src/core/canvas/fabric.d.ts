@@ -94,6 +94,7 @@ export declare module 'fabric' {
   }
 
   export class Group {
+    canvas: Canvas | undefined
     group: this | undefined
     _objects: FabricObject[]
     computed: {

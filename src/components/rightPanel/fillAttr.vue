@@ -29,8 +29,11 @@
     return hex.padEnd(6, hex)
   }
 
-  const modelValue = ref('')
+  const onChange = (value: string) => {
+    fill.value.onChange('#' + fillHexColor(value.replace('#', '')))
+  }
 
+  const modelValue = ref('')
   watchEffect(() => {
     const value = fill.value.modelValue
     if (isString(value)) {
@@ -43,9 +46,7 @@
     modelValue.value = '图案填充'
   })
 
-  const onChange = (value: string) => {
-    fill.value.onChange('#' + fillHexColor(value))
-  }
+  const readonly = computed(() => !isString(fill.value.modelValue))
 </script>
 
 <template>
@@ -54,19 +55,18 @@
     <!-- <div>点击 + 重置并修改多个内容</div> -->
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
-        <a-input
-          size="mini"
-          v-model="modelValue"
-          :readonly="!isString(fill.modelValue)"
-          @change="onChange"
-        >
-          <template #prepend>
-            <div
-              class="w16px h16px rd-4px"
-              :style="{
-                background,
-              }"
-            ></div>
+        <a-input size="mini" v-model="modelValue" :readonly="readonly" @change="onChange">
+          <template #prefix>
+            <a-button size="mini" class="icon-btn">
+              <template #icon>
+                <div
+                  class="w16px h16px rd-4px"
+                  :style="{
+                    background,
+                  }"
+                ></div>
+              </template>
+            </a-button>
           </template>
         </a-input>
       </a-col>
@@ -75,7 +75,18 @@
 </template>
 
 <style scoped lang="less">
-  :deep(.arco-input-prepend) {
-    padding: 0 6px !important;
+  :deep(.arco-input-wrapper) {
+    padding-left: 0 !important;
+  }
+
+  :deep(.arco-input-prefix) {
+    padding-right: 0 !important;
+    margin-left: -1px;
+    margin-right: 4px;
+    justify-content: center;
+
+    .arco-btn {
+      width: 32px;
+    }
   }
 </style>

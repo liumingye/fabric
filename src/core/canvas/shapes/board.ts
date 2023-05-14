@@ -1,4 +1,4 @@
-import { Rect, classRegistry, FabricObject, Text, Point } from '../../../lib/fabric/fabric'
+import { Rect, classRegistry, FabricObject, Text, Point } from '@/lib/fabric/fabric'
 import { Group } from './group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
