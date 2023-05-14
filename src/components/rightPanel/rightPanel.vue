@@ -2,6 +2,7 @@
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
   import LayerAttr from './layerAttr.vue'
+  import FillAttr from './fillAttr.vue'
   import { isDefined } from '@vueuse/core'
   import { useEditorServices } from '@/core'
 
@@ -23,6 +24,11 @@
       component: LayerAttr,
       visual: isDefined(canvas.activeObject),
     },
+    {
+      name: 'FillAttr',
+      component: FillAttr,
+      visual: isDefined(canvas.activeObject),
+    },
   ])
 </script>
 
@@ -31,7 +37,6 @@
     <template v-for="(com, index) in componentList" :key="com.name">
       <template v-if="com.visual">
         <component :is="com.component" />
-        <!-- arco bug 无法设置为0, 等待修复, https://github.com/arco-design/arco-design-vue/pull/2390 -->
         <a-divider v-if="index !== componentList.length - 1" :margin="4" />
       </template>
     </template>
@@ -40,8 +45,17 @@
 
 <style scoped lang="less">
   :deep(.arco-input-wrapper) {
-    // font-size: 12px !important;
+    padding-right: 4px;
+    padding-left: 6px;
     height: 28px;
+
+    .arco-input {
+      font-size: 12px !important;
+    }
+
+    .arco-input-suffix {
+      padding-left: 6px;
+    }
   }
   :deep(.arco-select-view-value) {
     line-height: initial !important;

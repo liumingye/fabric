@@ -79,7 +79,7 @@ export class UndoRedoService {
     return state
   }
 
-  async reset() {
+  reset() {
     this.undoStates = new UndoQueue()
     this.redoStates = new UndoQueue()
     this.isUndoing = false

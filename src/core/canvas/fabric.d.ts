@@ -3,6 +3,8 @@ export declare module 'fabric' {
 
   export type ObjectRef = Pick<
     FabricObject,
+    | 'id'
+    | 'name'
     | 'originX'
     | 'originY'
     | 'top'
@@ -75,18 +77,28 @@ export declare module 'fabric' {
   >
 
   export class Canvas {
+    _objects: FabricObject[]
+    computed: {
+      objects: ComputedRef<FabricObject[]>
+    }
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
   }
 
   export class Object {
+    group: Group | undefined
     id: string
     name: string
     ref: ObjectRef
   }
 
   export class Group {
+    group: this | undefined
+    _objects: FabricObject[]
+    computed: {
+      objects: ComputedRef<FabricObject[]>
+    }
     updateLayoutStrategy(): void
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,

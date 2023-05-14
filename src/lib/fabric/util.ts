@@ -1,4 +1,4 @@
-import { util as utilOrgin } from 'fabric'
+import { util as utilOrgin, Gradient, Pattern } from 'fabric'
 import type { FabricObject, Group, ActiveSelection } from './fabric'
 import { Board } from '@/core/canvas/shapes/board'
 
@@ -10,4 +10,10 @@ const isCollection = (fabricObject?: FabricObject): fabricObject is Group | Acti
   return !!fabricObject && Array.isArray((fabricObject as Group)._objects)
 }
 
-export const util = { ...utilOrgin, isBoard, isCollection }
+// 类型工具
+const isGradient = (obj: unknown): obj is Gradient<'linear'> | Gradient<'radial'> =>
+  obj instanceof Gradient
+
+const isPattern = (obj: unknown): obj is Pattern => obj instanceof Pattern
+
+export const util = { ...utilOrgin, isBoard, isCollection, isGradient, isPattern }

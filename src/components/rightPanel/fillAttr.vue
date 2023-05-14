@@ -1,0 +1,81 @@
+<script setup lang="ts">
+  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { isString } from 'lodash'
+  import { util } from '@/lib/fabric'
+  import type { GradientCoords } from 'fabric/src/gradient/typedefs'
+
+  const fill = useActiveObjectModel('fill')
+
+  const convertCoordsToDeg = (coords: GradientCoords<'linear'>) =>
+    (Math.atan2(coords.y2 - coords.y1, coords.x2 - coords.x1) * 180) / Math.PI + 90
+
+  const background = computed(() => {
+    const value = fill.value.modelValue
+    let css = ''
+    if (isString(value)) {
+      css += value
+    } else if (util.isGradient(value)) {
+      if (value.type === 'linear') {
+        css += `linear-gradient(${convertCoordsToDeg(value.coords)}deg`
+      } else {
+        css += `radial-gradient(8px 8px at 8px 8px`
+      }
+      css += `,${value.colorStops.map((cs) => `${cs.color} ${cs.offset * 100}%`).join(',')})`
+    }
+    return css || '#fff'
+  })
+
+  const fillHexColor = (hex: string) => {
+    return hex.padEnd(6, hex)
+  }
+
+  const modelValue = ref('')
+
+  watchEffect(() => {
+    const value = fill.value.modelValue
+    if (isString(value)) {
+      modelValue.value = value.replace('#', '').toUpperCase()
+      return
+    } else if (util.isGradient(value)) {
+      modelValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
+      return
+    }
+    modelValue.value = '图案填充'
+  })
+
+  const onChange = (value: string) => {
+    fill.value.onChange('#' + fillHexColor(value))
+  }
+</script>
+
+<template>
+  <div class="p2">
+    <div class="mb2 font-bold text-xs">填充</div>
+    <!-- <div>点击 + 重置并修改多个内容</div> -->
+    <a-row :gutter="[4, 4]" align="center">
+      <a-col :span="10">
+        <a-input
+          size="mini"
+          v-model="modelValue"
+          :readonly="!isString(fill.modelValue)"
+          @change="onChange"
+        >
+          <template #prepend>
+            <div
+              class="w16px h16px rd-4px"
+              :style="{
+                background,
+              }"
+            ></div>
+          </template>
+        </a-input>
+      </a-col>
+    </a-row>
+  </div>
+</template>
+
+<style scoped lang="less">
+  :deep(.arco-input-prepend) {
+    padding: 0 6px !important;
+  }
+</style>

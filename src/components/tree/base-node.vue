@@ -1,5 +1,11 @@
 <template>
-  <div :class="classNames" :data-level="level" :data-key="nodekey">
+  <div
+    :class="classNames"
+    :data-level="level"
+    :data-key="nodekey"
+    @mouseout="hover = false"
+    @mouseover="hover = true"
+  >
     <component :is="DefineTemplate">
       <!-- 缩进 -->
       <span :class="`${prefixCls}-indent`">
@@ -63,6 +69,7 @@
     <!-- 内容 -->
     <span
       ref="refTitle"
+      class="overflow-hidden"
       :class="titleClassNames"
       :draggable="draggable"
       @dragstart="onDragStart"
@@ -94,7 +101,7 @@
         <slot v-else name="title">{{ title }}</slot>
       </span>
       <!-- 拖拽图标 -->
-      <span v-if="draggable" :class="[`${prefixCls}-icon`, `${prefixCls}-drag-icon`]">
+      <span v-if="draggable && !extra" :class="[`${prefixCls}-icon`, `${prefixCls}-drag-icon`]">
         <slot v-if="$slots['drag-icon']" name="drag-icon" v-bind="nodeStatus"></slot>
         <RenderFunction v-else-if="dragIcon" :render-func="dragIcon" v-bind="nodeStatus" />
         <RenderFunction
@@ -106,7 +113,7 @@
         <IconDragDotVertical v-else />
       </span>
       <!-- 额外 -->
-      <RenderFunction v-if="extra" :render-func="extra" />
+      <RenderFunction v-if="extra" :render-func="extra" class="x1" />
     </span>
   </div>
 </template>
@@ -212,9 +219,12 @@
       const { isLeaf, isTail, selectable, disabled, disableCheckbox, draggable, blockNode } =
         toRefs(props)
 
+      const hover = ref(false)
+
       const classNames = computed(() => [
         `${prefixCls}`,
         {
+          [`${prefixCls}-hover`]: hover.value,
           [`${prefixCls}-block`]: blockNode.value,
           [`${prefixCls}-selected`]: selected.value,
           [`${prefixCls}-is-leaf`]: isLeaf.value,
@@ -293,6 +303,7 @@
       const [DefineTemplate, ReuseTemplate] = createReusableTemplate()
 
       return {
+        hover,
         DefineTemplate,
         ReuseTemplate,
         nodekey: key,

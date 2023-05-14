@@ -1,6 +1,6 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '../canvas/fabricCanvas'
-import { Board, Group, Rect } from '@/lib/fabric'
+import { Board, Gradient, Group, Rect } from '@/lib/fabric'
 import { random } from 'lodash'
 
 const myPlugin = createEditorPlugin((editor) => {
@@ -74,7 +74,14 @@ const myPlugin = createEditorPlugin((editor) => {
             left: random(0, 200),
             width: random(50, 100),
             height: random(50, 100),
-            fill: '#' + Math.random().toString(16).substring(2, 8),
+            fill: new Gradient({
+              type: 'radial',
+              coords: { x1: 50, y1: 50, r1: 0, x2: 50, y2: 50, r2: 50 },
+              colorStops: [
+                { color: '#000000', offset: 0 },
+                { color: '#ffffff', offset: 1 },
+              ],
+            }),
             strokeWidth: random(0, 10),
             stroke: '#' + Math.random().toString(16).substring(2, 8),
           }),
@@ -85,7 +92,20 @@ const myPlugin = createEditorPlugin((editor) => {
             left: random(50, 200),
             width: random(50, 100),
             height: random(50, 100),
-            fill: '#' + Math.random().toString(16).substring(2, 8),
+            fill: new Gradient({
+              type: 'linear',
+              coords: { x1: 0, y1: 0, x2: 100, y2: 100 },
+              colorStops: [
+                {
+                  color: '#' + Math.random().toString(16).substring(2, 8),
+                  offset: 0,
+                },
+                {
+                  color: '#' + Math.random().toString(16).substring(2, 8),
+                  offset: 1,
+                },
+              ],
+            }),
             strokeWidth: random(0, 10),
             stroke: '#' + Math.random().toString(16).substring(2, 8),
           }),

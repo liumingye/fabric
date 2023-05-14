@@ -1,8 +1,5 @@
 <script setup lang="ts">
-  import { useEditorServices } from '@/core'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
-
-  const { canvas } = useEditorServices()
 
   const opacity = useActiveObjectModel('opacity')
   const globalCompositeOperation = useActiveObjectModel<
@@ -119,13 +116,4 @@
   </div>
 </template>
 
-<style scoped lang="less">
-  :deep(.arco-input-wrapper) {
-    padding-right: 6px;
-    padding-left: 6px;
-
-    .arco-input-suffix {
-      padding-left: 6px;
-    }
-  }
-</style>
+<style scoped lang="less"></style>

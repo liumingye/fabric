@@ -4,6 +4,8 @@ const toRefObject = (object: FabricObject) => {
   if (object.ref) return object
 
   const keyArr: (keyof ObjectRef)[] = [
+    'id',
+    'name',
     'originX',
     'originY',
     'top',

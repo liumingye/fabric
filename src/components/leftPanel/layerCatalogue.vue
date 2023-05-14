@@ -1,11 +1,10 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
-  import { useAppStore } from '@/store'
   import type { TreeNodeData, DropPosition } from '@/components/tree'
   import { ActiveSelection, Group, ObjectRef, util } from '@/lib/fabric'
   import { FabricObject } from '@/lib/fabric'
   import { useEditorServices } from '@/core'
-  import { useResizeObserver, useThrottleFn } from '@vueuse/core'
+  import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import { SplitInstance } from '@arco-design/web-vue'
 
   type ITreeNodeData = TreeNodeData & {
@@ -23,6 +22,9 @@
     return getTreeData(canvas.computed.objects.value, searchKey.value)
   })
 
+  /**
+   * 获得树节点数据
+   */
   const getTreeData = (objects: FabricObject[], searchKey?: string): ITreeNodeData[] => {
     const objs: ITreeNodeData[] = []
     if (!objects) return objs
@@ -45,6 +47,9 @@
     return objs
   }
 
+  /**
+   * 节点搜索
+   */
   const canAddToResult = (object: ITreeNodeData, searchKey: string): boolean => {
     // 广度优先搜索
     const lowerSearchKey = searchKey.toLowerCase()
@@ -75,24 +80,24 @@
     },
   ]
 
+  /**
+   * 节点是否允许放置
+   */
   const allowDrop = (options: { dropNode: TreeNodeData }) => {
     return (options.dropNode as ITreeNodeData).canDragEnter
   }
 
-  const onDrop = (data: {
+  /**
+   * 移动节点
+   */
+  const moveNode = (data: {
     e: DragEvent
-    dragNode: TreeNodeData
-    dropNode: TreeNodeData
+    dragNodeKey: string | number
+    dropNodeKey: string | number
     dropPosition: DropPosition
+    excludeGroupObject: boolean
   }) => {
-    const { dragNode, dropNode, dropPosition } = data as {
-      e: DragEvent
-      dragNode: ITreeNodeData
-      dropNode: ITreeNodeData
-      dropPosition: DropPosition
-    }
-    // todo 多个元素
-
+    const { dragNodeKey, dropNodeKey, dropPosition, excludeGroupObject } = data
     let dragIndex = -1
     let dragObject: FabricObject | undefined
     let dropIndex = -1
@@ -104,10 +109,10 @@
       if (util.isCollection(obj)) {
         obj.forEachObject(add)
       }
-      if (obj.id == dragNode.key) {
+      if (obj.id == dragNodeKey) {
         dragObject = obj
         dragIndex = index
-      } else if (obj.get('id') == dropNode.key) {
+      } else if (obj.id == dropNodeKey) {
         dropObject = obj
         if (dragIndex !== -1 && dragObject?.group === dropObject?.group) {
           dropIndex = index - 1
@@ -116,6 +121,21 @@
         }
       }
     })
+
+    // 如果该对象属于的分组也在拖拽列表，则中止操作。
+    if (excludeGroupObject && dragObject) {
+      const checkNodeVisibility = (obj: FabricObject): boolean => {
+        if (!obj.group || !selectedkeys.value.includes(obj.group.id)) {
+          return false
+        } else if (obj.group.group) {
+          return checkNodeVisibility(obj.group.group)
+        }
+        return true
+      }
+      if (checkNodeVisibility(dragObject)) {
+        return
+      }
+    }
 
     if (dragIndex >= 0 && dropIndex >= 0 && dragObject && dropObject) {
       const dragGroup = dragObject?.group || canvas
@@ -131,20 +151,71 @@
     }
   }
 
-  const visibleClick = (
-    e: Event,
-    nodeData: {
-      node: ITreeNodeData
-    },
-  ) => {
+  /**
+   * tree节点放置事件
+   */
+  const onDrop = (data: {
+    e: DragEvent
+    dragNode: TreeNodeData
+    dropNode: TreeNodeData
+    dropPosition: DropPosition
+  }) => {
+    const { e, dragNode, dropNode, dropPosition } = data as {
+      e: DragEvent
+      dragNode: ITreeNodeData
+      dropNode: ITreeNodeData
+      dropPosition: DropPosition
+    }
+    if (!dragNode.key || !dropNode.key) return
+    if (selectedkeys.value.includes(dragNode.key + '')) {
+      // 多个拖拽
+      for (let i = selectedkeys.value.length - 1; i >= 0; i--) {
+        moveNode({
+          e,
+          dragNodeKey: selectedkeys.value[i],
+          dropNodeKey: dropNode.key,
+          dropPosition,
+          excludeGroupObject: true,
+        })
+      }
+    } else {
+      // 单个拖拽
+      moveNode({
+        e,
+        dragNodeKey: dragNode.key,
+        dropNodeKey: dropNode.key,
+        dropPosition,
+        excludeGroupObject: false,
+      })
+    }
+  }
+
+  /**
+   * 点击图层锁定
+   */
+  const lockClick = (e: Event, node: ITreeNodeData) => {
     e.stopPropagation()
-    nodeData.node.objectRef.visible = !nodeData.node.objectRef.visible
-    nodeData.node.group?.updateLayoutStrategy()
+    node.objectRef.evented = !node.objectRef.evented
+    node.objectRef.hasControls = node.objectRef.evented
+    node.objectRef.selectable = node.objectRef.evented
+    canvas.requestRenderAll()
+  }
+
+  /**
+   * 点击图层可视
+   */
+  const visibleClick = (e: Event, node: ITreeNodeData) => {
+    e.stopPropagation()
+    node.objectRef.visible = !node.objectRef.visible
+    node.group?.updateLayoutStrategy()
     canvas.requestRenderAll()
   }
 
   const selectedkeys = ref<string[]>([])
 
+  /**
+   * tree节点选择
+   */
   const onSelect = (_selectedKeys: (string | number)[]) => {
     const objects: FabricObject[] = []
     canvas.forEachObject(function add(obj) {
@@ -165,6 +236,7 @@
     canvas.requestRenderAll()
   }
 
+  // 更新tree选中节点
   watch(canvas.activeObject, (value) => {
     if (!value) {
       selectedkeys.value = []
@@ -181,6 +253,7 @@
     }
   })
 
+  // 更新tree组件的高度
   const splitRef = ref<SplitInstance>()
   const secondHeight = ref(0)
   onMounted(() => {
@@ -191,10 +264,35 @@
     }, 15)
     useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, throttledFn)
   })
+
+  // 图层是否可视
+  const isVisible = (node: ITreeNodeData): boolean => {
+    if (!node.objectRef.visible) {
+      return false
+    } else if (node.group) {
+      return isVisible({
+        objectRef: node.group.ref,
+        group: node.group.group,
+      } as ITreeNodeData)
+    }
+    return true
+  }
+
+  // 多选
+  // todo: shift键选择范围
+  const multiple = ref(false)
+  const { meta, ctrl } = useMagicKeys()
+  watchEffect(() => {
+    if (meta.value || ctrl.value) {
+      multiple.value = true
+    } else {
+      multiple.value = false
+    }
+  })
 </script>
 
 <template>
-  <a-split ref="splitRef" direction="vertical" min="40px" :default-size="0.3">
+  <a-split ref="splitRef" direction="vertical" min="40px" :default-size="0.2">
     <template #first>
       <Tree blockNode :data="treeData2" draggable size="small" />
     </template>
@@ -205,6 +303,7 @@
         blockNode
         draggable
         v-model:selected-keys="selectedkeys"
+        :multiple="multiple"
         :data="treeData"
         :allowDrop="allowDrop"
         :virtualListProps="{
@@ -217,22 +316,46 @@
         <template #title="nodeData">
           <span
             :class="{
-              'op-50': !nodeData.objectRef.visible,
+              'op-50': !isVisible(nodeData),
             }"
           >
             {{ nodeData.title }}
           </span>
         </template>
-        <template #drag-icon="nodeData">
-          <a-space>
-            <!-- <icon-lock /> -->
-            <a-button size="small" class="icon-btn" @click="visibleClick($event, nodeData)">
+        <template #extra="nodeData">
+          <div
+            class="extra"
+            :class="{
+              show: !nodeData.objectRef.evented || !nodeData.objectRef.visible,
+            }"
+          >
+            <a-button
+              :class="{
+                show: nodeData.objectRef.evented,
+              }"
+              size="small"
+              class="icon-btn"
+              @click="lockClick($event, nodeData)"
+            >
               <template #icon>
-                <icon-eye v-if="nodeData.node.objectRef.visible" />
+                <icon-unlock v-if="nodeData.objectRef.evented" />
+                <icon-lock v-else />
+              </template>
+            </a-button>
+            <a-button
+              :class="{
+                show: nodeData.objectRef.visible,
+              }"
+              size="small"
+              class="icon-btn"
+              @click="visibleClick($event, nodeData)"
+            >
+              <template #icon>
+                <icon-eye v-if="nodeData.objectRef.visible" />
                 <icon-eye-invisible v-else />
               </template>
             </a-button>
-          </a-space>
+          </div>
         </template>
       </Tree>
     </template>
@@ -244,4 +367,23 @@
   </a-split>
 </template>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  .extra {
+    display: none;
+    &.show {
+      display: inline-block;
+      .arco-btn.show {
+        visibility: hidden;
+      }
+    }
+  }
+
+  .arco-tree-node-hover {
+    .extra {
+      display: inline-block;
+      .arco-btn.show {
+        visibility: visible;
+      }
+    }
+  }
+</style>
