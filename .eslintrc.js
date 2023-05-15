@@ -109,5 +109,6 @@ module.exports = defineConfig({
     'no-extra-semi': 'off',
     // 可以使用重新声明相同的变量名
     'no-redeclare': 'off',
+    'no-dupe-class-members': 'off',
   },
 })

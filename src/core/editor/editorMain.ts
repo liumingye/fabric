@@ -1,6 +1,7 @@
 import { FabricTool } from '@/core/editor/fabricTool'
 import { HoverObjectBorder } from '@/core/editor/hoverObjectBorder'
 import { HandleWheelScroll } from '@/core/editor/handleWheelScroll'
+import { Keybinding } from '@/core/editor/keybinding'
 import { UndoRedo } from '@/core/editor/undoRedo'
 import { SyncDescriptor } from '@/core/instantiation/descriptors'
 import { useEditor } from '@/core/useEditor'
@@ -13,6 +14,7 @@ export class EditorMain {
       mainInstantiationService.createInstance(new SyncDescriptor(ctor))
     }
 
+    register(Keybinding)
     register(FabricTool)
     register(HoverObjectBorder)
     register(HandleWheelScroll)

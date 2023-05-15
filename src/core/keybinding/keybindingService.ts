@@ -1,91 +1,48 @@
-import mousetrap from 'mousetrap'
-import { ActiveSelection, FabricObject } from '@/lib/fabric'
-import { useFabricObject } from '@/hooks/useFabricObject'
-import { FabricCanvas } from '../canvas/fabricCanvas'
-import { isDefined } from '@vueuse/core'
+import mousetrap, { ExtendedKeyboardEvent } from 'mousetrap'
 import { createDecorator } from '@/core/instantiation/instantiation'
-import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
+import { isArray, isFunction, isObject, isString } from 'lodash'
 
 export const IKeybindingService = createDecorator<KeybindingService>('keybindingServices')
 
+type Callback = (e: ExtendedKeyboardEvent, combo: string) => boolean | void
+
 export class KeybindingService extends mousetrap {
-  private activeObject: ComputedRef<FabricObject | undefined>
-
-  constructor(@IFabricCanvas canvas: FabricCanvas) {
+  constructor() {
     super()
-
-    this.activeObject = computed(() => canvas.activeObject.value)
-
-    const objForEach = (target: FabricObject, fn: (obj: FabricObject) => void) => {
-      if (target instanceof ActiveSelection) {
-        target.forEachObject((obj) => {
-          fn(obj)
-        })
-      } else {
-        fn(target)
-      }
-    }
-
-    this.bind(['delete', 'backspace'], () => {
-      if (!isDefined(this.activeObject)) return
-      objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.remove(obj)
-      })
-      canvas.discardActiveObject()
-      canvas.requestRenderAll()
-    })
-
-    // 移至底层
-    this.bind('[', () => {
-      if (!isDefined(this.activeObject)) return
-      objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.sendObjectToBack(obj)
-      })
-    })
-
-    // 移至顶层
-    this.bind(']', () => {
-      if (!isDefined(this.activeObject)) return
-      objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.bringObjectToFront(obj)
-      })
-    })
-
-    // 向下移动一层
-    this.bind('mod+[', () => {
-      if (!isDefined(this.activeObject)) return
-      objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.sendObjectBackwards(obj)
-      })
-    })
-
-    // 向上移动一层
-    this.bind('mod+]', () => {
-      if (!isDefined(this.activeObject)) return
-      objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.bringObjectForward(obj)
-      })
-    })
-
-    this.bindAlign()
   }
 
-  bindAlign() {
-    const object = () => {
-      if (isDefined(this.activeObject)) {
-        return useFabricObject(this.activeObject)
+  /**
+   * Overwrites default Mousetrap.bind method to optionally accept
+   * an object to bind multiple key events in a single call
+   *
+   * You can pass it in like:
+   *
+   * Mousetrap.bind({
+   *     'a': function() { console.log('a'); },
+   *     'b': function() { console.log('b'); }
+   * });
+   *
+   * And can optionally pass in 'keypress', 'keydown', or 'keyup'
+   * as a second argument
+   *
+   */
+  override bind(keys: string | string[], callback: Callback, action?: string): this
+  override bind(keys: { [key: string]: Callback }, action?: string): this
+  override bind(
+    keys: string | string[] | { [key: string]: Callback },
+    callbackOrAction?: string | Callback,
+    action?: string,
+  ) {
+    if ((isString(keys) || isArray(keys)) && isFunction(callbackOrAction)) {
+      return super.bind(keys, callbackOrAction, action)
+    }
+
+    if (isObject(keys) && !isArray(keys) && (!callbackOrAction || isString(callbackOrAction))) {
+      for (const key in keys) {
+        super.bind(key, keys[key], callbackOrAction)
       }
     }
-    this.bind('alt+a', () => object()?.alignLeft())
-    this.bind('alt+d', () => object()?.alignRight())
-    this.bind('alt+h', () => object()?.alignCenter())
-    this.bind('alt+w', () => object()?.verticalTop())
-    this.bind('alt+s', () => object()?.verticalBottom())
-    this.bind('alt+v', () => object()?.verticalMiddle())
+
+    return this
   }
 }
