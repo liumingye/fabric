@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vite build",
+    "build:tsc": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint:prettier": "prettier --write  \"src/**/*.{json,tsx,css,less,scss,vue,html,md}\"",
     "lint:eslint": "eslint --cache --max-warnings 0 \"src/**/*.{vue,ts,tsx}\" --fix"

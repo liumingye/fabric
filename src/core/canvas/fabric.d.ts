@@ -1,5 +1,5 @@
 export declare module 'fabric' {
-  import { Object as FabricObject } from 'fabric'
+  import { Object as FabricObject, StaticCanvas } from 'fabric'
 
   export type ObjectRef = Pick<
     FabricObject,
@@ -86,11 +86,20 @@ export declare module 'fabric' {
     ): void
   }
 
+  // type Ancestors<Strict> = Strict extends true ? Group[] | undefined : (Group | Canvas)[]
+
+  type TAncestor = Group | Canvas | StaticCanvas
+
   export class Object {
     group: Group | undefined
     id: string
     name: string
     ref: ObjectRef
+    getParent<T extends boolean = false>(
+      strict?: T,
+    ): T extends true ? TAncestor | undefined : TAncestor
+
+    // getAncestors<T extends boolean = false>(strict?: T): Ancestors<T>
   }
 
   export class Group {

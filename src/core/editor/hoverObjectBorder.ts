@@ -18,9 +18,9 @@ export class HoverObjectBorder {
     if (!ctx) {
       return
     }
-    const v = this.canvas.viewportTransform
+    const vpt = this.canvas.viewportTransform
     ctx.save()
-    ctx.transform(v[0], v[1], v[2], v[3], v[4], v[5])
+    ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5])
     target.transform(ctx)
     // we add 4 pixel, to be sure to do not leave any pixel out
     const width = target.width + 4 + target.strokeWidth,
@@ -32,9 +32,7 @@ export class HoverObjectBorder {
 
   private clearBorder(e: CanvasEvents['mouse:over']) {
     if (!e.target) return
-    const target = e.target as unknown as FabricObject
-
-    this.clearContextTop(target)
+    this.clearContextTop(e.target as unknown as FabricObject)
     this.canvas.contextTopDirty = true
   }
 

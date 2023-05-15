@@ -28,6 +28,7 @@ class FabricCanvas extends Canvas {
           stopContextMenu: true,
           fireMiddleClick: true,
           includeDefaultValues: false,
+          // preserveObjectStacking: true,
         },
         options,
       ),

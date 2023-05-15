@@ -43,8 +43,11 @@ const positionHandlerV: Control['positionHandler'] = (
 }
 
 const rotateIcon = (angle: number) => {
-  return `url("data:image/svg+xml,<svg height='18' width='18' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 16 16),translate(-6,-6)'><path d='M22.4484 0L32 9.57891L22.4484 19.1478V13.1032C17.6121 13.8563 13.7935 17.6618 13.0479 22.4914H19.2141L9.60201 32.01L0 22.4813H6.54912C7.36524 14.1073 14.0453 7.44023 22.4484 6.61688V0Z' fill='white'/><path d='M24.0605 3.89587L29.7229 9.57896L24.0605 15.252V11.3562C17.0479 11.4365 11.3753 17.0895 11.3048 24.0879H15.3048L9.60201 29.7308L3.90932 24.0879H8.0806C8.14106 15.3223 15.2645 8.22345 24.0605 8.14313V3.89587Z' fill='black'/></g></svg>") 12 12,auto`
+  return `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 16 16)'><path fill='white' d='M18.24 5.37C11.41 6.04 5.98 11.46 5.32 18.26L0 18.26L7.8 26L15.61 18.27L10.6 18.27C11.21 14.35 14.31 11.25 18.24 10.64L18.24 15.55L26 7.78L18.24 0L18.24 5.37Z'></path><path fill='black' d='M19.5463 6.61441C12.4063 6.68441 6.61632 12.4444 6.56632 19.5644L3.17632 19.5644L7.80632 24.1444L12.4363 19.5644L9.18632 19.5644C9.24632 13.8844 13.8563 9.28441 19.5463 9.22441L19.5463 12.3844L24.1463 7.78441L19.5463 3.16441L19.5463 6.61441Z'></path></g></svg>") 12 12,auto`
 }
+
+// `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 10 10),translate(-2,-2)'><path fill='white' d='M9.82 2.89C6.14 3.25 3.22 6.17 2.87 9.83L0 9.83L4.2 14L8.41 9.84L5.71 9.84C6.03 7.72 7.71 6.06 9.82 5.73L9.82 8.37L14 4.19L9.82 0L9.82 2.89Z'></path><path fill='black' d='M10.5303 3.56391C6.68033 3.59391 3.56033 6.70391 3.53033 10.5339L1.71033 10.5339L4.20033 13.0039L6.70033 10.5339L4.95033 10.5339C4.98033 7.47391 7.46033 5.00391 10.5303 4.96391L10.5303 6.67391L13.0003 4.19391L10.5303 1.70391L10.5303 3.56391Z'></path></g></svg>") 12 12,auto`
+
 
 const getRotateControl = (angle: number): Partial<Control> => ({
   sizeX: 16,

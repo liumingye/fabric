@@ -16,28 +16,22 @@ export class KeybindingService extends mousetrap {
 
     this.activeObject = computed(() => canvas.activeObject.value)
 
-    const removeObject = (obj: FabricObject) => {
-      if (obj instanceof ActiveSelection) {
-        // 多个在ActiveSelection里
-        obj.forEachObject((obj) => {
-          // 第一个group是ActiveSelection，要删除俩次
-          if (obj.group instanceof ActiveSelection) {
-            obj.group.remove(obj)
-          }
-          removeObject(obj)
+    const objForEach = (target: FabricObject, fn: (obj: FabricObject) => void) => {
+      if (target instanceof ActiveSelection) {
+        target.forEachObject((obj) => {
+          fn(obj)
         })
-      } else if (obj.group) {
-        // 单个在Group里
-        obj.group?.remove(obj)
       } else {
-        // 单个在canvas里
-        canvas.remove(obj)
+        fn(target)
       }
     }
 
     this.bind(['delete', 'backspace'], () => {
       if (!isDefined(this.activeObject)) return
-      removeObject(this.activeObject.value)
+      objForEach(this.activeObject.value, (obj) => {
+        const group = obj.getParent()
+        group.remove(obj)
+      })
       canvas.discardActiveObject()
       canvas.requestRenderAll()
     })
@@ -45,27 +39,37 @@ export class KeybindingService extends mousetrap {
     // 移至底层
     this.bind('[', () => {
       if (!isDefined(this.activeObject)) return
-      const collection = this.activeObject.value.group || canvas
-      collection.sendObjectToBack(this.activeObject.value)
+      objForEach(this.activeObject.value, (obj) => {
+        const group = obj.getParent()
+        group.sendObjectToBack(obj)
+      })
     })
 
     // 移至顶层
     this.bind(']', () => {
       if (!isDefined(this.activeObject)) return
-      const collection = this.activeObject.value.group || canvas
-      collection.bringObjectToFront(this.activeObject.value)
+      objForEach(this.activeObject.value, (obj) => {
+        const group = obj.getParent()
+        group.bringObjectToFront(obj)
+      })
     })
+
     // 向下移动一层
     this.bind('mod+[', () => {
       if (!isDefined(this.activeObject)) return
-      const collection = this.activeObject.value.group || canvas
-      collection.sendObjectBackwards(this.activeObject.value)
+      objForEach(this.activeObject.value, (obj) => {
+        const group = obj.getParent()
+        group.sendObjectBackwards(obj)
+      })
     })
+
     // 向上移动一层
     this.bind('mod+]', () => {
       if (!isDefined(this.activeObject)) return
-      const collection = this.activeObject.value.group || canvas
-      collection.bringObjectForward(this.activeObject.value)
+      objForEach(this.activeObject.value, (obj) => {
+        const group = obj.getParent()
+        group.bringObjectForward(obj)
+      })
     })
 
     this.bindAlign()

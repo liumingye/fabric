@@ -61,7 +61,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
         activeObject.value[key === 'left' ? 'setX' : 'setY'](toFixed(Number(newValue)))
         activeObject.value.setCoords()
       } else if (
-        !['width', 'height', 'left', 'top'].includes(key) &&
+        !['width', 'height', 'left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
         util.isCollection(activeObject.value)
       ) {
         // 多个 组内
