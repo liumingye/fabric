@@ -1,44 +1,13 @@
 <script setup lang="ts">
-  import { useFabricEvent } from '@/hooks/useFabricEvent'
-  import { useFabricObject } from '@/hooks/useFabricObject'
-  import { isDefined } from '@vueuse/core'
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
-  import { useEditorServices } from '@/core'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
-
-  const { canvas } = useEditorServices()
-
-  const useScale = (xy: 'x' | 'y') => {
-    if (!isDefined(canvas.activeObject)) return
-    const { getHeight, getWidth, setHeight, setWidth } = useFabricObject(canvas.activeObject)
-    const model = computed(() => {
-      return xy === 'x' ? getWidth() : getHeight()
-    })
-    const change = (value?: number) => {
-      if (!isDefined(value) || !isDefined(canvas.activeObject)) return
-      const fn = xy === 'x' ? setWidth : setHeight
-      fn(value)
-      scale.effect.scheduler?.()
-      canvas.requestRenderAll()
-    }
-    return { model, change }
-  }
-
-  const scale = computed(() => ({
-    x: useScale('x'),
-    y: useScale('y'),
-  }))
-
-  useFabricEvent({
-    'object:skewing': () => scale.effect.scheduler?.(),
-    'object:scaling': () => scale.effect.scheduler?.(),
-    'object:resizing': () => scale.effect.scheduler?.(),
-  })
 
   const left = useActiveObjectModel('left')
   const top = useActiveObjectModel('top')
   const angle = useActiveObjectModel('angle')
+  const width = useActiveObjectModel('width')
+  const height = useActiveObjectModel('height')
 </script>
 
 <template>
@@ -50,23 +19,11 @@
       <a-col :span="10">
         <SwipeNumber size="small" label="Y" v-bind="top" />
       </a-col>
-      <a-col :span="10" v-if="scale.x">
-        <SwipeNumber
-          size="small"
-          label="W"
-          :modelValue="scale.x.model.value"
-          :min="1"
-          @change="scale.x.change"
-        />
+      <a-col :span="10">
+        <SwipeNumber size="small" label="W" v-bind="width" />
       </a-col>
-      <a-col :span="10" v-if="scale.y">
-        <SwipeNumber
-          size="small"
-          label="H"
-          :modelValue="scale.y.model.value"
-          :min="1"
-          @change="scale.y.change"
-        />
+      <a-col :span="10">
+        <SwipeNumber size="small" label="H" v-bind="height" />
       </a-col>
       <a-col :span="10">
         <SwipeNumber size="small" v-bind="angle">

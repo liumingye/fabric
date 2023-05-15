@@ -31,8 +31,7 @@ export class Group extends GroupOrign {
     })
   }
 
-  public updateLayoutStrategy() {
-    this._applyLayoutStrategy({ type: 'object_modified' })
+  public setDirty() {
     this._set('dirty', true)
   }
 

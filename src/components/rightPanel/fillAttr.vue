@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import Panel from './panel.vue'
+  import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import { isString } from 'lodash'
   import { util } from '@/lib/fabric'
@@ -50,8 +52,8 @@
 </script>
 
 <template>
-  <div class="p2">
-    <div class="mb2 font-bold text-xs">填充</div>
+  <Panel>
+    <PanelTitle title="填充" />
     <!-- <div>点击 + 重置并修改多个内容</div> -->
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
@@ -71,7 +73,7 @@
         </a-input>
       </a-col>
     </a-row>
-  </div>
+  </Panel>
 </template>
 
 <style scoped lang="less">

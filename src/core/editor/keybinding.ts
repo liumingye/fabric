@@ -2,6 +2,7 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricObject } from '@/hooks/useFabricObject'
 import { ActiveSelection, FabricObject } from '@/lib/fabric'
+import { AlignMethod } from '@/types'
 import { isDefined } from '@vueuse/core'
 
 export class Keybinding {
@@ -63,18 +64,19 @@ export class Keybinding {
   }
 
   private bindAlign() {
-    const object = () => {
-      if (isDefined(this.activeObject)) {
-        return useFabricObject(this.activeObject)
-      }
+    const align = (method: AlignMethod) => {
+      if (!isDefined(this.activeObject)) return
+      console.log(method)
+      useFabricObject(this.activeObject)[method]()
+      this.canvas.fire('object:modified', { target: this.activeObject.value })
     }
     this.keybindingServices.bind({
-      'alt+a': () => object()?.alignLeft(),
-      'alt+d': () => object()?.alignRight(),
-      'alt+h': () => object()?.alignCenter(),
-      'alt+w': () => object()?.verticalTop(),
-      'alt+s': () => object()?.verticalBottom(),
-      'alt+v': () => object()?.verticalMiddle(),
+      'alt+a': () => align('alignLeft'),
+      'alt+d': () => align('alignRight'),
+      'alt+h': () => align('alignCenter'),
+      'alt+w': () => align('verticalTop'),
+      'alt+s': () => align('verticalBottom'),
+      'alt+v': () => align('verticalMiddle'),
     })
   }
 

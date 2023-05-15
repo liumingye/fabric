@@ -8,7 +8,7 @@ export class UndoRedo {
   constructor(
     @IFabricCanvas private canvas: FabricCanvas,
     @IUndoRedoService private undoRedoService: UndoRedoService,
-    @IKeybindingService private keybindingServices: KeybindingService,
+    @IKeybindingService keybindingServices: KeybindingService,
   ) {
     this.lastState = this.getJson()
 

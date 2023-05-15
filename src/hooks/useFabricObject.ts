@@ -1,15 +1,7 @@
-import { fabric } from '@/types'
+import { AlignMethod, fabric } from '@/types'
 import { MaybeRef, toRef } from '@vueuse/core'
-import { toFixed } from '@/utils/math'
+import { clampAngle, toFixed } from '@/utils/math'
 // import { useEditorServices } from '@/core'
-
-type AlignMethod =
-  | 'alignLeft'
-  | 'alignRight'
-  | 'alignCenter'
-  | 'verticalTop'
-  | 'verticalMiddle'
-  | 'verticalBottom'
 
 export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<T>) {
   // const { canvas } = useEditorServices()
@@ -32,9 +24,24 @@ export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<
     target.value.set('scaleX', (value - target.value.strokeWidth) / target.value.width)
   }
 
+  const setAngle = (value: number) => {
+    target.value.rotate(toFixed(clampAngle(value)))
+  }
+
+  const setLeft = (value: number) => {
+    target.value.setX(toFixed(value))
+    target.value.getParent(true)?.setDirty()
+  }
+
+  const setTop = (value: number) => {
+    target.value.setY(toFixed(value))
+    target.value.getParent(true)?.setDirty()
+  }
+
   const align = (method: AlignMethod) => {
-    const { left, top, width, height } = target.value
     if (!(target.value instanceof fabric.ActiveSelection)) return
+    const { left, top, width, height } = target.value
+    const needUpdateGroup = new Set<fabric.Group>()
     target.value._objects.forEach((obj) => {
       switch (method) {
         case 'alignLeft':
@@ -56,6 +63,11 @@ export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<
           obj.setY(top + (height - obj.getScaledHeight()) / 2)
           break
       }
+      const group = obj.getParent(true)
+      group && needUpdateGroup.add(group)
+    })
+    needUpdateGroup.forEach((group) => {
+      group.setDirty()
     })
     target.value.canvas?.requestRenderAll()
   }
@@ -65,6 +77,9 @@ export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<
     getWidth,
     setHeight,
     setWidth,
+    setAngle,
+    setLeft,
+    setTop,
     alignLeft: () => align('alignLeft'),
     alignRight: () => align('alignRight'),
     alignCenter: () => align('alignCenter'),

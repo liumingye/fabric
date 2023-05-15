@@ -207,7 +207,7 @@
   const visibleClick = (e: Event, node: ITreeNodeData) => {
     e.stopPropagation()
     node.objectRef.visible = !node.objectRef.visible
-    node.group?.updateLayoutStrategy()
+    node.group?.setDirty()
     canvas.requestRenderAll()
   }
 
@@ -229,7 +229,7 @@
     if (objects.length === 0) return
     if (objects.length === 1) {
       canvas.setActiveObject(objects[0])
-      objects[0].group?.updateLayoutStrategy()
+      objects[0].group?.setDirty()
     } else {
       // todo 多选
     }

@@ -88,8 +88,6 @@ export declare module 'fabric' {
 
   // type Ancestors<Strict> = Strict extends true ? Group[] | undefined : (Group | Canvas)[]
 
-  type TAncestor = Group | Canvas | StaticCanvas
-
   export class Object {
     group: Group | undefined
     id: string
@@ -97,7 +95,7 @@ export declare module 'fabric' {
     ref: ObjectRef
     getParent<T extends boolean = false>(
       strict?: T,
-    ): T extends true ? TAncestor | undefined : TAncestor
+    ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
 
     // getAncestors<T extends boolean = false>(strict?: T): Ancestors<T>
   }
@@ -109,7 +107,7 @@ export declare module 'fabric' {
     computed: {
       objects: ComputedRef<FabricObject[]>
     }
-    updateLayoutStrategy(): void
+    setDirty(): void
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void

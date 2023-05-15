@@ -2,9 +2,10 @@ import { useEditorServices } from '@/core/useEditor'
 import { isDefined } from '@vueuse/core'
 import { ObjectRef } from 'fabric'
 import type { WritableComputedRef } from 'vue'
-import { clampAngle, toFixed } from '@/utils/math'
+import { toFixed } from '@/utils/math'
 import { isNumber } from 'lodash'
 import { FabricObject, util } from '@/lib/fabric'
+import { useFabricObject } from '@/hooks/useFabricObject'
 
 export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K] | undefined>(
   key: K,
@@ -21,59 +22,77 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   let lockChange = false
 
   watchEffect(() => {
-    if (isDefined(activeObject)) {
-      lockChange = true
-      let value
-      if ((key === 'left' || key === 'top') && activeObject.value.group) {
-        value = activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
-      } else if (key === 'opacity') {
-        value = (activeObject.value[key] as number) * 100
-      } else {
-        value = activeObject.value[key]
-      }
-      modelValue.value = isNumber(value) ? toFixed(value) : value
-      requestAnimationFrame(() => (lockChange = false))
+    if (!isDefined(activeObject)) return
+    lockChange = true
+    let value
+
+    if (['width', 'height'].includes(key)) {
+      value = useFabricObject(activeObject.value)[key === 'width' ? 'getWidth' : 'getHeight']()
+    } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
+      value = activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
+    } else if (key === 'opacity') {
+      value = (activeObject.value[key] as number) * 100
+    } else {
+      value = activeObject.value[key]
     }
+    modelValue.value = isNumber(value) ? toFixed(value) : value
+    requestAnimationFrame(() => (lockChange = false))
   })
 
-  const setValue = (obj: FabricObject, newValue: T) => {
-    let value
+  const setObjectValue = (obj: FabricObject, newValue: any) => {
     if (key === 'opacity') {
-      value = Number(newValue) / 100
+      newValue = Number(newValue) / 100
+    }
+    if (obj.get(key) !== newValue) {
+      obj.set(key, newValue)
+    }
+  }
+
+  const fireSave = () => {
+    if (!isDefined(activeObject)) return
+    canvas.fire('object:modified', { target: activeObject.value })
+  }
+
+  const onChange = (newValue: T) => {
+    if (lockChange || !isDefined(activeObject)) return
+
+    if (['width', 'height', 'left', 'top', 'angle'].includes(key)) {
+      // 左上宽高旋转
+      useFabricObject(activeObject)[
+        key === 'width'
+          ? 'setWidth'
+          : key === 'height'
+          ? 'setHeight'
+          : key === 'left'
+          ? 'setLeft'
+          : key === 'top'
+          ? 'setTop'
+          : 'setAngle'
+      ](Number(newValue))
+    } else if (
+      !['left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
+      util.isCollection(activeObject.value)
+    ) {
+      // 在收集器内
+      activeObject.value.forEachObject((obj) => {
+        setObjectValue(obj, newValue)
+      })
     } else {
-      value = newValue
+      // 在收集器外
+      setObjectValue(activeObject.value, newValue)
     }
-    if (obj.get(key) !== value) {
-      obj.set(key, value)
-    }
+
+    canvas.requestRenderAll()
   }
 
   return computed(() => ({
     modelValue: modelValue.value as T,
+    onSwipe: (newValue: T) => {
+      onChange(newValue)
+    },
     onChange: (newValue: T) => {
-      if (lockChange || !isDefined(activeObject)) return
-
-      if (key === 'angle') {
-        // 旋转
-        activeObject.value.rotate(toFixed(clampAngle(Number(newValue))))
-      } else if ((key === 'left' || key === 'top') && activeObject.value.group) {
-        // 单个 组内 左和上
-        activeObject.value[key === 'left' ? 'setX' : 'setY'](toFixed(Number(newValue)))
-        activeObject.value.setCoords()
-      } else if (
-        !['width', 'height', 'left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
-        util.isCollection(activeObject.value)
-      ) {
-        // 多个 组内
-        activeObject.value.forEachObject((obj) => {
-          setValue(obj, newValue)
-        })
-      } else {
-        // 组外
-        setValue(activeObject.value, newValue)
-      }
-
-      canvas.requestRenderAll()
+      onChange(newValue)
+      fireSave()
     },
   }))
 }

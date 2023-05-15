@@ -4,14 +4,13 @@ import { HandleWheelScroll } from '@/core/editor/handleWheelScroll'
 import { Keybinding } from '@/core/editor/keybinding'
 import { UndoRedo } from '@/core/editor/undoRedo'
 import { SyncDescriptor } from '@/core/instantiation/descriptors'
-import { useEditor } from '@/core/useEditor'
+import { IInstantiationService } from '@/core/instantiation/instantiation'
+import { InstantiationService } from '@/core/instantiation/instantiationService'
 
 export class EditorMain {
-  constructor() {
-    const mainInstantiationService = useEditor().service
-
+  constructor(@IInstantiationService instantiationService: InstantiationService) {
     const register = <T>(ctor: new (...args: any[]) => T) => {
-      mainInstantiationService.createInstance(new SyncDescriptor(ctor))
+      return instantiationService.createInstance(new SyncDescriptor(ctor))
     }
 
     register(Keybinding)

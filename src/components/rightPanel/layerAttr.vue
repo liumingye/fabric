@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import Panel from './panel.vue'
+  import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
 
   const opacity = useActiveObjectModel('opacity')
@@ -87,8 +89,8 @@
 </script>
 
 <template>
-  <div class="p2">
-    <div class="mb2 font-bold text-xs">图层</div>
+  <Panel>
+    <PanelTitle title="图层" />
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
         <a-select
@@ -113,7 +115,7 @@
         </a-button>
       </a-col>
     </a-row>
-  </div>
+  </Panel>
 </template>
 
 <style scoped lang="less"></style>

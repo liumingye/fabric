@@ -21,6 +21,7 @@
   const emit = defineEmits<{
     (e: 'update:modelValue', value: number | undefined): void
     (e: 'change', value: number | undefined, ev: Event): void
+    (e: 'swipe', value: number | undefined, ev: Event): void
   }>()
 
   const slots = useSlots()
@@ -51,7 +52,7 @@
     onSwipeStart: () => {
       startValue.value = numberValue.value
     },
-    onSwipe: (e: PointerEvent) => {
+    onSwipe: (e) => {
       // 检查startValue的值是否是数字，如果不是，退出函数
       if (!isNumber(startValue.value)) return
       // 根据props.step的值调整步长
@@ -68,9 +69,11 @@
       value = toFixed(value)
       numberValue.value = value
       // 调用change函数并传递新值和事件对象
-      change(value, e)
+      emit('update:modelValue', value)
+      emit('swipe', value, e)
     },
-    onSwipeEnd: () => {
+    onSwipeEnd: (e) => {
+      emit('change', numberValue.value, e)
       startValue.value = undefined
     },
   })
