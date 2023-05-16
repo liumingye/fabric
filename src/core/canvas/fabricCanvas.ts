@@ -43,7 +43,7 @@ export class FabricCanvas extends Canvas {
     const setDefaultAttr = (target: FabricObject) => {
       // 添加名称
       // todo 临时方法 findFirstMissingPositive
-      if (!target.get('name')) {
+      if (!target.name) {
         const className = target.constructor.name
         const id = this.uniqueIds.get(className) || 1
         target.set({
@@ -52,16 +52,18 @@ export class FabricCanvas extends Canvas {
         this.uniqueIds.set(className, id + 1)
       }
       // 添加id
-      target.set({
-        id: randomText(),
-      })
+      if (!target.id) {
+        target.set({
+          id: randomText(),
+        })
+      }
     }
 
     const objectAdded = ({ target }: { target: FabricObject }) => {
       setDefaultAttr(target)
       if (util.isCollection(target)) {
-        target._objects.forEach((obj) => {
-          setDefaultAttr(obj as FabricObject)
+        target.forEachObject((obj) => {
+          setDefaultAttr(obj)
         })
         target.on('object:added', objectAdded)
       }

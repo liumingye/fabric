@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
-  import type { TreeNodeData, DropPosition } from '@/components/tree'
+  import type { TreeNodeData, DropPosition, TreeNodeKey } from '@/components/tree'
   import { ActiveSelection, Group, ObjectRef, util } from '@/lib/fabric'
   import { FabricObject } from '@/lib/fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
-  import { SplitInstance } from '@arco-design/web-vue'
+  import type { SplitInstance } from '@arco-design/web-vue'
 
   type ITreeNodeData = TreeNodeData & {
     canDragEnter: boolean
@@ -17,6 +17,8 @@
   const { canvas } = useEditor()
 
   const searchKey = ref('')
+
+  const expandedKeys = ref<TreeNodeKey[]>([])
 
   const treeData = computed(() => {
     return getTreeData(canvas.computed.objects.value, searchKey.value)
@@ -253,10 +255,17 @@
     }
   })
 
-  // 更新tree组件的高度
   const splitRef = ref<SplitInstance>()
   const secondHeight = ref(0)
   onMounted(() => {
+    // 默认展开第一层节点
+    treeData.value.forEach((data) => {
+      if (data.children && data.key) {
+        expandedKeys.value.push(data.key)
+      }
+    })
+
+    // 更新tree组件的高度
     const throttledFn = useThrottleFn((entries) => {
       const entry = entries[0]
       const { height } = entry.contentRect
@@ -307,6 +316,7 @@
         blockNode
         draggable
         v-model:selected-keys="selectedkeys"
+        v-model:expanded-keys="expandedKeys"
         :multiple="multiple"
         :data="treeData"
         :allowDrop="allowDrop"

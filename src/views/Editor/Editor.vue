@@ -26,4 +26,8 @@
   </div>
 </template>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+  :global(body) {
+    overflow: hidden;
+  }
+</style>
