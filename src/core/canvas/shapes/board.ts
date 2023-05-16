@@ -86,19 +86,6 @@ export class Board extends Group {
       ctx.restore()
     }
   }
-
-  // shouldCache() {
-  //   const ownCache = FabricObject.prototype.shouldCache.call(this)
-  //   if (ownCache) {
-  //     for (let i = 0; i < this._objects.length; i++) {
-  //       if (this._objects[i].shouldCache()) {
-  //         this.ownCaching = false
-  //         return false
-  //       }
-  //     }
-  //   }
-  //   return ownCache
-  // }
 }
 
 classRegistry.setClass(Board)

@@ -1,12 +1,12 @@
 import { AlignMethod, fabric } from '@/types'
-import { MaybeRef, toRef } from '@vueuse/core'
+import { MaybeRef } from '@vueuse/core'
 import { clampAngle, toFixed } from '@/utils/math'
 // import { useEditor } from '@/app'
 
 export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<T>) {
   // const { canvas } = useEditor()
 
-  const target = toRef(object)
+  const target = shallowRef(object)
 
   const getHeight = () => {
     return toFixed(target.value.getScaledHeight())

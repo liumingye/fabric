@@ -34,7 +34,6 @@ export class FabricCanvas extends Canvas {
           stopContextMenu: true,
           fireMiddleClick: true,
           includeDefaultValues: false,
-          // preserveObjectStacking: true,
         },
         options,
       ),
@@ -87,7 +86,6 @@ export class FabricCanvas extends Canvas {
     super._onStackOrderChanged()
     // 更新objects
     triggerRef(this.computed.objects)
-    // this.ref.objects = this._objects
   }
 
   // @ts-ignore

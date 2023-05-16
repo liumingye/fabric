@@ -30,6 +30,7 @@ export class Keybinding {
         (obj) => {
           const group = obj.getParent()
           group.sendObjectToBack(obj)
+          useEditor().undoRedo.saveState()
         },
         true,
       )
@@ -42,6 +43,7 @@ export class Keybinding {
       this.objForEach(activeObject, (obj) => {
         const group = obj.getParent()
         group.bringObjectToFront(obj)
+        useEditor().undoRedo.saveState()
       })
     })
 
@@ -60,6 +62,7 @@ export class Keybinding {
           return
         }
         group.sendObjectBackwards(obj)
+        useEditor().undoRedo.saveState()
       })
     })
 
@@ -81,6 +84,7 @@ export class Keybinding {
             return
           }
           group.bringObjectForward(obj)
+          useEditor().undoRedo.saveState()
         },
         true,
       )

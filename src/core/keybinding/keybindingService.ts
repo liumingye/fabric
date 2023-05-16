@@ -5,7 +5,7 @@ import { registerSingleton } from '@/core/instantiation/extensions'
 
 export const IKeybindingService = createDecorator<KeybindingService>('keybindingServices')
 
-type Callback = (e: ExtendedKeyboardEvent, combo: string) => boolean | void
+type Callback = (e: ExtendedKeyboardEvent, combo: string) => void
 
 export class KeybindingService extends mousetrap {
   declare readonly _serviceBrand: undefined
