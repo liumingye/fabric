@@ -1,10 +1,10 @@
 import { useResizeObserver, useThrottleFn } from '@vueuse/core'
-import { useEditorServices } from '@/core'
+import { useEditor } from '@/app'
 import { h } from 'vue'
 
 export default defineComponent({
   setup() {
-    const { canvas } = useEditorServices()
+    const { canvas } = useEditor()
 
     const divRef = ref<HTMLDivElement>()
     onMounted(() => {

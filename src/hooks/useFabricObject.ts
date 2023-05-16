@@ -1,10 +1,10 @@
 import { AlignMethod, fabric } from '@/types'
 import { MaybeRef, toRef } from '@vueuse/core'
 import { clampAngle, toFixed } from '@/utils/math'
-// import { useEditorServices } from '@/core'
+// import { useEditor } from '@/app'
 
 export function useFabricObject<T extends fabric.FabricObject>(object: MaybeRef<T>) {
-  // const { canvas } = useEditorServices()
+  // const { canvas } = useEditor()
 
   const target = toRef(object)
 

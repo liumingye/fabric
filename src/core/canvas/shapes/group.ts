@@ -52,11 +52,24 @@ export class Group extends GroupOrign {
   }
 
   override _onObjectAdded(obj: FabricObject) {
-    if (!obj.get('noEventObjectAdded')) {
-      super._onObjectAdded(obj)
-    } else {
+    if (obj.noEventObjectAdded) {
       obj._set('canvas', this)
+    } else {
+      super._onObjectAdded(obj)
     }
+  }
+
+  override shouldCache() {
+    const ownCache = FabricObject.prototype.shouldCache.call(this)
+    if (ownCache) {
+      for (let i = 0; i < this._objects.length; i++) {
+        if (this._objects[i].shouldCache() || this._objects[i].isMoving) {
+          this.ownCaching = false
+          return false
+        }
+      }
+    }
+    return true
   }
 }
 

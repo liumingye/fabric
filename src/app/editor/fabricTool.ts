@@ -8,8 +8,8 @@ import { useMagicKeys } from '@vueuse/core'
 
 export class FabricTool {
   constructor(
-    @IFabricCanvas private canvas: FabricCanvas,
-    @IKeybindingService private keybinding: KeybindingService,
+    @IFabricCanvas private readonly canvas: FabricCanvas,
+    @IKeybindingService private readonly keybinding: KeybindingService,
   ) {
     this.initWatch()
     this.initHandMove()

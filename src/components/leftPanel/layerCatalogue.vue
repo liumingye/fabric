@@ -3,7 +3,7 @@
   import type { TreeNodeData, DropPosition } from '@/components/tree'
   import { ActiveSelection, Group, ObjectRef, util } from '@/lib/fabric'
   import { FabricObject } from '@/lib/fabric'
-  import { useEditorServices } from '@/core'
+  import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import { SplitInstance } from '@arco-design/web-vue'
 
@@ -14,7 +14,7 @@
     children?: ITreeNodeData[]
   }
 
-  const { canvas } = useEditorServices()
+  const { canvas } = useEditor()
 
   const searchKey = ref('')
 

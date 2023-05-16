@@ -2,7 +2,7 @@
   import svgIcon from '../svgIcon/svgIcon.vue'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
   import { fabric } from '@/types'
-  import { useEditorServices } from '@/core'
+  import { useEditor } from '@/app'
 
   const alignList = [
     {
@@ -53,7 +53,7 @@
     // },
   ]
 
-  const { canvas, keybinding } = useEditorServices()
+  const { canvas, keybinding } = useEditor()
 
   const disabled = computed(() => !(canvas.activeObject.value instanceof fabric.ActiveSelection))
 </script>

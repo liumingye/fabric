@@ -1,4 +1,4 @@
-import { useEditorServices } from '@/core/useEditor'
+import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
 import { ObjectRef } from 'fabric'
 import type { WritableComputedRef } from 'vue'
@@ -13,7 +13,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   modelValue: T
   onChange: (value: T) => void
 }> => {
-  const { canvas } = useEditorServices()
+  const { canvas } = useEditor()
   const { activeObject } = canvas
 
   const modelValue = ref()
@@ -48,9 +48,9 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     }
   }
 
-  const fireSave = () => {
+  const saveState = () => {
     if (!isDefined(activeObject)) return
-    canvas.fire('object:modified', { target: activeObject.value })
+    useEditor().undoRedo.saveState()
   }
 
   const onChange = (newValue: T) => {
@@ -92,7 +92,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     },
     onChange: (newValue: T) => {
       onChange(newValue)
-      fireSave()
+      saveState()
     },
   }))
 }

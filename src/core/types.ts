@@ -1,21 +1,9 @@
 import type { App } from 'vue'
 import type { IInstantiationService } from './instantiation/instantiation'
-
-// 内部类型
-export interface IEditor extends Editor {
-  install: (app: App) => void
-}
+import type { EditorMain } from '@/app/editor'
 
 export interface IEditorPluginContext extends EditorPluginContext {
   _id: symbol
-}
-
-// 插件用类型
-export type Editor = {
-  use: (plugin: EditorPlugin) => Editor
-  service: IInstantiationService
-  _p: Map<symbol, IEditorPluginContext>
-  _a: App
 }
 
 export interface EditorPluginContext {
@@ -23,4 +11,17 @@ export interface EditorPluginContext {
   dispose?: () => void
 }
 
-export type EditorPlugin = (editor: Editor) => EditorPluginContext
+export type EditorPlugin = (editor: Pick<EditorMain, 'service' | 'use'>) => EditorPluginContext
+
+export interface ICoreApp {
+  editor: EditorMain
+}
+
+export interface ICore {
+  install: (app: App) => void
+  service: IInstantiationService
+  use: (plugin: EditorPlugin) => ICore
+  app: ICoreApp
+  _p: EditorPlugin[]
+  _a: App
+}

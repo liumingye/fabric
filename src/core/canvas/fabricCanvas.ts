@@ -1,11 +1,17 @@
-import { Canvas, Object as FabricObject, ObjectEvents, util } from '@/lib/fabric'
+import { Canvas, Object as FabricObject, util } from '@/lib/fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
 
-export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
+export const IFabricCanvas = createDecorator<IFabricCanvas>('fabricCanvas')
 
-class FabricCanvas extends Canvas {
+export interface IFabricCanvas extends FabricCanvas {
+  readonly _serviceBrand: undefined
+}
+
+export class FabricCanvas extends Canvas {
+  declare readonly _serviceBrand: undefined
+
   public activeObject = shallowRef<FabricObject>()
   public computed = {
     objects: computed(() => this._objects),
@@ -103,5 +109,3 @@ class FabricCanvas extends Canvas {
     }
   }
 }
-
-export { FabricCanvas }

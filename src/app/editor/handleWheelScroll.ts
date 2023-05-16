@@ -7,7 +7,7 @@ import { useAppStore } from '@/store'
  * 画板默认滚动行为
  */
 export class HandleWheelScroll {
-  constructor(@IFabricCanvas canvas: FabricCanvas) {
+  constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     const { zoom } = storeToRefs(useAppStore())
 
     zoom.value = canvas.getZoom()

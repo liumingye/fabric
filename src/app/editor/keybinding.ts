@@ -1,20 +1,21 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
+import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricObject } from '@/hooks/useFabricObject'
 import { ActiveSelection, FabricObject } from '@/lib/fabric'
 import { AlignMethod } from '@/types'
 import { isDefined } from '@vueuse/core'
+import { useEditor } from '@/app'
 
 export class Keybinding {
   private activeObject: ComputedRef<FabricObject | undefined>
 
   constructor(
-    @IFabricCanvas private canvas: FabricCanvas,
-    @IKeybindingService private keybindingServices: KeybindingService,
+    @IFabricCanvas private readonly canvas: FabricCanvas,
+    @IKeybindingService private readonly KeybindingService: KeybindingService,
   ) {
     this.activeObject = computed(() => canvas.activeObject.value)
 
-    this.keybindingServices.bind(['delete', 'backspace'], () => {
+    this.KeybindingService.bind(['delete', 'backspace'], () => {
       if (!isDefined(this.activeObject)) return
       this.objForEach(this.activeObject.value, (obj) => {
         const group = obj.getParent()
@@ -25,7 +26,7 @@ export class Keybinding {
     })
 
     // 移至底层
-    this.keybindingServices.bind('[', () => {
+    this.KeybindingService.bind('[', () => {
       if (!isDefined(this.activeObject)) return
       this.objForEach(this.activeObject.value, (obj) => {
         const group = obj.getParent()
@@ -34,7 +35,7 @@ export class Keybinding {
     })
 
     // 移至顶层
-    this.keybindingServices.bind(']', () => {
+    this.KeybindingService.bind(']', () => {
       if (!isDefined(this.activeObject)) return
       this.objForEach(this.activeObject.value, (obj) => {
         const group = obj.getParent()
@@ -43,7 +44,7 @@ export class Keybinding {
     })
 
     // 向下移动一层
-    this.keybindingServices.bind('mod+[', () => {
+    this.KeybindingService.bind('mod+[', () => {
       if (!isDefined(this.activeObject)) return
       this.objForEach(this.activeObject.value, (obj) => {
         const group = obj.getParent()
@@ -52,7 +53,7 @@ export class Keybinding {
     })
 
     // 向上移动一层
-    this.keybindingServices.bind('mod+]', () => {
+    this.KeybindingService.bind('mod+]', () => {
       if (!isDefined(this.activeObject)) return
       this.objForEach(this.activeObject.value, (obj) => {
         const group = obj.getParent()
@@ -68,9 +69,9 @@ export class Keybinding {
       if (!isDefined(this.activeObject)) return
       console.log(method)
       useFabricObject(this.activeObject)[method]()
-      this.canvas.fire('object:modified', { target: this.activeObject.value })
+      useEditor().undoRedo.saveState()
     }
-    this.keybindingServices.bind({
+    this.KeybindingService.bind({
       'alt+a': () => align('alignLeft'),
       'alt+d': () => align('alignRight'),
       'alt+h': () => align('alignCenter'),

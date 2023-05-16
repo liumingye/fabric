@@ -4,9 +4,9 @@
   import LayerAttr from './layerAttr.vue'
   import FillAttr from './fillAttr.vue'
   import { isDefined } from '@vueuse/core'
-  import { useEditorServices } from '@/core'
+  import { useEditor } from '@/app'
 
-  const { canvas } = useEditorServices()
+  const { canvas } = useEditor()
 
   const componentList = computed(() => [
     {

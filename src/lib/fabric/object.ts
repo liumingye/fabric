@@ -7,7 +7,7 @@ type TControlSet = Record<string, Control>
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
   strokeWidth: 0,
-  fill: '#CCC',
+  fill: '#CCCCCC',
   cornerSize: 8,
   transparentCorners: false,
   cornerColor: '#FFF',

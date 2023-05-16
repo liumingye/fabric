@@ -96,7 +96,7 @@ export declare module 'fabric' {
     getParent<T extends boolean = false>(
       strict?: T,
     ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
-
+    noEventObjectAdded: boolean
     // getAncestors<T extends boolean = false>(strict?: T): Ancestors<T>
   }
 

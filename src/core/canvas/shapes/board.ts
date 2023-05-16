@@ -1,4 +1,4 @@
-import { Rect, classRegistry, FabricObject, Text, Point } from '@/lib/fabric/fabric'
+import { Rect, classRegistry, FabricObject } from '@/lib/fabric/fabric'
 import { Group } from './group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
@@ -7,7 +7,7 @@ export const boardDefaultValues = {
   selectable: false,
   subTargetCheck: true,
   interactive: true,
-  layout: 'clip-path',
+  layout: 'fixed',
 }
 
 export class Board extends Group {
@@ -87,18 +87,18 @@ export class Board extends Group {
     }
   }
 
-  shouldCache() {
-    const ownCache = FabricObject.prototype.shouldCache.call(this)
-    if (ownCache) {
-      for (let i = 0; i < this._objects.length; i++) {
-        if (this._objects[i].shouldCache()) {
-          this.ownCaching = false
-          return false
-        }
-      }
-    }
-    return ownCache
-  }
+  // shouldCache() {
+  //   const ownCache = FabricObject.prototype.shouldCache.call(this)
+  //   if (ownCache) {
+  //     for (let i = 0; i < this._objects.length; i++) {
+  //       if (this._objects[i].shouldCache()) {
+  //         this.ownCaching = false
+  //         return false
+  //       }
+  //     }
+  //   }
+  //   return ownCache
+  // }
 }
 
 classRegistry.setClass(Board)

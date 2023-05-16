@@ -46,9 +46,6 @@ const rotateIcon = (angle: number) => {
   return `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 16 16)'><path fill='white' d='M18.24 5.37C11.41 6.04 5.98 11.46 5.32 18.26L0 18.26L7.8 26L15.61 18.27L10.6 18.27C11.21 14.35 14.31 11.25 18.24 10.64L18.24 15.55L26 7.78L18.24 0L18.24 5.37Z'></path><path fill='black' d='M19.5463 6.61441C12.4063 6.68441 6.61632 12.4444 6.56632 19.5644L3.17632 19.5644L7.80632 24.1444L12.4363 19.5644L9.18632 19.5644C9.24632 13.8844 13.8563 9.28441 19.5463 9.22441L19.5463 12.3844L24.1463 7.78441L19.5463 3.16441L19.5463 6.61441Z'></path></g></svg>") 12 12,auto`
 }
 
-// `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 10 10),translate(-2,-2)'><path fill='white' d='M9.82 2.89C6.14 3.25 3.22 6.17 2.87 9.83L0 9.83L4.2 14L8.41 9.84L5.71 9.84C6.03 7.72 7.71 6.06 9.82 5.73L9.82 8.37L14 4.19L9.82 0L9.82 2.89Z'></path><path fill='black' d='M10.5303 3.56391C6.68033 3.59391 3.56033 6.70391 3.53033 10.5339L1.71033 10.5339L4.20033 13.0039L6.70033 10.5339L4.95033 10.5339C4.98033 7.47391 7.46033 5.00391 10.5303 4.96391L10.5303 6.67391L13.0003 4.19391L10.5303 1.70391L10.5303 3.56391Z'></path></g></svg>") 12 12,auto`
-
-
 const getRotateControl = (angle: number): Partial<Control> => ({
   sizeX: 16,
   sizeY: 16,
@@ -62,6 +59,12 @@ const getRotateControl = (angle: number): Partial<Control> => ({
   render: noop,
   actionName: 'rotate',
 })
+
+const getHornControl = {
+  cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
+  actionHandler: controlsUtils.scalingEqually,
+  actionName: 'scaling',
+}
 
 export const createObjectDefaultControls = () => ({
   size: new Control({
@@ -135,7 +138,7 @@ export const createObjectDefaultControls = () => ({
     y: 0,
     actionHandler: controlsUtils.scalingXOrSkewingY,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
+    actionName: 'scaling',
     render: noop,
     positionHandler: positionHandlerH,
   }),
@@ -145,7 +148,7 @@ export const createObjectDefaultControls = () => ({
     y: 0,
     actionHandler: controlsUtils.scalingXOrSkewingY,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
+    actionName: 'scaling',
     render: noop,
     positionHandler: positionHandlerH,
   }),
@@ -155,7 +158,7 @@ export const createObjectDefaultControls = () => ({
     y: 0.5,
     actionHandler: controlsUtils.scalingYOrSkewingX,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
+    actionName: 'scaling',
     render: noop,
     positionHandler: positionHandlerV,
   }),
@@ -165,7 +168,7 @@ export const createObjectDefaultControls = () => ({
     y: -0.5,
     actionHandler: controlsUtils.scalingYOrSkewingX,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
+    actionName: 'scaling',
     render: noop,
     positionHandler: positionHandlerV,
   }),
@@ -173,28 +176,24 @@ export const createObjectDefaultControls = () => ({
   tl: new Control({
     x: -0.5,
     y: -0.5,
-    cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
-    actionHandler: controlsUtils.scalingEqually,
+    ...getHornControl,
   }),
 
   tr: new Control({
     x: 0.5,
     y: -0.5,
-    cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
-    actionHandler: controlsUtils.scalingEqually,
+    ...getHornControl,
   }),
 
   bl: new Control({
     x: -0.5,
     y: 0.5,
-    cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
-    actionHandler: controlsUtils.scalingEqually,
+    ...getHornControl,
   }),
 
   br: new Control({
     x: 0.5,
     y: 0.5,
-    cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
-    actionHandler: controlsUtils.scalingEqually,
+    ...getHornControl,
   }),
 })

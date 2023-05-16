@@ -8,7 +8,7 @@ import { cloneDeep } from 'lodash'
 export class HoverObjectBorder {
   private lineWidth = 2
 
-  constructor(@IFabricCanvas private canvas: FabricCanvas) {
+  constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     canvas.on('mouse:out', this.drawBorder.bind(this))
     canvas.on('mouse:over', this.clearBorder.bind(this))
   }
