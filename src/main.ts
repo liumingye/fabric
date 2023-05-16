@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from '@/router'
 import pinia from '@/store'
 import { createCore } from '@/core'
+import '@/hooks/useThemes'
 
 import '@unocss/reset/tailwind-compat.css'
 import '@/assets/style/global.less'
@@ -16,4 +17,4 @@ core.use(myPlugin)
 
 createApp(App).use(pinia).use(router).use(core).mount('#app')
 
-document.body.setAttribute('arco-theme', 'dark')
+// useThemes()

@@ -3,10 +3,16 @@
   import CanvasEdit from '@/components/canvasEdit'
   import LeftPanel from '@/components/leftPanel'
   import RightPanel from '@/components/rightPanel'
+
+  const onContextmenu = (e: MouseEvent) => {
+    if (!e.target || !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+      e.preventDefault()
+    }
+  }
 </script>
 
 <template>
-  <div>
+  <div @contextmenu="onContextmenu">
     <a-layout class="h-screen">
       <a-layout-header class="bg-$color-bg-4 b-solid b-b b-$color-neutral-3">
         <HeaderBar />

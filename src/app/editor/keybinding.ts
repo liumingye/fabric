@@ -3,21 +3,17 @@ import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybind
 import { useFabricObject } from '@/hooks/useFabricObject'
 import { ActiveSelection, FabricObject } from '@/lib/fabric'
 import { AlignMethod } from '@/types'
-import { isDefined } from '@vueuse/core'
 import { useEditor } from '@/app'
 
 export class Keybinding {
-  private activeObject: ComputedRef<FabricObject | undefined>
-
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly KeybindingService: KeybindingService,
   ) {
-    this.activeObject = computed(() => canvas.activeObject.value)
-
     this.KeybindingService.bind(['delete', 'backspace'], () => {
-      if (!isDefined(this.activeObject)) return
-      this.objForEach(this.activeObject.value, (obj) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      this.objForEach(activeObject, (obj) => {
         const group = obj.getParent()
         group.remove(obj)
       })
@@ -27,17 +23,23 @@ export class Keybinding {
 
     // 移至底层
     this.KeybindingService.bind('[', () => {
-      if (!isDefined(this.activeObject)) return
-      this.objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.sendObjectToBack(obj)
-      })
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      this.objForEach(
+        activeObject,
+        (obj) => {
+          const group = obj.getParent()
+          group.sendObjectToBack(obj)
+        },
+        true,
+      )
     })
 
     // 移至顶层
     this.KeybindingService.bind(']', () => {
-      if (!isDefined(this.activeObject)) return
-      this.objForEach(this.activeObject.value, (obj) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      this.objForEach(activeObject, (obj) => {
         const group = obj.getParent()
         group.bringObjectToFront(obj)
       })
@@ -45,20 +47,43 @@ export class Keybinding {
 
     // 向下移动一层
     this.KeybindingService.bind('mod+[', () => {
-      if (!isDefined(this.activeObject)) return
-      this.objForEach(this.activeObject.value, (obj) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      const isActiveSelection = activeObject instanceof ActiveSelection
+      this.objForEach(activeObject, (obj) => {
         const group = obj.getParent()
+        // 排除已经在最底层的元素
+        if (
+          isActiveSelection &&
+          group._objects.indexOf(obj) === activeObject._objects.indexOf(obj)
+        ) {
+          return
+        }
         group.sendObjectBackwards(obj)
       })
     })
 
     // 向上移动一层
     this.KeybindingService.bind('mod+]', () => {
-      if (!isDefined(this.activeObject)) return
-      this.objForEach(this.activeObject.value, (obj) => {
-        const group = obj.getParent()
-        group.bringObjectForward(obj)
-      })
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      const isActiveSelection = activeObject instanceof ActiveSelection
+      this.objForEach(
+        activeObject,
+        (obj) => {
+          const group = obj.getParent()
+          // 排除已经在最顶层的元素
+          if (
+            isActiveSelection &&
+            group._objects.indexOf(obj) + activeObject._objects.length ===
+              activeObject._objects.indexOf(obj) + group._objects.length
+          ) {
+            return
+          }
+          group.bringObjectForward(obj)
+        },
+        true,
+      )
     })
 
     this.bindAlign()
@@ -66,9 +91,9 @@ export class Keybinding {
 
   private bindAlign() {
     const align = (method: AlignMethod) => {
-      if (!isDefined(this.activeObject)) return
-      console.log(method)
-      useFabricObject(this.activeObject)[method]()
+      const activeObject = this.canvas.getActiveObject()
+      if (!activeObject) return
+      useFabricObject(activeObject)[method]()
       useEditor().undoRedo.saveState()
     }
     this.KeybindingService.bind({
@@ -81,13 +106,11 @@ export class Keybinding {
     })
   }
 
-  private objForEach(target: FabricObject, fn: (obj: FabricObject) => void) {
-    if (target instanceof ActiveSelection) {
-      target.forEachObject((obj) => {
-        fn(obj)
-      })
-    } else {
-      fn(target)
+  private objForEach(target: FabricObject, fn: (obj: FabricObject) => void, reverse = false) {
+    const objects = target instanceof ActiveSelection ? target.getObjects().slice(0) : [target]
+    if (reverse) {
+      objects.reverse()
     }
+    objects.forEach((obj) => fn(obj))
   }
 }

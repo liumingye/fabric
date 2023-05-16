@@ -10,6 +10,8 @@ type Callback = (e: ExtendedKeyboardEvent, combo: string) => boolean | void
 export class KeybindingService extends mousetrap {
   declare readonly _serviceBrand: undefined
 
+  public mod = /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl'
+
   constructor() {
     super()
   }

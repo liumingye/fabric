@@ -1,5 +1,5 @@
 export declare module 'fabric' {
-  import { Object as FabricObject, StaticCanvas } from 'fabric'
+  import { Object as FabricObject, StaticCanvas, ActiveSelection } from 'fabric'
 
   export type ObjectRef = Pick<
     FabricObject,
@@ -84,6 +84,12 @@ export declare module 'fabric' {
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
+    getActiveObject(): FabricObject | undefined
+  }
+
+  export class ActiveSelection {
+    multiSelectAdd(...targets: FabricObject[]): void
+    getObjects(...types: string[]): FabricObject[]
   }
 
   // type Ancestors<Strict> = Strict extends true ? Group[] | undefined : (Group | Canvas)[]

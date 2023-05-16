@@ -5,6 +5,7 @@
     :data-key="nodekey"
     @mouseout="hover = false"
     @mouseover="hover = true"
+    @contextmenu="onNodeContextmenu"
   >
     <component :is="DefineTemplate">
       <!-- 缩进 -->
@@ -380,6 +381,9 @@
           e.preventDefault()
 
           setDragStatus('drop', e)
+        },
+        onNodeContextmenu(e: MouseEvent) {
+          treeContext.onNodeContextmenu?.(key.value, e)
         },
       }
     },

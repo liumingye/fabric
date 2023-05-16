@@ -297,6 +297,12 @@
     },
     emits: {
       /**
+       * 当某一节点被鼠标右键点击时会触发该事件
+       * @param {MouseEvent} ev
+       * @param {TreeNodeData} node
+       */
+      nodeContextmenu: (ev: MouseEvent, node: TreeNodeData) => true,
+      /**
        * @zh 点击树节点时触发
        * @en Triggered when the tree node is clicked
        * @param {Array<string | number>} selectedKeys
@@ -919,6 +925,12 @@
               dropNode: node.treeNodeData,
               dropPosition,
             })
+          }
+        },
+        onNodeContextmenu(key: TreeNodeKey, e: MouseEvent) {
+          const node = key2TreeNode.value.get(key)
+          if (node) {
+            emit('nodeContextmenu', e, node)
           }
         },
       })

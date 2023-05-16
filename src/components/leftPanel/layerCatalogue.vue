@@ -6,6 +6,8 @@
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
+  import ContextMenu from '@/components/contextMenu'
+  import { mod } from '@/utils/keybinding'
 
   type ITreeNodeData = TreeNodeData & {
     canDragEnter: boolean
@@ -14,7 +16,7 @@
     children?: ITreeNodeData[]
   }
 
-  const { canvas } = useEditor()
+  const { canvas, keybinding } = useEditor()
 
   const searchKey = ref('')
 
@@ -213,28 +215,38 @@
     canvas.requestRenderAll()
   }
 
-  const selectedkeys = ref<string[]>([])
+  const selectedkeys = ref<(string | number)[]>([])
 
   /**
    * tree节点选择
    */
-  const onSelect = (_selectedKeys: (string | number)[]) => {
+  const onSelect = (_selectedkeys: (string | number)[] = selectedkeys.value) => {
     const objects: FabricObject[] = []
     canvas.forEachObject(function add(obj) {
       if (util.isCollection(obj)) {
         obj.forEachObject(add)
       }
-      if (_selectedKeys.includes(obj.get('id'))) {
-        objects.push(obj as FabricObject)
+      if (_selectedkeys.includes(obj.id)) {
+        objects.push(obj)
       }
     })
-    if (objects.length === 0) return
+    if (objects.length === 0) {
+      canvas.discardActiveObject()
+      return
+    }
+    const activeSelection = canvas.getActiveSelection()
+    const prevActiveObjects = activeSelection.getObjects()
     if (objects.length === 1) {
       canvas.setActiveObject(objects[0])
       objects[0].group?.setDirty()
     } else {
-      // todo 多选
+      activeSelection.removeAll()
+      activeSelection.multiSelectAdd(...objects)
+      canvas._hoveredTarget = activeSelection
+      canvas._hoveredTargets = [...objects]
+      canvas.setActiveObject(activeSelection)
     }
+    canvas._fireSelectionEvents(prevActiveObjects, undefined)
     canvas.requestRenderAll()
   }
 
@@ -298,6 +310,61 @@
       multiple.value = false
     }
   })
+
+  const showContextMenu = (e: MouseEvent, node: TreeNodeData) => {
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    if (!node.key) return
+
+    if (!selectedkeys.value.includes(node.key)) {
+      selectedkeys.value = [node.key]
+      onSelect()
+    }
+
+    const { mod } = keybinding
+
+    ContextMenu.showContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      preserveIconWidth: false,
+      items: [
+        {
+          label: '向上移动一层',
+          onClick: () => {
+            keybinding.trigger('mod+]')
+          },
+          shortcut: `${mod} ]`,
+        },
+        {
+          label: '移到顶层',
+          onClick: () => {
+            keybinding.trigger(']')
+          },
+          shortcut: ']',
+        },
+        {
+          label: '向下移动一层',
+          onClick: () => {
+            keybinding.trigger('mod+[')
+          },
+          shortcut: `${mod} [`,
+        },
+        {
+          label: '移到底层',
+          onClick: () => {
+            keybinding.trigger('[')
+          },
+          shortcut: '[',
+          divided: true,
+        },
+        {
+          label: '创建分组',
+          onClick: () => {},
+          shortcut: `${mod} G`,
+        },
+      ],
+    })
+  }
 </script>
 
 <template>
@@ -306,17 +373,14 @@
       <Tree blockNode :data="treeData2" draggable size="small" />
     </template>
     <template #second>
-      <a-input-search
-        v-model="searchKey"
-        placeholder="Search..."
-        class="bg-transparent! border-none!"
-      />
+      <a-input v-model="searchKey" placeholder="Search..." class="bg-transparent! border-none!" />
       <Tree
         size="small"
         blockNode
         draggable
         v-model:selected-keys="selectedkeys"
         v-model:expanded-keys="expandedKeys"
+        :animation="false"
         :multiple="multiple"
         :data="treeData"
         :allowDrop="allowDrop"
@@ -326,6 +390,7 @@
         }"
         @drop="onDrop"
         @select="onSelect"
+        @node-contextmenu="showContextMenu"
       >
         <template #title="nodeData">
           <span
