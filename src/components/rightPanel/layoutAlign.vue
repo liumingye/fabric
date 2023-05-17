@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import svgIcon from '../svgIcon/svgIcon.vue'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
-  import { fabric } from '@/types'
+  import { ActiveSelection } from 'fabric'
   import { useEditor } from '@/app'
 
   const alignList = [
@@ -55,7 +55,7 @@
 
   const { canvas, keybinding } = useEditor()
 
-  const disabled = computed(() => !(canvas.activeObject.value instanceof fabric.ActiveSelection))
+  const disabled = computed(() => !(canvas.activeObject.value instanceof ActiveSelection))
 </script>
 
 <template>

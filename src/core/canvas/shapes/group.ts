@@ -1,10 +1,10 @@
-import { Group as GroupOrign, classRegistry } from 'fabric'
-import { FabricObject } from '@/lib/fabric/fabric'
+import { Group as GroupOrigin } from 'fabric'
+import { FabricObject, classRegistry } from '@fabric'
 import { GroupProps } from 'fabric/src/shapes/Group'
 // import { FabricCanvas } from '@/core/canvas/fabricCanvas'
 import { toRefObject } from '@/core/canvas/toRefObject'
 
-export class Group extends GroupOrign {
+export class Group extends GroupOrigin {
   public computed = {
     objects: computed(() => this._objects),
   }

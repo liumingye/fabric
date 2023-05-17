@@ -1,8 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
-import { useFabricObject } from '@/hooks/useFabricObject'
-import { ActiveSelection, FabricObject } from '@/lib/fabric'
-import { AlignMethod } from '@/types'
+import { ActiveSelection, FabricObject } from '@fabric'
+import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 
 export class Keybinding {
@@ -97,7 +96,7 @@ export class Keybinding {
     const align = (method: AlignMethod) => {
       const activeObject = this.canvas.getActiveObject()
       if (!activeObject) return
-      useFabricObject(activeObject)[method]()
+      activeObject[method]()
       useEditor().undoRedo.saveState()
     }
     this.KeybindingService.bind({
@@ -115,6 +114,10 @@ export class Keybinding {
     if (reverse) {
       objects.reverse()
     }
-    objects.forEach((obj) => fn(obj))
+    const length = objects.length - 1
+    for (let i = length; i >= 0; i--) {
+      fn(objects[length - i])
+    }
+    // objects.forEach((obj) => fn(obj))
   }
 }

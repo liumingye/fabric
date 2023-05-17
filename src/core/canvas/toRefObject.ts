@@ -1,4 +1,4 @@
-import { FabricObject, ObjectRef } from '@/lib/fabric'
+import { FabricObject, ObjectRef } from '@fabric'
 
 const toRefObject = (object: FabricObject) => {
   if (object.ref) return object

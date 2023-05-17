@@ -8,12 +8,14 @@
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
-		"experimentalDecorators": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true,
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@fabric": ["src/lib/fabric"],
+      "@fabric/*": ["src/lib/fabric/*"]
     },
     "skipLibCheck": true
   },

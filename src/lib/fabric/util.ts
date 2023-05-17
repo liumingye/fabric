@@ -1,5 +1,5 @@
-import { util as utilOrgin, Gradient, Pattern } from 'fabric'
-import type { FabricObject, Group, ActiveSelection } from './fabric'
+import { util as utilOrgin } from 'fabric'
+import { FabricObject, Group, ActiveSelection, Gradient, Pattern } from '@fabric'
 import { Board } from '@/core/canvas/shapes/board'
 
 const isBoard = (object: any): object is Board => {

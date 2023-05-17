@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { Point } from '@/lib/fabric'
+import { Point } from '@fabric'
 import { useMagicKeys, clamp } from '@vueuse/core'
 import { useAppStore } from '@/store'
 

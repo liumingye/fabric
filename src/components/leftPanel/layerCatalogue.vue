@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
   import type { TreeNodeData, DropPosition, TreeNodeKey } from '@/components/tree'
-  import { ActiveSelection, Group, ObjectRef, util } from '@/lib/fabric'
-  import { FabricObject } from '@/lib/fabric'
+  import { ActiveSelection, Group, ObjectRef, util } from '@fabric'
+  import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
@@ -142,11 +142,12 @@
     }
 
     if (dragIndex >= 0 && dropIndex >= 0 && dragObject && dropObject) {
-      const dragGroup = dragObject?.group || canvas
-      let dropGroup = dropObject?.group || canvas
-      // 进入组
+      const dragGroup = dragObject.getParent()
+      let dropGroup = dropObject.getParent()
+      // 进入组，dropObject是组
       if (dropPosition === 0) {
-        dropGroup = dropObject as Group
+        if (!util.isCollection(dropObject)) return
+        dropGroup = dropObject
         dropIndex = dragGroup._objects.length
       }
       const _dragObject = dragObject

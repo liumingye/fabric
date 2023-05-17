@@ -1,6 +1,6 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '../canvas/fabricCanvas'
-import { Board, Gradient, Group, Rect } from '@/lib/fabric'
+import { Board, Gradient, Group, Rect } from '@fabric'
 import { random } from 'lodash'
 
 const myPlugin = createEditorPlugin((editor) => {

@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { FabricObject, util, CanvasEvents, Rect } from '@/lib/fabric'
+import { FabricObject, util, CanvasEvents, Rect } from '@fabric'
 import { cloneDeep } from 'lodash'
 
 /**

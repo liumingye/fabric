@@ -47,7 +47,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      // vue: 'vue/dist/vue.esm-bundler.js',
+      '@fabric': resolve(__dirname, './src/lib/fabric'),
     },
   },
   server: {

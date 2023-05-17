@@ -1,7 +1,9 @@
-export declare module 'fabric' {
-  import { Object as FabricObject, StaticCanvas, ActiveSelection } from 'fabric'
+import { AlignMethod } from 'app'
+import { FabricObject } from '@fabric'
+import 'fabric/src/typedefs'
 
-  export type ObjectRef = Pick<
+export declare module 'fabric' {
+  export declare type ObjectRef = Pick<
     FabricObject,
     | 'id'
     | 'name'
@@ -76,7 +78,7 @@ export declare module 'fabric' {
     | 'absolutePositioned'
   >
 
-  export class Canvas {
+  export declare class Canvas {
     _objects: FabricObject[]
     computed: {
       objects: ComputedRef<FabricObject[]>
@@ -87,14 +89,23 @@ export declare module 'fabric' {
     getActiveObject(): FabricObject | undefined
   }
 
-  export class ActiveSelection {
+  export declare class ActiveSelection {
     multiSelectAdd(...targets: FabricObject[]): void
     getObjects(...types: string[]): FabricObject[]
+    forEachObject(
+      callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
+    ): void
   }
 
-  // type Ancestors<Strict> = Strict extends true ? Group[] | undefined : (Group | Canvas)[]
+  declare type AlignFunction = {
+    [K in AlignMethod]: () => void
+  }
 
-  export class Object {
+  export declare interface Object extends AlignFunction {
+    align(method: AlignMethod): void
+  }
+
+  export declare class Object {
     group: Group | undefined
     id: string
     name: string
@@ -103,10 +114,16 @@ export declare module 'fabric' {
       strict?: T,
     ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
     noEventObjectAdded: boolean
-    // getAncestors<T extends boolean = false>(strict?: T): Ancestors<T>
+    getHeight(): number
+    getWidth(): number
+    setHeight(height: number): void
+    setWidth(width: number): void
+    setAngle(angle: number): void
+    setLeft(left: number): void
+    setTop(top: number): void
   }
 
-  export class Group {
+  export declare class Group {
     canvas: Canvas | undefined
     group: this | undefined
     _objects: FabricObject[]
@@ -118,4 +135,13 @@ export declare module 'fabric' {
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
   }
+
+  export declare class StaticCanvas {
+    _objects: FabricObject[]
+  }
+}
+
+export declare namespace fabric {
+  export * from 'fabric'
+  export * from 'fabric/src/typedefs'
 }

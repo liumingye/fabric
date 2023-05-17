@@ -1,4 +1,4 @@
-import type { EditTool } from '@/types'
+import type { EditTool } from 'app'
 
 export const useAppStore = defineStore('app', () => {
   const zoom = ref<number>(0)

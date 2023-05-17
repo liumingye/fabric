@@ -1,5 +1,5 @@
 import { tryOnScopeDispose } from '@vueuse/shared'
-import type { TPointerEventInfo, TPointerEvent } from '@/lib/fabric'
+import type { TPointerEventInfo, TPointerEvent } from '@fabric'
 import { useEditor } from '@/app'
 
 export interface UseSwipeOptions {

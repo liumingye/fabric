@@ -1,9 +1,9 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, FabricObject, Point, Rect } from '@/lib/fabric'
+import { Ellipse, FabricObject, Point, Rect } from '@fabric'
 import { useAppStore } from '@/store'
-import { EditTool } from '@/types'
+import { EditTool } from 'app'
 import { useMagicKeys } from '@vueuse/core'
 
 export class FabricTool {
@@ -44,31 +44,32 @@ export class FabricTool {
         canvas.setCursor(canvas.defaultCursor)
         canvas.skipTargetFind = true
         canvas.selection = false
+        const { min, max, abs, ceil } = Math
         let startLeft: number
         let startTop: number
         const { stop, lengthX, lengthY } = useFabricSwipe({
           onSwipeStart(e) {
             if (e.button !== 1) return
             const { x, y } = canvas.getPointer(e.e)
-            startLeft = Math.ceil(x)
-            startTop = Math.ceil(y)
+            startLeft = ceil(x)
+            startTop = ceil(y)
             switch (newValue) {
               case 'rect':
                 tempObject = new Rect({
                   left: startLeft,
                   top: startTop,
-                  width: 0,
-                  height: 0,
+                  width: 1,
+                  height: 1,
                 })
                 break
               case 'ellipse':
                 tempObject = new Ellipse({
                   left: startLeft,
                   top: startTop,
-                  width: 0,
-                  height: 0,
-                  rx: 0,
-                  ry: 0,
+                  width: 1,
+                  height: 1,
+                  rx: 0.5,
+                  ry: 0.5,
                 })
                 break
             }
@@ -81,17 +82,17 @@ export class FabricTool {
             requestAnimationFrame(() => {
               if (!tempObject) return
               let opt: Partial<Rect | Ellipse> = {
-                left: Math.min(startLeft, startLeft + lengthX.value),
-                top: Math.min(startTop, startTop + lengthY.value),
-                width: Math.abs(Math.ceil(lengthX.value)),
-                height: Math.abs(Math.ceil(lengthY.value)),
+                left: min(startLeft, startLeft + lengthX.value),
+                top: min(startTop, startTop + lengthY.value),
+                width: max(abs(ceil(lengthX.value)), 1),
+                height: max(abs(ceil(lengthY.value)), 1),
               }
               tempObject.set({})
               if (newValue === 'ellipse') {
                 opt = {
                   ...opt,
-                  rx: Math.abs(Math.ceil(lengthX.value)) / 2,
-                  ry: Math.abs(Math.ceil(lengthY.value)) / 2,
+                  rx: max(abs(ceil(lengthX.value)) / 2, 0.5),
+                  ry: max(abs(ceil(lengthY.value)) / 2, 0.5),
                 }
               }
               tempObject.set(opt)

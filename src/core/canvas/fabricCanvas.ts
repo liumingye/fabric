@@ -1,7 +1,8 @@
-import { Canvas, Object as FabricObject, util } from '@/lib/fabric'
+import { Canvas, Object as FabricObject, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
+import './mixin'
 
 export const IFabricCanvas = createDecorator<IFabricCanvas>('fabricCanvas')
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import SvgIcon from '@/components/svgIcon'
   import { useAppStore } from '@/store'
-  import type { EditTool } from '@/types'
+  import type { EditTool } from 'app'
 
   const { activeTool } = storeToRefs(useAppStore())
 

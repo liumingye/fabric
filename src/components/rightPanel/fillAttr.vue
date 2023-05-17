@@ -3,7 +3,7 @@
   import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import { isString } from 'lodash'
-  import { util } from '@/lib/fabric'
+  import { util } from '@fabric'
   import type { GradientCoords } from 'fabric/src/gradient/typedefs'
 
   const fill = useActiveObjectModel('fill')

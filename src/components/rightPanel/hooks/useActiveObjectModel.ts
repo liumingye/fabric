@@ -1,11 +1,10 @@
 import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
-import { ObjectRef } from 'fabric'
+import { ObjectRef } from '@fabric'
 import type { WritableComputedRef } from 'vue'
 import { toFixed } from '@/utils/math'
 import { isNumber } from 'lodash'
-import { FabricObject, util } from '@/lib/fabric'
-import { useFabricObject } from '@/hooks/useFabricObject'
+import { FabricObject, util } from '@fabric'
 
 export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K] | undefined>(
   key: K,
@@ -27,7 +26,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     let value
 
     if (['width', 'height'].includes(key)) {
-      value = useFabricObject(activeObject.value)[key === 'width' ? 'getWidth' : 'getHeight']()
+      value = activeObject.value[key === 'width' ? 'getWidth' : 'getHeight']()
     } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
       value = activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
@@ -58,7 +57,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
 
     if (['width', 'height', 'left', 'top', 'angle'].includes(key)) {
       // 左上宽高旋转
-      useFabricObject(activeObject)[
+      activeObject.value[
         key === 'width'
           ? 'setWidth'
           : key === 'height'
