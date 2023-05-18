@@ -16,7 +16,7 @@ const myPlugin = createEditorPlugin((editor) => {
         left: 0,
         width: 300,
         height: 300,
-        backgroundColor: '#fff',
+        backgroundColor: 'rgb(244,244,244)',
       })
       const board2 = new Board([], {
         top: 400,
@@ -26,6 +26,7 @@ const myPlugin = createEditorPlugin((editor) => {
         backgroundColor: '#f2b8ca',
       })
       canvas.add(board1, board2)
+      // canvas.add(board2)
 
       const group = new Group(
         [
@@ -53,16 +54,16 @@ const myPlugin = createEditorPlugin((editor) => {
           interactive: true,
         },
       )
-      canvas.add(group)
+      // canvas.add(group)
 
-      for (let index = 0; index < 5; index++) {
+      for (let index = 0; index < 3; index++) {
         canvas.add(
           new Rect({
             top: random(200, 300),
             left: random(400, 600),
             width: random(50, 100),
             height: random(50, 100),
-            fill: '#' + Math.random().toString(16).substring(2, 8),
+            fill: 'rgb(244,244,244)',
             // strokeWidth: random(0, 10),
             // stroke: '#' + Math.random().toString(16).substring(2, 8),
             // globalCompositeOperation: 'luminosity',

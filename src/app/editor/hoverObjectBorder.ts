@@ -11,6 +11,7 @@ export class HoverObjectBorder {
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     canvas.on('mouse:out', this.drawBorder.bind(this))
     canvas.on('mouse:over', this.clearBorder.bind(this))
+    // canvas.on('', this.clearBorder.bind(this))
   }
 
   private clearContextTop(target: FabricObject, restoreManually = false) {
@@ -32,13 +33,15 @@ export class HoverObjectBorder {
 
   private clearBorder(e: CanvasEvents['mouse:over']) {
     if (!e.target) return
-    this.clearContextTop(e.target as unknown as FabricObject)
-    this.canvas.contextTopDirty = true
+    if (this.canvas.contextTopDirty) {
+      this.clearContextTop(e.target)
+    }
+    // this.canvas.contextTopDirty = true
   }
 
   private drawBorder(e: CanvasEvents['mouse:out']) {
     if (!e.target) return
-    const target = e.target as unknown as FabricObject
+    const target = e.target
 
     if (util.isBoard(target) || target === this.canvas._activeObject) return
 

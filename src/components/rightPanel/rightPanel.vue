@@ -37,7 +37,7 @@
     <template v-for="(com, index) in componentList" :key="com.name">
       <template v-if="com.visual">
         <component :is="com.component" />
-        <a-divider v-if="index !== componentList.length - 1" :margin="0.01" />
+        <a-divider v-if="index !== componentList.length - 1" :margin="0" />
       </template>
     </template>
   </div>

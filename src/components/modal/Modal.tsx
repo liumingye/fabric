@@ -1,5 +1,6 @@
 import { Modal, type ModalConfig } from '@arco-design/web-vue'
 import type { AppContext } from 'vue'
+import '@arco-design/web-vue/es/modal/style'
 
 interface MyModalConfig extends ModalConfig {
   // lastLock?: boolean
@@ -34,7 +35,7 @@ const getConfig = (config: MyModalConfig, event?: MouseEvent): MyModalConfig => 
   //   }
   // }
   return {
-    alignCenter: false,
+    // alignCenter: false,
     // top: breakpoints.value.md ? '15vh' : 20,
     ...config,
     modalStyle: {

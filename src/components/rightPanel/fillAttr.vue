@@ -3,8 +3,19 @@
   import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import { isString } from 'lodash'
-  import { util } from '@fabric'
+  import { util, Color as FabricColor, Gradient, Pattern } from '@fabric'
   import type { GradientCoords } from 'fabric/src/gradient/typedefs'
+  import Modal from '@/components/modal'
+  import ColorPicker from '@/components/colorPicker/index.vue'
+  import { useEditor } from '@/app'
+  import { isDefined } from '@vueuse/core'
+  import { ColorPoint, ColorType } from '@/components/colorPicker/interface'
+  import {
+    gradAngleToCoords,
+    validateColor,
+    pointsToColorStops,
+    fabricGradientToPoints,
+  } from '@/utils/fill'
 
   const fill = useActiveObjectModel('fill')
 
@@ -32,14 +43,19 @@
   }
 
   const onChange = (value: string) => {
-    fill.value.onChange('#' + fillHexColor(value.replace('#', '')))
+    value = value.replace(/^#/, '')
+    if (value.length < 6) {
+      value = '#' + fillHexColor(value)
+    }
+    if (!validateColor(value)) return
+    fill.value.onChange(value)
   }
 
   const modelValue = ref('')
   watchEffect(() => {
-    const value = fill.value.modelValue
+    let value = fill.value.modelValue
     if (isString(value)) {
-      modelValue.value = value.replace('#', '').toUpperCase()
+      modelValue.value = new FabricColor(value).toHex().toUpperCase()
       return
     } else if (util.isGradient(value)) {
       modelValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
@@ -49,6 +65,101 @@
   })
 
   const readonly = computed(() => !isString(fill.value.modelValue))
+
+  const openColorPicker = () => {
+    const { canvas, undoRedo } = useEditor()
+    if (!isDefined(canvas.activeObject)) return
+
+    let points: ColorPoint[]
+    let type: ColorType = 'color'
+    if (canvas.activeObject.value.fill instanceof Gradient<'linear' | 'radial'>) {
+      points = fabricGradientToPoints(canvas.activeObject.value.fill)
+      type = canvas.activeObject.value.fill.type
+    } else if (canvas.activeObject.value.fill instanceof Pattern) {
+      //
+    } else if (canvas.activeObject.value.fill) {
+      const color = new FabricColor(canvas.activeObject.value.fill)
+      const [red, green, blue, alpha] = color.getSource()
+      points = [
+        {
+          left: 0,
+          red,
+          green,
+          blue,
+          alpha,
+        },
+        {
+          left: 100,
+          red: 255,
+          green: 255,
+          blue: 255,
+          alpha: 0,
+        },
+      ]
+    }
+
+    Modal.open({
+      title: '颜色',
+      content: () =>
+        h(
+          'div',
+          {
+            class: '-mx-20px -my-24px',
+          },
+          h(ColorPicker, {
+            gradient: {
+              type,
+              points,
+            },
+            onChange(data) {
+              if (!isDefined(canvas.activeObject)) return
+              if (data.type === 'color') {
+                if (data.points.length < 1) return
+                const { red, green, blue, alpha } = data.points[0]
+                canvas.activeObject.value.set('fill', `rgba(${red}, ${green}, ${blue}, ${alpha})`)
+              } else if (data.type === 'linear' || data.type === 'radial') {
+                const colorStops = pointsToColorStops(data.points)
+                let angle = 0
+
+                let coords: GradientCoords<'linear' | 'radial'> | undefined = undefined
+
+                if (canvas.activeObject.value.fill instanceof Gradient<'linear'>) {
+                  coords = canvas.activeObject.value.fill.coords
+                  // angle = getAngle(coords)
+                }
+
+                if (!coords) {
+                  const angleCoords = gradAngleToCoords(angle)
+                  coords = {
+                    x1: angleCoords.x1 * canvas.activeObject.value.width,
+                    y1: angleCoords.y1 * canvas.activeObject.value.height,
+                    x2: angleCoords.x2 * canvas.activeObject.value.width,
+                    y2: angleCoords.y2 * canvas.activeObject.value.height,
+                  }
+                }
+
+                canvas.activeObject.value.set(
+                  'fill',
+                  new Gradient({
+                    type: 'linear',
+                    coords,
+                    colorStops,
+                  }),
+                )
+              }
+              canvas.requestRenderAll()
+            },
+            onEndChange() {
+              undoRedo.saveState()
+            },
+          }),
+        ),
+      footer: false,
+      draggable: true,
+      mask: false,
+      width: 240,
+    })
+  }
 </script>
 
 <template>
@@ -59,7 +170,7 @@
       <a-col :span="10">
         <a-input size="mini" v-model="modelValue" :readonly="readonly" @change="onChange">
           <template #prefix>
-            <a-button size="mini" class="icon-btn">
+            <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>
                 <div
                   class="w16px h16px rd-4px"

@@ -29,12 +29,12 @@ export class Board extends Group {
     // this.setRelativeX
     // this.lockScalingY = true
 
-    this.on('rotating', this.setClipPath)
-    this.on('added', this.setClipPath)
-    this.on('modified', () => {
-      this.setClipPath()
-      // this._scaling = false
-    })
+    // this.on('rotating', this.setClipPath)
+    this.setClipPath()
+    // this.on('modified', () => {
+    //   this.setClipPath()
+    //   // this._scaling = false
+    // })
     this.on('scaling', () => {
       this.set({
         width: this.getScaledWidth(),
@@ -85,6 +85,10 @@ export class Board extends Group {
       ctx.fillText(this.name, 4, -2)
       ctx.restore()
     }
+  }
+
+  _watchObject(_watch: boolean, _object: FabricObject) {
+    // noop
   }
 }
 

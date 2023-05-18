@@ -1,6 +1,6 @@
 import { Group as GroupOrigin } from 'fabric'
-import { FabricObject, classRegistry } from '@fabric'
-import { GroupProps } from 'fabric/src/shapes/Group'
+import { FabricObject, classRegistry, util } from '@fabric'
+import type { GroupProps } from 'fabric/src/shapes/Group'
 // import { FabricCanvas } from '@/core/canvas/fabricCanvas'
 import { toRefObject } from '@/core/canvas/toRefObject'
 
@@ -57,19 +57,6 @@ export class Group extends GroupOrigin {
     } else {
       super._onObjectAdded(obj)
     }
-  }
-
-  override shouldCache() {
-    const ownCache = FabricObject.prototype.shouldCache.call(this)
-    if (ownCache) {
-      for (let i = 0; i < this._objects.length; i++) {
-        if (this._objects[i].shouldCache() || this._objects[i].isMoving) {
-          this.ownCaching = false
-          return false
-        }
-      }
-    }
-    return true
   }
 }
 

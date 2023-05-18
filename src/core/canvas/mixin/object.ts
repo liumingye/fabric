@@ -1,9 +1,7 @@
-import { Object as FabricObject, ActiveSelection, Group, Control } from '@fabric'
+import { Object as FabricObject, ActiveSelection, Group, TControlSet } from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
-
-type TControlSet = Record<string, Control>
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,

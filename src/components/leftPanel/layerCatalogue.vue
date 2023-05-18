@@ -441,7 +441,7 @@
     </template>
     <template #resize-trigger>
       <div class="pt4">
-        <a-divider :margin="0.01" />
+        <a-divider :margin="0" />
       </div>
     </template>
   </a-split>

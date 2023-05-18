@@ -1,5 +1,5 @@
 import { noop } from '@vueuse/core'
-import { Control, FabricObject, controlsUtils, Point } from '../../../lib/fabric/fabric'
+import { Control, FabricObject, controlsUtils, Point } from '@fabric'
 import { toFixed } from '@/utils/math'
 
 const positionHandler: Control['positionHandler'] = (

@@ -1,5 +1,8 @@
 import { FabricObject, ObjectRef } from '@fabric'
 
+/**
+ * 元素添加相应式属性
+ */
 const toRefObject = (object: FabricObject) => {
   if (object.ref) return object
 
@@ -77,10 +80,9 @@ const toRefObject = (object: FabricObject) => {
     'absolutePositioned',
   ]
 
-  object.ref = reactive({}) as any
+  object.ref = reactive({}) as ObjectRef
 
-  keyArr.forEach((key) => {
-    // @ts-ignore
+  keyArr.forEach(<K extends keyof ObjectRef>(key: K) => {
     object.ref[key] = object[key]
 
     Object.defineProperty(object, key, {

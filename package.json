@@ -21,7 +21,7 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
-    "@arco-design/web-vue": "^2.45.3",
+    "@arco-design/web-vue": "^2.46.0",
     "@types/lodash": "^4.14.194",
     "@types/mousetrap": "^1.6.11",
     "@types/node": "^18.16.3",

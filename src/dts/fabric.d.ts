@@ -1,5 +1,5 @@
-import { AlignMethod } from 'app'
-import { FabricObject } from '@fabric'
+import type { AlignMethod } from 'app'
+import type { FabricObject } from '@fabric'
 import 'fabric/src/typedefs'
 
 export declare module 'fabric' {

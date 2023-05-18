@@ -27,7 +27,7 @@ export default defineConfig({
       },
     }),
     Components({
-      // directoryAsNamespace: true,
+      directoryAsNamespace: true,
       resolvers: [
         // 自动引入arco
         ArcoResolver({
