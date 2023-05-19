@@ -1,5 +1,5 @@
 import type { AlignMethod } from 'app'
-import type { FabricObject } from '@fabric'
+import type { FabricObject, Point } from '@fabric'
 import 'fabric/src/typedefs'
 
 export declare module 'fabric' {
@@ -87,6 +87,7 @@ export declare module 'fabric' {
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
     getActiveObject(): FabricObject | undefined
+    getObjects(): FabricObject[]
   }
 
   export declare class ActiveSelection {
@@ -116,9 +117,13 @@ export declare module 'fabric' {
     noEventObjectAdded: boolean
     getHeight(): number
     getWidth(): number
+    getLeftTop(): Point
+    getLeft(): number
+    getTop(): number
     setHeight(height: number): void
     setWidth(width: number): void
     setAngle(angle: number): void
+    setLeftTop(point: Point): void
     setLeft(left: number): void
     setTop(top: number): void
   }
@@ -134,6 +139,7 @@ export declare module 'fabric' {
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
+    getObjects(): FabricObject[]
   }
 
   export declare class StaticCanvas {

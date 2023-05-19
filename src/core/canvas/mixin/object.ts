@@ -1,4 +1,4 @@
-import { Object as FabricObject, ActiveSelection, Group, TControlSet } from '@fabric'
+import { Object as FabricObject, ActiveSelection, Group, TControlSet, util, Point } from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
@@ -32,13 +32,36 @@ const mixin = {
   setAngle(value: number) {
     this.rotate(toFixed(clampAngle(value)))
   },
+  getLeftTop() {
+    const relativePosition = this.getRelativeXY()
+    if (this.group) {
+      return relativePosition
+        .subtract(this.group.getRelativeXY())
+        .transform(this.group.calcTransformMatrix())
+    }
+    return relativePosition
+  },
+  getLeft() {
+    return this.getLeftTop().x
+  },
+  getTop() {
+    return this.getLeftTop().y
+  },
+  setLeftTop(point: Point) {
+    if (this.group) {
+      point = point
+        .add(this.group.getRelativeXY())
+        .transform(util.invertTransform(this.group.calcTransformMatrix()))
+    }
+    this.setRelativeXY(point)
+  },
   setLeft(value: number) {
-    this.setX(toFixed(value))
-    this.getParent(true)?.setDirty()
+    const point = this.getLeftTop().setX(value)
+    this.setLeftTop(point)
   },
   setTop(value: number) {
-    this.setY(toFixed(value))
-    this.getParent(true)?.setDirty()
+    const point = this.getLeftTop().setY(value)
+    this.setLeftTop(point)
   },
   align(method: AlignMethod) {
     if (!(this instanceof ActiveSelection)) return

@@ -1,6 +1,7 @@
 import { FabricTool } from '@/app/editor/fabricTool'
 import { HoverObjectBorder } from '@/app/editor/hoverObjectBorder'
 import { HandleWheelScroll } from '@/app/editor/handleWheelScroll'
+import { GuideLines } from '@/app/editor/guideLines'
 import { Keybinding } from '@/app/editor/keybinding'
 import { SyncDescriptor } from '@/core/instantiation/descriptors'
 import { IInstantiationService, ServiceIdentifier } from '@/core/instantiation/instantiation'
@@ -25,6 +26,7 @@ export class EditorMain {
     register(FabricTool)
     register(HoverObjectBorder)
     register(HandleWheelScroll)
+    register(GuideLines)
 
     const core = getActiveCore()
     core._p.forEach((plugin) => {

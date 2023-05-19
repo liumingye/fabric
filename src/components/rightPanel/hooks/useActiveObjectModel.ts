@@ -28,7 +28,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     if (['width', 'height'].includes(key)) {
       value = activeObject.value[key === 'width' ? 'getWidth' : 'getHeight']()
     } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
-      value = activeObject.value.getXY()[key === 'left' ? 'x' : 'y']
+      value = activeObject.value.getLeftTop()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
       value = (activeObject.value[key] as number) * 100
     } else {

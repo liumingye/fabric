@@ -90,6 +90,7 @@ const toRefObject = (object: FabricObject) => {
         return this.ref[key]
       },
       set(value) {
+        if (this.ref[key] === value) return
         this.ref[key] = value
       },
     })
