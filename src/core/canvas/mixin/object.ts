@@ -52,6 +52,8 @@ const mixin = {
       point = point
         .add(this.group.getRelativeXY())
         .transform(util.invertTransform(this.group.calcTransformMatrix()))
+      // this.group.updateLayout()
+      // this.group.setCoords()
     }
     this.setRelativeXY(point)
   },

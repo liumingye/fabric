@@ -22,9 +22,10 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
 
   watchEffect(() => {
     if (!isDefined(activeObject)) return
+    // 锁定修改
     lockChange = true
+    //
     let value
-
     if (['width', 'height'].includes(key)) {
       value = activeObject.value[key === 'width' ? 'getWidth' : 'getHeight']()
     } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
@@ -52,7 +53,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     useEditor().undoRedo.saveState()
   }
 
-  const onChange = (newValue: T) => {
+  const changeValue = (newValue: T, type: 'swipe' | 'change') => {
     if (lockChange || !isDefined(activeObject)) return
 
     if (['width', 'height', 'left', 'top', 'angle'].includes(key)) {
@@ -68,6 +69,10 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
           ? 'setTop'
           : 'setAngle'
       ](Number(newValue))
+      // 更改值后，更新组的布局
+      if (type === 'change') {
+        activeObject.value.group?.updateLayout()
+      }
     } else if (
       !['left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
       util.isCollection(activeObject.value)
@@ -86,11 +91,12 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
 
   return computed(() => ({
     modelValue: modelValue.value as T,
-    onSwipe: (newValue: T) => {
-      onChange(newValue)
+    onSwipe: (value: T) => {
+      changeValue(value, 'swipe')
     },
-    onChange: (newValue: T) => {
-      onChange(newValue)
+    onChange: (value: T) => {
+      changeValue(value, 'change')
+      // 保存历史
       saveState()
     },
   }))

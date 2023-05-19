@@ -35,6 +35,11 @@ export class Group extends GroupOrigin {
     this._set('dirty', true)
   }
 
+  public updateLayout() {
+    this._applyLayoutStrategy({ type: 'object_modified' })
+    this.setDirty()
+  }
+
   /**
    * 图层位置改变
    */

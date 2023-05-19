@@ -136,6 +136,7 @@ export declare module 'fabric' {
       objects: ComputedRef<FabricObject[]>
     }
     setDirty(): void
+    updateLayout(): void
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void

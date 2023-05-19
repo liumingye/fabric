@@ -25,8 +25,8 @@ const myPlugin = createEditorPlugin((editor) => {
         height: 300,
         backgroundColor: '#f2b8ca',
       })
-      canvas.add(board1, board2)
-      // canvas.add(board2)
+      // canvas.add(board1, board2)
+      canvas.add(board2)
 
       const group = new Group(
         [
@@ -54,9 +54,9 @@ const myPlugin = createEditorPlugin((editor) => {
           interactive: true,
         },
       )
-      // canvas.add(group)
+      canvas.add(group)
 
-      for (let index = 0; index < 3; index++) {
+      for (let index = 0; index < 1; index++) {
         canvas.add(
           new Rect({
             top: random(200, 300),

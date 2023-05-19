@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { Canvas, CanvasEvents, FabricObject, Group, Point, util } from '@fabric'
+import { Board, Canvas, CanvasEvents, FabricObject, Group, Point, util } from '@fabric'
 
 type VerticalLineCoords = {
   x: number
@@ -63,7 +63,16 @@ export class GuideLines {
         if (this.pickObjTypes.length) {
           return this.pickObjTypes.some((item) => obj.get(item.key) === item.value)
         }
-        // if (util.isCollection(obj)) add(obj)
+        // 元素为画板，把画板内元素加入
+        if (obj instanceof Board) {
+          add(obj)
+          return true
+        }
+        // 元素为激活元素的组，把组内元素加入，同时排除组本身
+        if (obj instanceof Group && activeObject.group && obj === activeObject.group) {
+          add(obj)
+          return false
+        }
         return true
       })
       canvasObjects.push(...objects)
@@ -78,30 +87,19 @@ export class GuideLines {
     this.verticalLines.length = this.horizontalLines.length = 0
   }
 
-  private getObjDraggingObjCoords(activeObject: FabricObject) {
-    const aCoords = activeObject.aCoords as NonNullable<FabricObject['aCoords']>
-    const centerPoint = new Point(
-      (aCoords.tl.x + aCoords.br.x) / 2,
-      (aCoords.tl.y + aCoords.br.y) / 2,
+  private getObjDraggingObjCoords(activeObject: FabricObject): ACoordsAppendCenter {
+    const coords = this.getCoords(activeObject)
+    const centerPoint = this.calcCenterPointByACoords(coords).subtract(
+      activeObject.getCenterPoint(),
     )
-
-    const offsetX = centerPoint.x - activeObject.getCenterPoint().x
-    const offsetY = centerPoint.y - activeObject.getCenterPoint().y
-
-    return Keys(aCoords).reduce(
-      (acc, key) => {
-        return {
-          ...acc,
-          [key]: {
-            x: aCoords[key].x - offsetX,
-            y: aCoords[key].y - offsetY,
-          },
-        }
-      },
-      {
-        c: activeObject.getCenterPoint(),
-      } as ACoordsAppendCenter,
-    )
+    const newCoords = Keys(coords).map((key) => coords[key].subtract(centerPoint))
+    return {
+      tl: newCoords[0],
+      tr: newCoords[1],
+      br: newCoords[2],
+      bl: newCoords[3],
+      c: activeObject.getCenterPoint(),
+    }
   }
 
   private getObjMaxWidthHeightByCoords(coords: ACoordsAppendCenter) {
@@ -113,49 +111,32 @@ export class GuideLines {
 
   // 当对象被旋转时，需要忽略一些坐标，例如水平辅助线只取最上、下边的坐标（参考 figma）
   private omitCoords(objCoords: ACoordsAppendCenter, type: 'vertical' | 'horizontal') {
-    let newCoords
-    type PointArr = [keyof ACoordsAppendCenter, Point]
-    if (type === 'vertical') {
-      let l: PointArr = ['tl', objCoords.tl]
-      let r: PointArr = ['tl', objCoords.tl]
-      Keys(objCoords).forEach((key) => {
-        if (objCoords[key].x < l[1].x) {
-          l = [key, objCoords[key]]
-        }
-        if (objCoords[key].x > r[1].x) {
-          r = [key, objCoords[key]]
-        }
-      })
-      newCoords = {
-        [l[0]]: l[1],
-        [r[0]]: r[1],
-        c: objCoords.c,
-      } as ACoordsAppendCenter
-    } else {
-      let t: PointArr = ['tl', objCoords.tl]
-      let b: PointArr = ['tl', objCoords.tl]
-      Keys(objCoords).forEach((key) => {
-        if (objCoords[key].y < t[1].y) {
-          t = [key, objCoords[key]]
-        }
-        if (objCoords[key].y > b[1].y) {
-          b = [key, objCoords[key]]
-        }
-      })
-      newCoords = {
-        [t[0]]: t[1],
-        [b[0]]: b[1],
-        c: objCoords.c,
-      } as ACoordsAppendCenter
-    }
+    const newCoords = objCoords
+    const axis = type === 'vertical' ? 'x' : 'y'
+    Keys(objCoords).forEach((key) => {
+      if (objCoords[key][axis] < newCoords.tl[axis]) {
+        newCoords[key] = objCoords[key]
+      }
+      if (objCoords[key][axis] > newCoords.tl[axis]) {
+        newCoords[key] = objCoords[key]
+      }
+    })
     return newCoords
   }
 
+  /**
+   * 检查 value1 和 value2 是否在指定的范围内，用于对齐线的计算
+   */
   private isInRange(value1: number, value2: number) {
     return (
       Math.abs(Math.round(value1) - Math.round(value2)) <=
       this.aligningLineMargin / this.canvas.getZoom()
     )
+  }
+
+  private getCoords(obj: FabricObject) {
+    const [tl, tr, br, bl] = obj.getCoords(true)
+    return { tl, tr, br, bl }
   }
 
   /**
@@ -168,14 +149,13 @@ export class GuideLines {
 
   private traversAllObjects(activeObject: FabricObject, canvasObjects: FabricObject[]) {
     const objCoordsByMovingDistance = this.getObjDraggingObjCoords(activeObject)
-
     const snapXPoints: number[] = []
     const snapYPoints: number[] = []
-
     for (let i = canvasObjects.length; i--; ) {
+      // 排除自己
       if (canvasObjects[i] === activeObject) continue
       const objCoords = {
-        ...canvasObjects[i].aCoords,
+        ...this.getCoords(canvasObjects[i]),
         c: canvasObjects[i].getCenterPoint(),
       } as ACoordsAppendCenter
       const { objHeight, objWidth } = this.getObjMaxWidthHeightByCoords(objCoords)
@@ -201,20 +181,16 @@ export class GuideLines {
         Keys(newCoords).forEach((objPoint) => {
           if (this.isInRange(objCoordsByMovingDistance[activeObjPoint].y, objCoords[objPoint].y)) {
             const y = objCoords[objPoint].y
-            const { x1, x2 } = calcHorizontalLineCoords(objPoint, objCoordsByMovingDistance)
 
             const offset = objCoordsByMovingDistance[activeObjPoint].y - y
             snapYPoints.push(objCoordsByMovingDistance.c.y - offset)
 
-            if (activeObject.aCoords) {
-              const { x1, x2 } = calcHorizontalLineCoords(objPoint, {
-                ...activeObject.aCoords,
-                c: this.calcCenterPointByACoords(activeObject.aCoords),
-              } as ACoordsAppendCenter)
-              this.horizontalLines.push({ y, x1, x2 })
-            } else {
-              this.horizontalLines.push({ y, x1, x2 })
-            }
+            const aCoords = this.getCoords(activeObject)
+            const { x1, x2 } = calcHorizontalLineCoords(objPoint, {
+              ...aCoords,
+              c: this.calcCenterPointByACoords(aCoords),
+            } as ACoordsAppendCenter)
+            this.horizontalLines.push({ y, x1, x2 })
           }
         })
       })
@@ -241,20 +217,16 @@ export class GuideLines {
         Keys(newCoords).forEach((objPoint) => {
           if (this.isInRange(objCoordsByMovingDistance[activeObjPoint].x, objCoords[objPoint].x)) {
             const x = objCoords[objPoint].x
-            const { y1, y2 } = calcVerticalLineCoords(objPoint, objCoordsByMovingDistance)
 
             const offset = objCoordsByMovingDistance[activeObjPoint].x - x
             snapXPoints.push(objCoordsByMovingDistance.c.x - offset)
 
-            if (activeObject.aCoords) {
-              const { y1, y2 } = calcVerticalLineCoords(objPoint, {
-                ...activeObject.aCoords,
-                c: this.calcCenterPointByACoords(activeObject.aCoords),
-              } as ACoordsAppendCenter)
-              this.verticalLines.push({ x, y1, y2 })
-            } else {
-              this.verticalLines.push({ x, y1, y2 })
-            }
+            const aCoords = this.getCoords(activeObject)
+            const { y1, y2 } = calcVerticalLineCoords(objPoint, {
+              ...aCoords,
+              c: this.calcCenterPointByACoords(aCoords),
+            } as ACoordsAppendCenter)
+            this.verticalLines.push({ x, y1, y2 })
           }
         })
       })
@@ -268,26 +240,35 @@ export class GuideLines {
     }
   }
 
+  /**
+   * 自动吸附对象
+   */
   private snap({
     activeObject,
-    snapXPoints,
     draggingObjCoords,
+    snapXPoints,
     snapYPoints,
   }: {
+    /** 当前活动对象 */
     activeObject: FabricObject
-    snapXPoints: number[]
+    /** 活动对象的坐标 */
     draggingObjCoords: ACoordsAppendCenter
+    /** 横向吸附点列表 */
+    snapXPoints: number[]
+    /** 纵向吸附点列表 */
     snapYPoints: number[]
   }) {
-    const sortPoints = (list: number[], originPoint: number) => {
-      if (!list.length) return originPoint
-      const sortedList = list
-        .map((val) => ({
-          abs: Math.abs(originPoint - val),
-          val,
-        }))
-        .sort((a, b) => a.abs - b.abs)
-      return sortedList[0].val
+    // 获得最近的吸附点
+    const sortPoints = (list: number[], originPoint: number): number => {
+      if (list.length === 0) {
+        return originPoint
+      }
+
+      const sortedList = [...list].sort(
+        (a, b) => Math.abs(originPoint - a) - Math.abs(originPoint - b),
+      )
+
+      return sortedList[0]
     }
 
     // auto snap nearest object, record all the snap points, and then find the nearest one
@@ -304,7 +285,6 @@ export class GuideLines {
   private drawSign(x: number, y: number) {
     const ctx = this.canvas.getSelectionContext()
 
-    ctx.lineWidth = 0.5
     ctx.strokeStyle = this.aligningLineColor
     ctx.beginPath()
 
@@ -366,7 +346,6 @@ export class GuideLines {
     }
 
     const movingCoords = this.getObjDraggingObjCoords(this.activeObj)
-    // console.log(movingCoords)
     for (let i = this.verticalLines.length; i--; ) {
       this.drawVerticalLine(this.verticalLines[i], movingCoords)
     }
