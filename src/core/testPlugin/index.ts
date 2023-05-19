@@ -54,7 +54,7 @@ const myPlugin = createEditorPlugin((editor) => {
           interactive: true,
         },
       )
-      canvas.add(group)
+      // canvas.add(group)
 
       for (let index = 0; index < 1; index++) {
         canvas.add(

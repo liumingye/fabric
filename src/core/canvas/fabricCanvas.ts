@@ -35,6 +35,7 @@ export class FabricCanvas extends Canvas {
           stopContextMenu: true,
           fireMiddleClick: true,
           includeDefaultValues: false,
+          // selectionFullyContained: true,
         },
         options,
       ),

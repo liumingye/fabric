@@ -20,10 +20,7 @@ const _collectObjects = (
     if (
       // 包含子元素
       util.isCollection(object) &&
-      object.subTargetCheck &&
-      object.visible &&
-      object._objects &&
-      // 与box相交
+      // 组内的元素在clipPath外边的部分不会收集
       (object.intersectsWithRect(tl, br, true) ||
         object.containsPoint(tl, undefined, true) ||
         object.containsPoint(br, undefined, true))
@@ -32,20 +29,21 @@ const _collectObjects = (
       collected.push(..._collectObjects(object._objects, box, opt))
     }
 
-    // box与画板重叠才会被收集
+    // 画板内有元素开启includeIntersecting，没有则关闭
     const isBoard = util.isBoard(object)
+    const isIncludeIntersecting =
+      (!isBoard || object._objects.length === 0) &&
+      includeIntersecting &&
+      (object.intersectsWithRect(tl, br, true) ||
+        object.containsPoint(tl, undefined, true) ||
+        object.containsPoint(br, undefined, true))
     if (
-      // 画板或可选择
-      (isBoard || object.selectable) &&
+      // 可选择
+      (object.selectable || (isBoard && object._objects.length !== 0)) &&
       // 可视
       object.visible &&
       // 与box重叠
-      (object.isContainedWithinRect(tl, br, true) ||
-        (!isBoard &&
-          includeIntersecting &&
-          (object.intersectsWithRect(tl, br, true) ||
-            object.containsPoint(tl, undefined, true) ||
-            object.containsPoint(br, undefined, true))))
+      (object.isContainedWithinRect(tl, br, true) || isIncludeIntersecting)
     ) {
       collected.push(object)
     }

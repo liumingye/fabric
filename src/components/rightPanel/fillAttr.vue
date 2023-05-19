@@ -45,10 +45,10 @@
   const onChange = (value: string) => {
     value = value.replace(/^#/, '')
     if (value.length < 6) {
-      value = '#' + fillHexColor(value)
+      value = fillHexColor(value)
     }
     if (!validateColor(value)) return
-    fill.value.onChange(value)
+    fill.value.onChange(`#${value}`)
   }
 
   const modelValue = ref('')

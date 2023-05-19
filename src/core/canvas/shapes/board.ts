@@ -49,6 +49,23 @@ export class Board extends Group {
     })
 
     this.setCoords()
+
+    this.on('added', () => {
+      this.updateSelectable()
+      watchEffect(() => {
+        // 锁定selectable
+        if (this.ref.selectable && this.size()) {
+          this.ref.selectable = false
+        }
+      })
+    })
+  }
+
+  updateSelectable() {
+    // 画板内没有元素开启selectable，否则关闭
+    if (this.ref) {
+      this.ref.selectable = !this.size()
+    }
   }
 
   setClipPath() {
@@ -89,6 +106,16 @@ export class Board extends Group {
 
   _watchObject(_watch: boolean, _object: FabricObject) {
     // noop
+  }
+
+  _onObjectAdded(object: FabricObject) {
+    super._onObjectAdded(object)
+    this.updateSelectable()
+  }
+
+  _onObjectRemoved(object: FabricObject) {
+    super._onObjectAdded(object)
+    this.updateSelectable()
   }
 }
 

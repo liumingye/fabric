@@ -7,7 +7,6 @@
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
-  import { mod } from '@/utils/keybinding'
 
   type ITreeNodeData = TreeNodeData & {
     canDragEnter: boolean

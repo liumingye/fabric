@@ -63,6 +63,12 @@ export class Group extends GroupOrigin {
       super._onObjectAdded(obj)
     }
   }
+
+  // public isActiveGroup(): boolean {
+  //   return (
+  //     this.canvas?.getActiveObjects().includes(this) || (!!this.group && this.group.isActiveGroup())
+  //   )
+  // }
 }
 
 classRegistry.setClass(Group)
