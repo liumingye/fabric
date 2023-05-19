@@ -70,7 +70,6 @@
     <!-- 内容 -->
     <span
       ref="refTitle"
-      class="overflow-hidden"
       :class="titleClassNames"
       :draggable="draggable"
       @dragstart="onDragStart"
@@ -114,7 +113,7 @@
         <IconDragDotVertical v-else />
       </span>
       <!-- 额外 -->
-      <RenderFunction v-if="extra" :render-func="extra" class="x1" />
+      <RenderFunction v-if="extra" :render-func="extra" />
     </span>
   </div>
 </template>
@@ -404,6 +403,9 @@
     .@{prefix}-title {
       width: 100%;
       border-radius: 0;
+      margin-left: 0;
+      padding-right: 0;
+      padding-left: 0;
 
       &-gap-bottom::before {
         bottom: -@transfer-item-draggable-height-gap;

@@ -144,13 +144,13 @@
       const dragGroup = dragObject.getParent()
       let dropGroup = dropObject.getParent()
       // 进入组，dropObject是组
-      if (dropPosition === 0) {
-        if (!util.isCollection(dropObject)) return
+      if (util.isCollection(dropObject) && [0, 1].includes(dropPosition)) {
         dropGroup = dropObject
         dropIndex = dragGroup._objects.length
       }
       const _dragObject = dragObject
       dragGroup.remove(dragObject)
+      _dragObject.group?.exitGroup(_dragObject)
       dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
     }
   }
