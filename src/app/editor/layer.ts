@@ -1,6 +1,6 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
-import { ActiveSelection, FabricObject } from '@fabric'
+import { ActiveSelection, Canvas, FabricObject, Group, StaticCanvas, util } from '@fabric'
 import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
@@ -14,10 +14,7 @@ export class Layer extends Disposable {
     this.KeybindingService.bind(['delete', 'backspace'], () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
-      this.objForEach(activeObject, (obj) => {
-        const group = obj.getParent()
-        group.remove(obj)
-      })
+      this.deleteLayer(this.getObjects(activeObject))
       canvas.discardActiveObject()
       canvas.requestRenderAll()
     })
@@ -91,6 +88,39 @@ export class Layer extends Disposable {
       )
     })
 
+    // 创建分组
+    this.KeybindingService.bind('mod+g', (e) => {
+      e.preventDefault?.()
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      const objects = this.getObjects(activeObject)
+      // 获取要插入的分组，在deleteLayer前获取，不然获取不到
+      const insertGroup = objects[0].getParent()
+      const index = insertGroup._objects.indexOf(objects[0])
+      // 创建组
+      // 不能直接 new Group(this.deleteLayer(objects))，objects有组的话x和y会偏移
+      const group = new Group()
+      group.add(...this.deleteLayer(objects))
+      insertGroup.insertAt(index, group)
+      // 设置激活对象
+      canvas.setActiveObject(group)
+    })
+
+    //解除分组
+    this.KeybindingService.bind('mod+shift+g', (e) => {
+      e.preventDefault?.()
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject || !util.isCollection(activeObject)) return
+      const parentGroup = activeObject.getParent()
+      const objects = this.getObjects(activeObject)
+      const index = parentGroup._objects.indexOf(activeObject)
+      // 移除组
+      parentGroup.remove(activeObject)
+      parentGroup.insertAt(index, ...this.deleteLayer(objects))
+      // 设置激活对象
+      canvas.setActiveObjects(objects)
+    })
+
     this.bindAlign()
   }
 
@@ -111,8 +141,12 @@ export class Layer extends Disposable {
     })
   }
 
+  private getObjects(target: FabricObject) {
+    return util.isCollection(target) ? target.getObjects() : [target]
+  }
+
   private objForEach(target: FabricObject, fn: (obj: FabricObject) => void, reverse = false) {
-    const objects = target instanceof ActiveSelection ? target.getObjects().slice(0) : [target]
+    const objects = this.getObjects(target)
     if (reverse) {
       objects.reverse()
     }
@@ -121,5 +155,9 @@ export class Layer extends Disposable {
       fn(objects[length - i])
     }
     // objects.forEach((obj) => fn(obj))
+  }
+
+  private deleteLayer(objects: FabricObject[]): FabricObject[] {
+    return objects.flatMap((obj) => obj.getParent().remove(obj) as FabricObject[])
   }
 }

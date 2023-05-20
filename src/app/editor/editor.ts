@@ -77,6 +77,7 @@ export class EditorMain extends Disposable {
       this.service.invokeFunction((accessor) => {
         accessor.get(IKeybindingService).reset()
         accessor.get(IFabricCanvas).destroy()
+        accessor.get(IUndoRedoService).reset()
       })
     } catch (_e) {
       console.error(_e)

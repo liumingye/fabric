@@ -10,6 +10,10 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
       return super.add(...objects.map((obj) => toRefObject(obj)))
     }
 
+    insertAt(index: number, ...objects: FabricObject[]): number {
+      return super.insertAt(index, ...objects.map((obj) => toRefObject(obj)))
+    }
+
     _onObjectAdded(obj: FabricObject) {
       if (obj.get('noEventObjectAdded')) {
         obj._set('canvas', this)

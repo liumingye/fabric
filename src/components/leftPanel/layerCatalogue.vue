@@ -9,7 +9,7 @@
   import ContextMenu from '@/components/contextMenu'
 
   type ITreeNodeData = TreeNodeData & {
-    canDragEnter: boolean
+    isCollection: boolean
     objectRef: ObjectRef
     group?: Group
     children?: ITreeNodeData[]
@@ -37,7 +37,7 @@
       const nodeData: ITreeNodeData = {
         group: object.group as Group | undefined,
         objectRef: object.ref,
-        canDragEnter: isCollection,
+        isCollection,
         title: object.name || object.constructor.name,
         key: object.id,
         children,
@@ -87,7 +87,7 @@
    * 节点是否允许放置
    */
   const allowDrop = (options: { dropNode: TreeNodeData }) => {
-    return (options.dropNode as ITreeNodeData).canDragEnter
+    return (options.dropNode as ITreeNodeData).isCollection
   }
 
   /**
@@ -230,23 +230,12 @@
         objects.push(obj)
       }
     })
-    if (objects.length === 0) {
-      canvas.discardActiveObject()
-      return
-    }
-    const activeSelection = canvas.getActiveSelection()
-    const prevActiveObjects = activeSelection.getObjects()
-    if (objects.length === 1) {
-      canvas.setActiveObject(objects[0])
-      objects[0].group?.setDirty()
+    if (objects.length) {
+      canvas.setActiveObjects(objects)
     } else {
-      activeSelection.removeAll()
-      activeSelection.multiSelectAdd(...objects)
-      canvas._hoveredTarget = activeSelection
-      canvas._hoveredTargets = [...objects]
-      canvas.setActiveObject(activeSelection)
+      canvas.discardActiveObject()
     }
-    canvas._fireSelectionEvents(prevActiveObjects, undefined)
+    // 控制器不会消失，更新一下画板
     canvas.requestRenderAll()
   }
 
@@ -311,9 +300,12 @@
     }
   })
 
-  const showContextMenu = (e: MouseEvent, node: TreeNodeData) => {
+  const showContextMenu = (e: MouseEvent, _node: TreeNodeData) => {
     e.preventDefault()
     e.stopImmediatePropagation()
+
+    const node = _node as ITreeNodeData
+
     if (!node.key) return
 
     if (!selectedkeys.value.includes(node.key)) {
@@ -359,8 +351,18 @@
         },
         {
           label: '创建分组',
-          onClick: () => {},
+          onClick: () => {
+            keybinding.trigger('mod+g')
+          },
           shortcut: `${mod} G`,
+        },
+        {
+          label: '解除分组',
+          hidden: !node.isCollection,
+          onClick: () => {
+            keybinding.trigger('mod+shift+g')
+          },
+          shortcut: `${mod} ⇧ G`,
         },
       ],
     })

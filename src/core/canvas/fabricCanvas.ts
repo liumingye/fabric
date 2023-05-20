@@ -101,4 +101,23 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     super.zoomToPoint(point, value)
     this.ref.zoom.value = toFixed(this.getZoom(), 2)
   }
+
+  public setActiveObjects(objects: FabricObject[]) {
+    if (objects.length === 0) {
+      this.discardActiveObject()
+      return
+    }
+    if (objects.length === 1) {
+      this.setActiveObject(objects[0])
+      return
+    }
+    const activeSelection = this.getActiveSelection()
+    // const prevActiveObjects = activeSelection.getObjects()
+    activeSelection.removeAll()
+    activeSelection.multiSelectAdd(...objects)
+    this._hoveredTarget = activeSelection
+    this._hoveredTargets = [...objects]
+    this.setActiveObject(activeSelection)
+    // this._fireSelectionEvents(prevActiveObjects, undefined)
+  }
 }
