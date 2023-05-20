@@ -1,6 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { UndoRedo } from '@/core/undoRedo/undoRedo'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
+import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { createDecorator } from '@/core/instantiation/instantiation'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoService')
@@ -11,6 +12,7 @@ export class UndoRedoService extends UndoRedo {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService readonly keybindingServices: KeybindingService,
+    @IEventbusService private readonly eventbusService: EventbusService,
   ) {
     super()
 
@@ -24,16 +26,34 @@ export class UndoRedoService extends UndoRedo {
     canvas.on('object:removed', this.saveState.bind(this))
   }
 
+  public push(state: any) {
+    super.push(state)
+    this.eventbusService.emit('undoRedoStackChange')
+  }
+
   public redo() {
     if (!this.canRedo) return
     this.lastState = super.redo(this.lastState)
-    this.loadJson(this.lastState)
+    if (this.lastState) {
+      this.loadJson(this.lastState)
+      this.eventbusService.emit('undoRedoStackChange')
+    }
+    return this.lastState
   }
 
   public undo() {
     if (!this.canUndo) return
     this.lastState = super.undo(this.lastState)
-    this.loadJson(this.lastState)
+    if (this.lastState) {
+      this.loadJson(this.lastState)
+      this.eventbusService.emit('undoRedoStackChange')
+    }
+    return this.lastState
+  }
+
+  public reset() {
+    super.reset()
+    this.eventbusService.emit('undoRedoStackChange')
   }
 
   private async loadJson(json: string) {
@@ -47,7 +67,7 @@ export class UndoRedoService extends UndoRedo {
   }
 
   private getJson() {
-    return this.canvas.toObject(['id', 'name'])
+    return this.canvas.toObject()
   }
 
   public saveState() {

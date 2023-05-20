@@ -9,6 +9,7 @@ import {
   Point,
   util,
 } from '@fabric'
+import { Disposable } from '@/utils/lifecycle'
 
 type VerticalLineCoords = {
   x: number
@@ -35,7 +36,7 @@ const Keys = <T extends object>(obj: T): (keyof T)[] => {
   return Object.keys(obj) as (keyof T)[]
 }
 
-export class GuideLines {
+export class GuideLines extends Disposable {
   private aligningLineMargin = 4
   private aligningLineWidth = 1
   private aligningLineColor = '#F68066'
@@ -48,9 +49,10 @@ export class GuideLines {
   private dirty = false
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
+    super()
+    canvas.on('before:render', this.clearGuideline.bind(this))
     canvas.on('after:render', this.drawGuideLines.bind(this))
     canvas.on('object:moving', this.objectMoving.bind(this))
-    canvas.on('before:render', this.clearGuideline.bind(this))
     canvas.on('mouse:up', () => {
       if (this.horizontalLines.length || this.verticalLines.length) {
         this.clearGuideline()

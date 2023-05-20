@@ -16,14 +16,14 @@ const myPlugin = createEditorPlugin((editor) => {
         left: 0,
         width: 300,
         height: 300,
-        backgroundColor: 'rgb(244,244,244)',
+        fill: 'rgb(244,244,244)',
       })
       const board2 = new Board([], {
         top: 400,
         left: 50,
         width: 300,
         height: 300,
-        backgroundColor: '#f2b8ca',
+        fill: '#f2b8ca',
       })
       // canvas.add(board1, board2)
       canvas.add(board2)

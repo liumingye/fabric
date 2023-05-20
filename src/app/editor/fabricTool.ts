@@ -5,12 +5,14 @@ import { Ellipse, FabricObject, Point, Rect } from '@fabric'
 import { useAppStore } from '@/store'
 import { EditTool } from 'app'
 import { useMagicKeys } from '@vueuse/core'
+import { Disposable } from '@/utils/lifecycle'
 
-export class FabricTool {
+export class FabricTool extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
   ) {
+    super()
     this.initWatch()
     this.initHandMove()
     this.initKeybinding()

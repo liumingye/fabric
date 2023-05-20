@@ -4,6 +4,7 @@ import router from '@/router'
 import pinia from '@/store'
 import { createCore } from '@/core'
 import '@/hooks/useThemes'
+import NP from 'number-precision'
 
 import '@unocss/reset/tailwind-compat.css'
 import '@/assets/style/global.less'
@@ -23,6 +24,6 @@ const patch = (app: App2) => {
   Message._context = app._context
 }
 
-createApp(App).use(pinia).use(router).use(core).use(patch).mount('#app')
+NP.enableBoundaryChecking(false)
 
-// useThemes()
+createApp(App).use(pinia).use(router).use(core).use(patch).mount('#app')

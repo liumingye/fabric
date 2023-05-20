@@ -2,6 +2,7 @@ import { Object as FabricObject, ActiveSelection, Group, TControlSet, util, Poin
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
+import NP from 'number-precision'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
@@ -24,10 +25,10 @@ const mixin = {
     return toFixed(this.getScaledWidth())
   },
   setHeight(value: number) {
-    this.set('scaleY', (value - this.strokeWidth) / this.height)
+    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), this.height))
   },
   setWidth(value: number) {
-    this.set('scaleX', (value - this.strokeWidth) / this.width)
+    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), this.width))
   },
   setAngle(value: number) {
     this.rotate(toFixed(clampAngle(value)))
@@ -115,6 +116,10 @@ const mixin = {
   },
   verticalBottom() {
     this.align('verticalBottom')
+  },
+  toObject(propertiesToInclude = []) {
+    propertiesToInclude.push(...['id', 'name'])
+    return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
   },
 } as FabricObject
 

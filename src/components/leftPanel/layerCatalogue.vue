@@ -171,7 +171,7 @@
       dropPosition: DropPosition
     }
     if (!dragNode.key || !dropNode.key) return
-    if (selectedkeys.value.includes(dragNode.key + '')) {
+    if (selectedkeys.value.includes(dragNode.key.toString())) {
       // 多个拖拽
       for (let i = selectedkeys.value.length - 1; i >= 0; i--) {
         moveNode({

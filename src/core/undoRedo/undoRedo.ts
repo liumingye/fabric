@@ -23,7 +23,6 @@ export class UndoRedo {
 
   private undoStates: UndoQueue = new UndoQueue()
   private redoStates: UndoQueue = new UndoQueue()
-  // private eventEmitter: any = new EventEmitter()
   private isUndoing = false
   public isTracking = true
 
@@ -39,19 +38,10 @@ export class UndoRedo {
     this.isTracking = true
   }
 
-  // on(eventName: string, callback: Function) {
-  //   return this.eventEmitter.on(eventName, callback)
-  // }
-
-  // off(eventName: string, callback: Function) {
-  //   return this.eventEmitter.removeListener(eventName, callback)
-  // }
-
   push(state: any) {
     if (!this.isTracking) return
     this.undoStates.push(state)
     this.redoStates = new UndoQueue()
-    // this.eventEmitter.emit('stackChange')
   }
 
   undo(redoState: any) {
@@ -60,7 +50,6 @@ export class UndoRedo {
     this.isUndoing = true
     const state = this.undoStates.pop()
     this.redoStates.push(redoState)
-    // this.eventEmitter.emit('stackChange')
     this.isUndoing = false
     return state
   }
@@ -71,7 +60,6 @@ export class UndoRedo {
     this.isUndoing = true
     const state = this.redoStates.pop()
     this.undoStates.push(undoState)
-    // this.eventEmitter.emit('stackChange')
     this.isUndoing = false
     return state
   }
@@ -80,7 +68,6 @@ export class UndoRedo {
     this.undoStates = new UndoQueue()
     this.redoStates = new UndoQueue()
     this.isUndoing = false
-    // this.eventEmitter.emit('stackChange')
   }
 
   get canUndo(): boolean {

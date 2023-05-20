@@ -23,10 +23,8 @@ export const createCore = (): ICore => {
     install(vueApp) {
       this._a = vueApp
       setActiveCore(core)
-      // 创建编辑器实例
-      core.service.createInstance(EditorMain)
+      // 创建应用实例
       this.app.editor = service.createInstance(EditorMain)
-      this.app.editor.startup()
     },
     use(plugin) {
       // todo 插件管理和生命周期

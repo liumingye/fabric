@@ -96,17 +96,15 @@
       })
 
       function installBodyEvents() {
-        setTimeout(() => {
-          document.addEventListener('click', onBodyClick, true)
-          document.addEventListener('contextmenu', onBodyClick, true)
-          document.addEventListener('wheel', onBodyWhell, true)
-          if (options.value.keyboardControl !== false)
-            document.addEventListener('keydown', onMenuKeyDown)
-        }, 50)
+        document.addEventListener('mousedown', onBodyClick, true)
+        document.addEventListener('contextmenu', onBodyClick, true)
+        document.addEventListener('wheel', onBodyWhell, true)
+        if (options.value.keyboardControl !== false)
+          document.addEventListener('keydown', onMenuKeyDown)
       }
       function removeBodyEvents() {
+        document.removeEventListener('mousedown', onBodyClick, true)
         document.removeEventListener('contextmenu', onBodyClick, true)
-        document.removeEventListener('click', onBodyClick, true)
         document.removeEventListener('wheel', onBodyWhell, true)
         if (options.value.keyboardControl !== false)
           document.removeEventListener('keydown', onMenuKeyDown)

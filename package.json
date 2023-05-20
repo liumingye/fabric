@@ -16,6 +16,7 @@
     "fabric": "^6.0.0-beta5",
     "lodash": "^4.17.21",
     "mousetrap": "^1.6.5",
+    "number-precision": "^1.6.0",
     "pinia": "^2.0.35",
     "vue": "^3.2.25",
     "vue-router": "^4.1.6"

@@ -119,7 +119,7 @@
                 canvas.activeObject.value.set('fill', `rgba(${red}, ${green}, ${blue}, ${alpha})`)
               } else if (data.type === 'linear' || data.type === 'radial') {
                 const colorStops = pointsToColorStops(data.points)
-                let angle = 0
+                let angle = 180
 
                 let coords: GradientCoords<'linear' | 'radial'> | undefined = undefined
 

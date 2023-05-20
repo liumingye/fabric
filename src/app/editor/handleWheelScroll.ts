@@ -1,17 +1,14 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Point } from '@fabric'
-import { useMagicKeys, clamp } from '@vueuse/core'
-import { useAppStore } from '@/store'
+import { useMagicKeys } from '@vueuse/core'
+import { Disposable } from '@/utils/lifecycle'
 
 /**
  * 画板默认滚动行为
  */
-export class HandleWheelScroll {
-  constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
-    const { zoom } = storeToRefs(useAppStore())
-
-    zoom.value = canvas.getZoom()
-
+export class HandleWheelScroll extends Disposable {
+  constructor(@IFabricCanvas readonly canvas: FabricCanvas) {
+    super()
     const { ctrl, shift } = useMagicKeys()
 
     canvas.on('mouse:wheel', (e) => {
@@ -21,9 +18,7 @@ export class HandleWheelScroll {
       // 缩放视窗
       if (ctrl.value) {
         const zoomFactor = Math.abs(deltaY) < 10 ? deltaY * 2 : deltaY / 3
-        let newZoom = canvas.getZoom() * (1 - zoomFactor / 200)
-        newZoom = clamp(newZoom, 0.01, 20)
-        zoom.value = newZoom
+        const newZoom = canvas.getZoom() * (1 - zoomFactor / 200)
         canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom)
         return
       }

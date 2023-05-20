@@ -1,17 +1,18 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { FabricObject, util, CanvasEvents, Rect } from '@fabric'
 import { cloneDeep } from 'lodash'
+import { Disposable } from '@/utils/lifecycle'
 
 /**
  * 对象获得焦点后在外围显示一个边框
  */
-export class HoverObjectBorder {
+export class HoverObjectBorder extends Disposable {
   private lineWidth = 2
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
+    super()
     canvas.on('mouse:out', this.drawBorder.bind(this))
     canvas.on('mouse:over', this.clearBorder.bind(this))
-    // canvas.on('', this.clearBorder.bind(this))
   }
 
   private clearContextTop(target: FabricObject, restoreManually = false) {

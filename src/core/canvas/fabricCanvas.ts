@@ -1,7 +1,10 @@
-import { Canvas, Object as FabricObject, util } from '@fabric'
+import { Canvas, Object as FabricObject, Point, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
+import { clamp } from '@vueuse/core'
+import { toFixed } from '@/utils/math'
+import { createCollectionMixin } from '@/core/canvas/Collection'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<IFabricCanvas>('fabricCanvas')
@@ -10,15 +13,19 @@ export interface IFabricCanvas extends FabricCanvas {
   readonly _serviceBrand: undefined
 }
 
-export class FabricCanvas extends Canvas {
+export class FabricCanvas extends createCollectionMixin(Canvas) {
   declare readonly _serviceBrand: undefined
 
   public activeObject = shallowRef<FabricObject>()
+
+  public ref = {
+    zoom: ref(toFixed(this.getZoom(), 2)),
+  }
+
   public computed = {
     objects: computed(() => this._objects),
   }
 
-  // public objectsRef = computed(() => this._objects)
   private uniqueIds = new Map<string, number>()
 
   constructor(el?: string | HTMLCanvasElement, options?: Partial<Canvas>) {
@@ -68,7 +75,6 @@ export class FabricCanvas extends Canvas {
         })
         target.on('object:added', objectAdded)
       }
-      // this.ref.objects = this._objects
       triggerRef(this.computed.objects)
     }
 
@@ -81,15 +87,6 @@ export class FabricCanvas extends Canvas {
     this._activeSelection = toRefObject(this._activeSelection)
   }
 
-  /**
-   * 图层位置改变
-   */
-  override _onStackOrderChanged() {
-    super._onStackOrderChanged()
-    // 更新objects
-    triggerRef(this.computed.objects)
-  }
-
   // @ts-ignore
   override get _activeObject() {
     return this.activeObject.value
@@ -99,15 +96,9 @@ export class FabricCanvas extends Canvas {
     this.activeObject.value = value
   }
 
-  override add(...objects: FabricObject[]): number {
-    return super.add(...objects.map((obj) => toRefObject(obj)))
-  }
-
-  override _onObjectAdded(obj: FabricObject) {
-    if (!obj.get('noEventObjectAdded')) {
-      super._onObjectAdded(obj)
-    } else {
-      obj._set('canvas', this)
-    }
+  override zoomToPoint(point: Point, value: number) {
+    value = clamp(value, 0.02, 256)
+    super.zoomToPoint(point, value)
+    this.ref.zoom.value = toFixed(this.getZoom(), 2)
   }
 }

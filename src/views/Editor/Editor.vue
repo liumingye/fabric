@@ -3,12 +3,23 @@
   import CanvasEdit from '@/components/canvasEdit'
   import LeftPanel from '@/components/leftPanel'
   import RightPanel from '@/components/rightPanel'
+  import { getActiveCore } from '@/core'
 
   const onContextmenu = (e: MouseEvent) => {
     if (!e.target || !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
       e.preventDefault()
     }
   }
+
+  const { app } = getActiveCore()
+
+  onMounted(() => {
+    app.editor.startup()
+  })
+
+  onUnmounted(() => {
+    app.editor.dispose()
+  })
 </script>
 
 <template>

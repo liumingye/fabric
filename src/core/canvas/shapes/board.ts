@@ -1,4 +1,4 @@
-import { Rect, classRegistry, FabricObject } from '@/lib/fabric/fabric'
+import { Rect, classRegistry, FabricObject } from '@fabric'
 import { Group } from './group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
@@ -84,6 +84,10 @@ export class Board extends Group {
     this.clipPath && this.clipPath.setCoords()
   }
 
+  _renderBackground(ctx: CanvasRenderingContext2D) {
+    Rect.prototype._render.call(this, ctx)
+  }
+
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx)
 
@@ -120,4 +124,3 @@ export class Board extends Group {
 }
 
 classRegistry.setClass(Board)
-classRegistry.setClass(Board, 'board')

@@ -80,6 +80,9 @@ export declare module 'fabric' {
 
   export declare class Canvas {
     _objects: FabricObject[]
+    ref: {
+      zoom: Ref<number>
+    }
     computed: {
       objects: ComputedRef<FabricObject[]>
     }
@@ -114,6 +117,7 @@ export declare module 'fabric' {
     getParent<T extends boolean = false>(
       strict?: T,
     ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
+    /** 不发送 object:added 事件 */
     noEventObjectAdded: boolean
     getHeight(): number
     getWidth(): number
@@ -126,6 +130,7 @@ export declare module 'fabric' {
     setLeftTop(point: Point): void
     setLeft(left: number): void
     setTop(top: number): void
+    toObject(propertiesToInclude?: any[]): any
   }
 
   export declare class Group {

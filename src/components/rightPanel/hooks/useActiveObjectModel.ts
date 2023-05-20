@@ -5,6 +5,7 @@ import type { WritableComputedRef } from 'vue'
 import { toFixed } from '@/utils/math'
 import { isNumber } from 'lodash'
 import { FabricObject, util } from '@fabric'
+import NP from 'number-precision'
 
 export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K] | undefined>(
   key: K,
@@ -31,7 +32,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
       value = activeObject.value.getLeftTop()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
-      value = (activeObject.value[key] as number) * 100
+      value = NP.times(activeObject.value[key] as number, 100)
     } else {
       value = activeObject.value[key]
     }
@@ -41,7 +42,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
 
   const setObjectValue = (obj: FabricObject, newValue: any) => {
     if (key === 'opacity') {
-      newValue = Number(newValue) / 100
+      newValue = NP.divide(newValue, 100)
     }
     if (obj.get(key) !== newValue) {
       obj.set(key, newValue)

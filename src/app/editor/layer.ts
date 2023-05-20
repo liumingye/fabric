@@ -3,12 +3,14 @@ import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybind
 import { ActiveSelection, FabricObject } from '@fabric'
 import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
+import { Disposable } from '@/utils/lifecycle'
 
-export class Keybinding {
+export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly KeybindingService: KeybindingService,
   ) {
+    super()
     this.KeybindingService.bind(['delete', 'backspace'], () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
