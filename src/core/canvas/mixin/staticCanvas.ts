@@ -20,6 +20,7 @@ const _collectObjects = (
     if (
       // 包含子元素
       util.isCollection(object) &&
+      object.evented &&
       // 组内的元素在clipPath外边的部分不会收集
       (object.intersectsWithRect(tl, br, true) ||
         object.containsPoint(tl, undefined, true) ||
@@ -42,6 +43,7 @@ const _collectObjects = (
       (object.selectable || (isBoard && object._objects.length !== 0)) &&
       // 可视
       object.visible &&
+      object.evented &&
       // 与box重叠
       (object.isContainedWithinRect(tl, br, true) || isIncludeIntersecting)
     ) {

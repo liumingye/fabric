@@ -2,7 +2,7 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Disposable } from '@/utils/lifecycle'
 import MenuComponent from '@/components/contextMenu'
 import { CanvasEvents, util } from '@fabric'
-import { layerItems, zoomItems } from '@/utils/contextmenu'
+import { layerItems, zoomItems } from '@/utils/contextMenu'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 
 export class ContextMenu extends Disposable {

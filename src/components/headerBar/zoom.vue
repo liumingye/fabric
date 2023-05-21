@@ -7,7 +7,7 @@
   import { isDefined } from '@vueuse/core'
   import { useEditor } from '@/app'
   import { isNumber } from 'lodash'
-  import { zoomItems } from '@/utils/contextmenu'
+  import { zoomItems } from '@/utils/contextMenu'
 
   const { zoom } = storeToRefs(useAppStore())
   const { canvas, keybinding } = useEditor()
