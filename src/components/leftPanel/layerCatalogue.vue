@@ -7,6 +7,7 @@
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
+  import { layerItems } from '@/utils/contextMenu'
 
   type ITreeNodeData = TreeNodeData & {
     isCollection: boolean
@@ -15,7 +16,7 @@
     children?: ITreeNodeData[]
   }
 
-  const { canvas, keybinding } = useEditor()
+  const { canvas } = useEditor()
 
   const searchKey = ref('')
 
@@ -313,58 +314,13 @@
       onSelect()
     }
 
-    const { mod } = keybinding
-
     ContextMenu.showContextMenu({
       x: e.clientX,
       y: e.clientY,
       preserveIconWidth: false,
-      items: [
-        {
-          label: '向上移动一层',
-          onClick: () => {
-            keybinding.trigger('mod+]')
-          },
-          shortcut: `${mod} ]`,
-        },
-        {
-          label: '移到顶层',
-          onClick: () => {
-            keybinding.trigger(']')
-          },
-          shortcut: ']',
-        },
-        {
-          label: '向下移动一层',
-          onClick: () => {
-            keybinding.trigger('mod+[')
-          },
-          shortcut: `${mod} [`,
-        },
-        {
-          label: '移到底层',
-          onClick: () => {
-            keybinding.trigger('[')
-          },
-          shortcut: '[',
-          divided: true,
-        },
-        {
-          label: '创建分组',
-          onClick: () => {
-            keybinding.trigger('mod+g')
-          },
-          shortcut: `${mod} G`,
-        },
-        {
-          label: '解除分组',
-          hidden: !node.isCollection,
-          onClick: () => {
-            keybinding.trigger('mod+shift+g')
-          },
-          shortcut: `${mod} ⇧ G`,
-        },
-      ],
+      items: layerItems({
+        isCollection: node.isCollection,
+      }),
     })
   }
 </script>

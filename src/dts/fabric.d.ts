@@ -89,7 +89,6 @@ export declare module 'fabric' {
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
-    getActiveObject(): FabricObject | undefined
     getObjects(): FabricObject[]
   }
 
@@ -150,6 +149,7 @@ export declare module 'fabric' {
 
   export declare class StaticCanvas {
     _objects: FabricObject[]
+    getObjects(): FabricObject[]
   }
 }
 

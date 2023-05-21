@@ -5,8 +5,6 @@ import type { GroupProps } from 'fabric/src/shapes/Group'
 export const boardDefaultValues = {
   padding: 5,
   selectable: false,
-  subTargetCheck: true,
-  interactive: true,
   layout: 'fixed',
 }
 
@@ -26,15 +24,9 @@ export class Board extends Group {
     objectsRelativeToGroup?: boolean,
   ) {
     super(objects, options as any, objectsRelativeToGroup)
-    // this.setRelativeX
-    // this.lockScalingY = true
 
-    // this.on('rotating', this.setClipPath)
     this.setClipPath()
-    // this.on('modified', () => {
-    //   this.setClipPath()
-    //   // this._scaling = false
-    // })
+
     this.on('scaling', () => {
       this.set({
         width: this.getScaledWidth(),
@@ -45,7 +37,6 @@ export class Board extends Group {
         scaleY: 1,
       })
       this.setClipPath()
-      // this._scaling = true
     })
 
     this.setCoords()
@@ -93,17 +84,14 @@ export class Board extends Group {
 
     if (this.visible) {
       // 左上角文字
-      const { x, y } = this.oCoords.tl
-      const retinaScaling = this.getCanvasRetinaScaling()
-      const angle = this.getTotalAngle()
       ctx.save()
-      ctx.setTransform(retinaScaling, 0, 0, retinaScaling, 0, 0)
-      ctx.translate(x, y)
-      ctx.rotate((angle * Math.PI) / 180)
+      this.transform(ctx)
+      ctx.translate(-this.width / 2, -this.height / 2)
+      ctx.scale(1 / (this.zoomX ?? 1), 1 / (this.zoomY ?? 1))
       ctx.font = '12px Helvetica'
       ctx.fillStyle = '#888'
       ctx.textBaseline = 'bottom'
-      ctx.fillText(this.name, 4, -2)
+      ctx.fillText(this.name, 0, -2)
       ctx.restore()
     }
   }

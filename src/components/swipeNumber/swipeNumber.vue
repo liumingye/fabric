@@ -68,8 +68,7 @@
       // 四舍五入计算的值，并将其分配给numberValue
       value = toFixed(value)
       numberValue.value = value
-      // 调用change函数并传递新值和事件对象
-      emit('update:modelValue', value)
+      // 调用swipe函数并传递新值和事件对象
       emit('swipe', value, e)
     },
     onSwipeEnd: (e) => {

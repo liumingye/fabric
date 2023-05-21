@@ -217,7 +217,7 @@
       const globalHasSlot = inject('globalHasSlot') as GlobalHasSlot
       const globalRenderSlot = inject('globalRenderSlot') as GlobalRenderSlot
       const globalTheme = inject('globalTheme') as string
-      // const globalIsFullScreenContainer = inject('globalIsFullScreenContainer') as boolean
+      const globalIsFullScreenContainer = inject('globalIsFullScreenContainer') as boolean
 
       //#endregion
 

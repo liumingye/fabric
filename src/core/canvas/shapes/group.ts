@@ -5,9 +5,8 @@ import { toRefObject } from '@/core/canvas/toRefObject'
 import { createCollectionMixin } from '@/core/canvas/Collection'
 
 export class Group extends createCollectionMixin(GroupOrigin) {
-  // public computed = {
-  //   objects: computed(() => this._objects),
-  // }
+  public subTargetCheck = true
+  public interactive = true
 
   constructor(
     objects?: FabricObject[],
@@ -17,17 +16,6 @@ export class Group extends createCollectionMixin(GroupOrigin) {
     const newObjects = objects?.map((obj) => toRefObject(obj))
 
     super(newObjects, options, objectsRelativeToGroup)
-
-    // this.on({
-    //   'object:added': () => {
-    //     triggerRef(this.computed.objects)
-    //     // this.canvas && triggerRef(this.canvas.computed.objects)
-    //   },
-    //   'object:removed': () => {
-    //     triggerRef(this.computed.objects)
-    //     // this.canvas && triggerRef(this.canvas.computed.objects)
-    //   },
-    // })
   }
 
   public setDirty() {

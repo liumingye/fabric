@@ -8,10 +8,10 @@ import { Disposable } from '@/utils/lifecycle'
 export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
-    @IKeybindingService private readonly KeybindingService: KeybindingService,
+    @IKeybindingService private readonly keybindingService: KeybindingService,
   ) {
     super()
-    this.KeybindingService.bind(['delete', 'backspace'], (e) => {
+    this.keybindingService.bind(['delete', 'backspace'], (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -21,7 +21,7 @@ export class Layer extends Disposable {
     })
 
     // 移至底层
-    this.KeybindingService.bind('[', (e) => {
+    this.keybindingService.bind('[', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -37,7 +37,7 @@ export class Layer extends Disposable {
     })
 
     // 移至顶层
-    this.KeybindingService.bind(']', (e) => {
+    this.keybindingService.bind(']', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -49,7 +49,7 @@ export class Layer extends Disposable {
     })
 
     // 向下移动一层
-    this.KeybindingService.bind('mod+[', (e) => {
+    this.keybindingService.bind('mod+[', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -69,7 +69,7 @@ export class Layer extends Disposable {
     })
 
     // 向上移动一层
-    this.KeybindingService.bind('mod+]', (e) => {
+    this.keybindingService.bind('mod+]', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -94,7 +94,7 @@ export class Layer extends Disposable {
     })
 
     // 创建分组
-    this.KeybindingService.bind('mod+g', (e) => {
+    this.keybindingService.bind('mod+g', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -111,8 +111,8 @@ export class Layer extends Disposable {
       canvas.setActiveObject(group)
     })
 
-    //解除分组
-    this.KeybindingService.bind('mod+shift+g', (e) => {
+    // 解除分组
+    this.keybindingService.bind('mod+shift+g', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject || !util.isCollection(activeObject)) return
       e.preventDefault?.()
@@ -126,6 +126,15 @@ export class Layer extends Disposable {
       canvas.setActiveObjects(objects)
     })
 
+    // 选择全部
+    this.keybindingService.bind('mod+a', (e) => {
+      e.preventDefault?.()
+      const activeObject = canvas.getActiveObject()
+      const parent = activeObject?.getParent() || canvas
+      canvas.setActiveObjects(parent.getObjects())
+      canvas.requestRenderAll()
+    })
+
     this.bindAlign()
   }
 
@@ -137,7 +146,7 @@ export class Layer extends Disposable {
       activeObject[method]()
       useEditor().undoRedo.saveState()
     }
-    this.KeybindingService.bind({
+    this.keybindingService.bind({
       'alt+a': (e) => align(e, 'alignLeft'),
       'alt+d': (e) => align(e, 'alignRight'),
       'alt+h': (e) => align(e, 'alignCenter'),

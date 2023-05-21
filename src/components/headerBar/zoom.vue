@@ -7,6 +7,7 @@
   import { isDefined } from '@vueuse/core'
   import { useEditor } from '@/app'
   import { isNumber } from 'lodash'
+  import { zoomItems } from '@/utils/contextmenu'
 
   const { zoom } = storeToRefs(useAppStore())
   const { canvas, keybinding } = useEditor()
@@ -56,20 +57,7 @@
               ),
             ),
         },
-        {
-          label: '放大',
-          onClick: () => {
-            keybinding.trigger('+')
-          },
-          shortcut: `+`,
-        },
-        {
-          label: '缩小',
-          onClick: () => {
-            keybinding.trigger('-')
-          },
-          shortcut: `-`,
-        },
+        ...zoomItems(),
         {
           label: '50%',
           onClick: () => {

@@ -1,6 +1,7 @@
 import { FabricTool } from '@/app/editor/fabricTool'
 import { HoverObjectBorder } from '@/app/editor/hoverObjectBorder'
 import { HandleWheelScroll } from '@/app/editor/handleWheelScroll'
+import { ContextMenu } from '@/app/editor/contextMenu'
 import { Zoom } from '@/app/editor/zoom'
 import { GuideLines } from '@/app/editor/guideLines'
 import { Layer } from '@/app/editor/layer'
@@ -32,6 +33,7 @@ export class EditorMain extends Disposable {
         this.service.createInstance(HandleWheelScroll),
         this.service.createInstance(GuideLines),
         this.service.createInstance(Zoom),
+        this.service.createInstance(ContextMenu),
       ]
       instances.forEach((instance) => {
         this._register(instance)

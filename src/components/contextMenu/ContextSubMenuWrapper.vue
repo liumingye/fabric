@@ -53,10 +53,10 @@
       /**
        * Make sure is user set the custom container.
        */
-      // isFullScreenContainer: {
-      //   type: Boolean,
-      //   default: true,
-      // },
+      isFullScreenContainer: {
+        type: Boolean,
+        default: true,
+      },
     },
     emits: ['update:show', 'close'],
     setup(props, ctx) {
@@ -184,7 +184,7 @@
       provide('globalOptions', options.value)
       provide('globalCloseMenu', closeMenu)
       provide('globalTheme', options.value?.theme || useThemes().trueMode)
-      // provide('globalIsFullScreenContainer', props.isFullScreenContainer)
+      provide('globalIsFullScreenContainer', props.isFullScreenContainer)
 
       provide('globalIconFontClass', options.value?.iconFontClass || 'iconfont')
       //check slot exists
