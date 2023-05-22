@@ -8,40 +8,46 @@
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
   import { layerItems } from '@/utils/contextMenu'
+  import { useFabricEvent } from '@/hooks/useFabricEvent'
 
   type ITreeNodeData = TreeNodeData & {
     isCollection: boolean
+    visible: boolean
     objectRef: ObjectRef
-    group?: Group
+    setDirty: () => void
     children?: ITreeNodeData[]
   }
 
-  const { canvas } = useEditor()
+  const { canvas, event } = useEditor()
 
   const searchKey = ref('')
 
   const expandedKeys = ref<TreeNodeKey[]>([])
 
-  const treeData = computed(() => {
-    return getTreeData(canvas.computed.objects.value, searchKey.value)
-  })
-
   /**
    * 获得树节点数据
    */
-  const getTreeData = (objects: FabricObject[], searchKey?: string): ITreeNodeData[] => {
+  const getTreeData = (
+    objects: FabricObject[],
+    searchKey?: string,
+    parentVisible = true,
+  ): ITreeNodeData[] => {
     const objs: ITreeNodeData[] = []
     if (!objects) return objs
     for (const object of objects) {
       const isCollection = util.isCollection(object)
-      const children = isCollection ? getTreeData(object._objects as FabricObject[], searchKey) : []
+      const children = isCollection
+        ? getTreeData(object._objects, searchKey, parentVisible && object.visible)
+        : []
       const nodeData: ITreeNodeData = {
-        group: object.group as Group | undefined,
+        visible: parentVisible && object.visible,
         objectRef: object.ref,
         isCollection,
         title: object.name || object.constructor.name,
         key: object.id,
+        setDirty: () => object.group?.setDirty(),
         children,
+        draggable: renameNodeKey.value !== object.id,
       }
       if (!searchKey || canAddToResult(nodeData, searchKey)) {
         objs.unshift(nodeData)
@@ -50,6 +56,12 @@
 
     return objs
   }
+
+  const treeData: Ref<ITreeNodeData[]> = ref([])
+
+  watchEffect(() => {
+    treeData.value = getTreeData(canvas.computed.objects.value, searchKey.value)
+  })
 
   /**
    * 节点搜索
@@ -212,7 +224,7 @@
   const visibleClick = (e: Event, node: ITreeNodeData) => {
     e.stopPropagation()
     node.objectRef.visible = !node.objectRef.visible
-    node.group?.setDirty()
+    node.setDirty()
     canvas.requestRenderAll()
   }
 
@@ -241,20 +253,27 @@
   }
 
   // 更新tree选中节点
-  watch(canvas.activeObject, (value) => {
-    if (!value) {
+  const updateSelectedkeys = () => {
+    if (!canvas.activeObject.value) {
       selectedkeys.value = []
       return
     }
-    if (value instanceof ActiveSelection) {
+    if (canvas.activeObject.value instanceof ActiveSelection) {
       const tempKeys: string[] = []
-      value.forEachObject((obj) => {
-        tempKeys.push((obj as FabricObject).id)
+      canvas.activeObject.value.forEachObject((obj) => {
+        tempKeys.push(obj.id)
+        console.log(obj)
       })
       selectedkeys.value = tempKeys
     } else {
-      selectedkeys.value = [value.id]
+      selectedkeys.value = [canvas.activeObject.value.id]
     }
+  }
+
+  useFabricEvent({
+    'selection:created': updateSelectedkeys,
+    'selection:updated': updateSelectedkeys,
+    'selection:cleared': updateSelectedkeys,
   })
 
   const splitRef = ref<SplitInstance>()
@@ -275,19 +294,6 @@
     }, 15)
     useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, throttledFn)
   })
-
-  // 图层是否可视
-  const isVisible = (node: ITreeNodeData): boolean => {
-    if (!node.objectRef.visible) {
-      return false
-    } else if (node.group) {
-      return isVisible({
-        objectRef: node.group.ref,
-        group: node.group.group,
-      } as ITreeNodeData)
-    }
-    return true
-  }
 
   // 多选
   // todo: shift键选择范围
@@ -318,10 +324,40 @@
       x: e.clientX,
       y: e.clientY,
       preserveIconWidth: false,
-      items: layerItems({
-        isCollection: node.isCollection,
-      }),
+      items: layerItems(),
     })
+  }
+
+  // 重命名
+  const renameNodeKey = ref<string | number>()
+
+  event.on('layerRename', (e) => {
+    renameNodeKey.value = e.id
+  })
+
+  const onNodeDbclick = (e: MouseEvent, _node: TreeNodeData) => {
+    e.preventDefault()
+    if (!_node.key) return
+    renameNodeKey.value = _node.key
+  }
+
+  const onInputMounted = (vnode: VNode) => {
+    const el = vnode.el as HTMLDivElement | null
+    if (!el) return
+    const input = el.querySelector('input')
+    if (!input) return
+    input.focus()
+    input.select()
+  }
+
+  const onInputChange = (value: string, e: Event) => {
+    const key = renameNodeKey.value
+    const target = e.target as HTMLElement | null
+    target?.blur()
+    if (!key || !value) return
+    const object = canvas.findObjectById(key.toString())
+    if (!object) return
+    object.name = value
   }
 </script>
 
@@ -349,11 +385,23 @@
         @drop="onDrop"
         @select="onSelect"
         @node-contextmenu="showContextMenu"
+        @node-dbclick="onNodeDbclick"
       >
         <template #title="nodeData">
+          <a-input
+            v-if="renameNodeKey === nodeData.key"
+            class="bg-transparent! border-none px0"
+            size="mini"
+            :default-value="nodeData.objectRef.name"
+            @blur="renameNodeKey = undefined"
+            @vnode-mounted="onInputMounted"
+            @change="onInputChange"
+            @press-enter="renameNodeKey = undefined"
+          />
           <span
+            v-else
             :class="{
-              'op-50': !isVisible(nodeData),
+              'op-50': !nodeData.visible,
             }"
           >
             {{ nodeData.title }}
@@ -361,7 +409,8 @@
         </template>
         <template #extra="nodeData">
           <div
-            class="extra"
+            v-if="renameNodeKey !== nodeData.key"
+            class="extra pr4px"
             :class="{
               show: !nodeData.objectRef.evented || !nodeData.objectRef.visible,
             }"
@@ -370,7 +419,7 @@
               :class="{
                 show: nodeData.objectRef.evented,
               }"
-              size="small"
+              size="mini"
               class="icon-btn"
               @click="lockClick($event, nodeData)"
             >
@@ -383,7 +432,7 @@
               :class="{
                 show: nodeData.objectRef.visible,
               }"
-              size="small"
+              size="mini"
               class="icon-btn"
               @click="visibleClick($event, nodeData)"
             >

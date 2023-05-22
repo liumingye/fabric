@@ -3,7 +3,8 @@ import { registerSingleton } from '@/core/instantiation/extensions'
 import { Mitt } from '@/core/eventbus/mitt'
 
 export type Events = {
-  undoRedoStackChange: () => void
+  undoRedoStackChange: undefined
+  layerRename: { id: string }
 }
 
 export type EventbusService = Mitt<Events>

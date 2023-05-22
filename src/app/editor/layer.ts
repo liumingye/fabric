@@ -4,11 +4,13 @@ import { ActiveSelection, FabricObject, Group, util } from '@fabric'
 import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
+import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
 export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybindingService: KeybindingService,
+    @IEventbusService private readonly eventbusService: EventbusService,
   ) {
     super()
     this.keybindingService.bind(['delete', 'backspace'], (e) => {
@@ -105,7 +107,21 @@ export class Layer extends Disposable {
       // 创建组
       // 不能直接 new Group(this.deleteLayer(objects))，objects有组的话x和y会偏移
       const group = new Group()
-      group.add(...this.deleteLayer(objects))
+      group.add(
+        ...this.deleteLayer(
+          objects
+            .filter((obj, index, array) => {
+              const parent = obj.getParent(true)
+              // 修复选中一个组内元素一个组外元素，打组位置偏移
+              if (obj.group) {
+                obj.group.remove(obj)
+              }
+              // 如果元素的组也在objects里，则排除该元素
+              return !parent || !array.includes(parent)
+            })
+            .reverse(),
+        ),
+      )
       insertGroup.insertAt(index, group)
       // 设置激活对象
       canvas.setActiveObject(group)
@@ -133,6 +149,42 @@ export class Layer extends Disposable {
       const parent = activeObject?.getParent() || canvas
       canvas.setActiveObjects(parent.getObjects())
       canvas.requestRenderAll()
+    })
+
+    // 显示/隐藏
+    this.keybindingService.bind('mod+shift+h', (e) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const objects = this.getObjects(activeObject)
+      objects.forEach((obj) => {
+        obj.visible = !obj.visible
+        obj.getParent(true)?.setDirty()
+      })
+      canvas.requestRenderAll()
+    })
+
+    // 锁定/解锁
+    this.keybindingService.bind('mod+shift+l', (e) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const objects = this.getObjects(activeObject)
+      objects.forEach((obj) => {
+        obj.evented = !obj.evented
+        obj.hasControls = obj.evented
+        obj.selectable = obj.evented
+      })
+      canvas.requestRenderAll()
+    })
+
+    this.keybindingService.bind('mod+r', (e) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      eventbusService.emit('layerRename', {
+        id: activeObject.id,
+      })
     })
 
     this.bindAlign()
@@ -183,6 +235,6 @@ export class Layer extends Disposable {
   }
 
   private deleteLayer(objects: FabricObject[]): FabricObject[] {
-    return objects.flatMap((obj) => obj.getParent().remove(obj) as FabricObject[])
+    return objects.flatMap((obj) => obj.getParent().remove(obj)) as FabricObject[]
   }
 }

@@ -238,6 +238,7 @@ export interface TreeProps {
     dropPosition: DropPosition
   }) => void
   onNodeContextmenu?: (e: MouseEvent, node: TreeNodeData) => void
+  onNodeDbclick?: (e: MouseEvent, node: TreeNodeData) => void
   filterTreeNode?: (node: TreeNodeData) => boolean
 }
 

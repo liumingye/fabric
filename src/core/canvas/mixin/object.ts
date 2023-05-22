@@ -3,6 +3,7 @@ import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
 import NP from 'number-precision'
+import { randomText } from '@/utils/strings'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,

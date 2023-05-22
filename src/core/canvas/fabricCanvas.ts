@@ -65,6 +65,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
           id: randomText(),
         })
       }
+      console.log(target)
     }
 
     const objectAdded = ({ target }: { target: FabricObject }) => {
@@ -112,12 +113,24 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       return
     }
     const activeSelection = this.getActiveSelection()
-    // const prevActiveObjects = activeSelection.getObjects()
     activeSelection.removeAll()
     activeSelection.multiSelectAdd(...objects)
     this._hoveredTarget = activeSelection
     this._hoveredTargets = [...objects]
     this.setActiveObject(activeSelection)
-    // this._fireSelectionEvents(prevActiveObjects, undefined)
+  }
+
+  public findObjectById(id: string) {
+    const stack = [...this._objects]
+    while (stack.length) {
+      const node = stack.pop()
+      if (node?.id === id) {
+        return node
+      }
+      if (util.isCollection(node)) {
+        stack.push(...node._objects)
+      }
+    }
+    return undefined
   }
 }

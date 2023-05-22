@@ -78,6 +78,7 @@
       @dragleave="onDragLeave"
       @drop="onDrop"
       @click="onTitleClick"
+      @dblclick="onTitleDbclick"
     >
       <component :is="ReuseTemplate" v-if="blockNode" />
 
@@ -334,6 +335,10 @@
           }
           if (!selectable.value || disabled.value) return
           treeContext.onSelect?.(key.value, e)
+        },
+        onTitleDbclick(e: Event) {
+          if (!selectable.value || disabled.value) return
+          treeContext.onNodeDbclick?.(key.value, e)
         },
         onSwitcherClick,
         onDragStart(e: DragEvent) {

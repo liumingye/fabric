@@ -40,4 +40,5 @@ export type TreeContext = Readonly<{
   onDrop?: (key: TreeNodeKey, dropPosition: DropPosition, e: DragEvent) => void
   allowDrop?: (key: TreeNodeKey, dropPosition: DropPosition) => boolean
   onNodeContextmenu?: (key: TreeNodeKey, e: MouseEvent) => void
+  onNodeDbclick?: (key: TreeNodeKey, e: MouseEvent) => void
 }>

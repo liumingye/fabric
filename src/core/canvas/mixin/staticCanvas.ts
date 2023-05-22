@@ -1,5 +1,5 @@
 import { StaticCanvas } from 'fabric'
-import { Point, FabricObject, util } from '@fabric'
+import { Point, FabricObject, util, Board } from '@fabric'
 import type { fabric } from '@/dts/fabric'
 
 // 收集box内的元素
@@ -18,8 +18,8 @@ const _collectObjects = (
 
   _objects?.forEach((object: FabricObject) => {
     if (
-      // 包含子元素
-      util.isCollection(object) &&
+      // 画板
+      object instanceof Board &&
       object.evented &&
       // 组内的元素在clipPath外边的部分不会收集
       (object.intersectsWithRect(tl, br, true) ||

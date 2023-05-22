@@ -51,9 +51,7 @@ export class ContextMenu extends Disposable {
       x: event.clientX,
       y: event.clientY,
       preserveIconWidth: false,
-      items: layerItems({
-        isCollection: util.isCollection(object),
-      }),
+      items: layerItems(),
     })
 
     this.canvas.requestRenderAll()

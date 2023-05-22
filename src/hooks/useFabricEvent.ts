@@ -1,10 +1,10 @@
 import type { Fn } from '@vueuse/shared'
 import { tryOnScopeDispose } from '@vueuse/shared'
-import { fabric } from '@/types'
+import { CanvasEvents, ObjectEvents } from '@fabric'
 import { useEditor } from '@/app'
 
 type TEventCallback<T = any> = (options: T) => any
-type IEvent = fabric.CanvasEvents & fabric.ObjectEvents
+type IEvent = CanvasEvents & ObjectEvents
 
 export function useFabricEvent<K extends keyof IEvent, E extends IEvent[K]>(
   eventName: K,

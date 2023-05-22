@@ -1,7 +1,8 @@
 import { useEditor } from '@/app'
+import { ActiveSelection, Group } from '@fabric'
 
-export const layerItems = ({ isCollection }: { isCollection: boolean }) => {
-  const { keybinding } = useEditor()
+export const layerItems = () => {
+  const { canvas, keybinding } = useEditor()
   const { mod } = keybinding
   return [
     {
@@ -42,11 +43,34 @@ export const layerItems = ({ isCollection }: { isCollection: boolean }) => {
     },
     {
       label: '解除分组',
-      hidden: !isCollection,
+      hidden: !(canvas.getActiveObject() instanceof Group),
       onClick: () => {
         keybinding.trigger('mod+shift+g')
       },
       shortcut: `${mod} ⇧ G`,
+    },
+    {
+      label: '重命名',
+      hidden: canvas.getActiveObject() instanceof ActiveSelection,
+      onClick: () => {
+        keybinding.trigger('mod+r')
+      },
+      shortcut: `${mod} R`,
+      divided: true,
+    },
+    {
+      label: '显示/隐藏',
+      onClick: () => {
+        keybinding.trigger('mod+shift+h')
+      },
+      shortcut: `${mod} ⇧ H`,
+    },
+    {
+      label: '锁定/解锁',
+      onClick: () => {
+        keybinding.trigger('mod+shift+l')
+      },
+      shortcut: `${mod} ⇧ L`,
     },
   ]
 }

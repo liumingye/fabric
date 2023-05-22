@@ -45,10 +45,9 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
    * @param {Function} handler Function to call in response to given event
    * @memberOf mitt
    */
-  public on<Key extends keyof Events>(
-    type: Key,
-    handler: Handler<Events[keyof Events]> | WildcardHandler<Events>,
-  ) {
+  public on<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
+  public on(type: '*', handler: WildcardHandler<Events>): void
+  public on(type: any, handler: any) {
     const handlers = this.all!.get(type)
     if (handlers) {
       handlers.push(handler)
@@ -64,10 +63,9 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
    * @param {Function} [handler] Handler function to remove
    * @memberOf mitt
    */
-  public off<Key extends keyof Events>(
-    type: Key,
-    handler?: Handler<Events[keyof Events]> | WildcardHandler<Events>,
-  ) {
+  public off<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>): void
+  public off(type: '*', handler: WildcardHandler<Events>): void
+  public off(type: any, handler: any) {
     const handlers: Array<Handler<Events[keyof Events]> | WildcardHandler<Events>> | undefined =
       this.all!.get(type)
     if (handlers) {
@@ -89,7 +87,9 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
    * @param {Any} [evt] Any value (object is recommended and powerful), passed to each handler
    * @memberOf mitt
    */
-  public emit<Key extends keyof Events>(type: Key, evt?: Events[Key]) {
+  public emit<Key extends keyof Events>(type: Key, evt: Events[Key]): void
+  public emit<Key extends keyof Events>(type: undefined extends Events[Key] ? Key : never): void
+  public emit(type: any, evt?: any) {
     let handlers = this.all!.get(type)
     if (handlers) {
       ;(handlers as EventHandlerList<Events[keyof Events]>).slice().map((handler) => {

@@ -297,6 +297,12 @@
     },
     emits: {
       /**
+       * 当某一节点被鼠标双击时会触发该事件
+       * @param {MouseEvent} ev
+       * @param {TreeNodeData} node
+       */
+      nodeDbclick: (ev: MouseEvent, node: TreeNodeData) => true,
+      /**
        * 当某一节点被鼠标右键点击时会触发该事件
        * @param {MouseEvent} ev
        * @param {TreeNodeData} node
@@ -931,6 +937,12 @@
           const node = key2TreeNode.value.get(key)
           if (node) {
             emit('nodeContextmenu', e, node)
+          }
+        },
+        onNodeDbclick(key: TreeNodeKey, e: MouseEvent) {
+          const node = key2TreeNode.value.get(key)
+          if (node) {
+            emit('nodeDbclick', e, node)
           }
         },
       })
