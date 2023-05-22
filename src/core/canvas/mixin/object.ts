@@ -118,7 +118,7 @@ const mixin = {
     this.align('verticalBottom')
   },
   toObject(propertiesToInclude = []) {
-    propertiesToInclude.push(...['id', 'name'])
+    propertiesToInclude.push('id', 'name')
     return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
   },
 } as FabricObject
