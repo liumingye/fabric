@@ -28,11 +28,10 @@ export class Board extends Group {
     this.setClipPath()
 
     this.on('scaling', () => {
+      const { y: height, x: width } = this._getTransformedDimensions()
       this.set({
-        width: this.getScaledWidth(),
-        height: this.getScaledHeight(),
-      })
-      this.set({
+        width,
+        height,
         scaleX: 1,
         scaleY: 1,
       })

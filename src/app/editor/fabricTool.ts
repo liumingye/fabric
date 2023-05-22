@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, FabricObject, Point, Rect } from '@fabric'
+import { Ellipse, FabricObject, Point, Rect, Triangle, IText, Textbox } from '@fabric'
 import { useAppStore } from '@/store'
 import { EditTool } from 'app'
 import { useMagicKeys } from '@vueuse/core'
@@ -18,30 +18,31 @@ export class FabricTool extends Disposable {
     this.initKeybinding()
   }
 
-  initWatch() {
+  private initWatch() {
     const canvas = this.canvas
     const { activeTool } = storeToRefs(useAppStore())
     // 监听activeTool
     let swipeStop: (() => void) | undefined
-    let tempObject: FabricObject | undefined
-    watch(activeTool, (newValue, oldValue) => {
+    let tempObject: Ellipse | Rect | Triangle | Textbox | undefined
+    watch(activeTool, (tool, oldTool) => {
       if (swipeStop) {
         swipeStop()
         swipeStop = undefined
+        tempObject = undefined
       }
       // 移动工具关闭元素选中
-      if (newValue === 'move' || oldValue === 'handMove') {
+      if (tool === 'move' || oldTool === 'handMove') {
         canvas.defaultCursor = 'default'
         canvas.setCursor(canvas.defaultCursor)
         canvas.skipTargetFind = false
         canvas.selection = true
       }
-      if (newValue === 'handMove') {
+      if (tool === 'handMove') {
         canvas.defaultCursor = 'grab'
         canvas.setCursor(canvas.defaultCursor)
         canvas.skipTargetFind = true
         canvas.selection = false
-      } else if (newValue === 'rect' || newValue === 'ellipse') {
+      } else if (['rect', 'ellipse', 'triangle', 'text'].includes(tool)) {
         canvas.defaultCursor = 'crosshair'
         canvas.setCursor(canvas.defaultCursor)
         canvas.skipTargetFind = true
@@ -55,7 +56,7 @@ export class FabricTool extends Disposable {
             const { x, y } = canvas.getPointer(e.e)
             startLeft = ceil(x)
             startTop = ceil(y)
-            switch (newValue) {
+            switch (tool as 'rect' | 'ellipse' | 'triangle' | 'text') {
               case 'rect':
                 tempObject = new Rect({
                   left: startLeft,
@@ -74,6 +75,23 @@ export class FabricTool extends Disposable {
                   ry: 0.5,
                 })
                 break
+              case 'triangle':
+                tempObject = new Triangle({
+                  left: startLeft,
+                  top: startTop,
+                  width: 1,
+                  height: 1,
+                })
+                break
+              case 'text':
+                tempObject = new Textbox('', {
+                  left: startLeft,
+                  top: startTop,
+                  width: 1,
+                  height: 1,
+                  splitByGrapheme: true,
+                })
+                break
             }
             tempObject.set('noEventObjectAdded', true)
             canvas.add(tempObject)
@@ -90,7 +108,7 @@ export class FabricTool extends Disposable {
                 height: max(abs(ceil(lengthY.value)), 1),
               }
               tempObject.set({})
-              if (newValue === 'ellipse') {
+              if (tool === 'ellipse') {
                 opt = {
                   ...opt,
                   rx: max(abs(ceil(lengthX.value)) / 2, 0.5),
@@ -103,6 +121,21 @@ export class FabricTool extends Disposable {
           },
           onSwipeEnd() {
             if (tempObject) {
+              if (tempObject.width <= 1 && tempObject.height <= 1) {
+                tempObject.set({
+                  left: tempObject.left - 50,
+                  top: tempObject.top - 50,
+                  width: 100,
+                  height: 100,
+                })
+                if (tool === 'ellipse') {
+                  tempObject.set({
+                    rx: 50,
+                    ry: 50,
+                  })
+                }
+                canvas.requestRenderAll()
+              }
               if (tempObject.group) {
                 tempObject.group._onObjectAdded(tempObject)
               } else {
@@ -118,7 +151,7 @@ export class FabricTool extends Disposable {
     })
   }
 
-  initHandMove() {
+  private initHandMove() {
     const canvas = this.canvas
     const { space } = useMagicKeys()
     const { activeTool } = storeToRefs(useAppStore())
@@ -177,7 +210,7 @@ export class FabricTool extends Disposable {
     })
   }
 
-  initKeybinding() {
+  private initKeybinding() {
     // 快捷键
     const { activeTool } = storeToRefs(useAppStore())
     this.keybinding.bind('v', () => (activeTool.value = 'move'))

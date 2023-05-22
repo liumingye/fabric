@@ -1,4 +1,4 @@
-import { Canvas, Object as FabricObject, Point, util } from '@fabric'
+import { Canvas, Object as FabricObject, Point, TPointerEvent, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
@@ -65,7 +65,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
           id: randomText(),
         })
       }
-      console.log(target)
     }
 
     const objectAdded = ({ target }: { target: FabricObject }) => {
@@ -132,5 +131,38 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       }
     }
     return undefined
+  }
+
+  // 重写 取消 preserveObjectStacking 逻辑
+  override findTarget(e: TPointerEvent): FabricObject | undefined {
+    if (this.skipTargetFind) {
+      return undefined
+    }
+
+    const pointer = this.getPointer(e, true),
+      activeObject = this._activeObject,
+      aObjects = this.getActiveObjects()
+
+    this.targets = []
+
+    if (activeObject && aObjects.length >= 1) {
+      if (activeObject._findTargetCorner(pointer, util.isTouchEvent(e))) {
+        // if we hit the corner of the active object, let's return that.
+        return activeObject
+      } else if (
+        aObjects.length > 1 &&
+        // check pointer is over active selection and possibly perform `subTargetCheck`
+        this.searchPossibleTargets([activeObject], pointer)
+      ) {
+        // active selection does not select sub targets like normal groups
+        return activeObject
+      } else if (activeObject === this.searchPossibleTargets([activeObject], pointer)) {
+        // active object is not an active selection
+        // 取消 preserveObjectStacking 逻辑
+        return activeObject
+      }
+    }
+
+    return this.searchPossibleTargets(this._objects, pointer)
   }
 }

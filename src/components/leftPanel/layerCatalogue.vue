@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
   import type { TreeNodeData, DropPosition, TreeNodeKey } from '@/components/tree'
-  import { ActiveSelection, Group, ObjectRef, util } from '@fabric'
+  import { ActiveSelection, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
@@ -392,9 +392,9 @@
             v-if="renameNodeKey === nodeData.key"
             class="bg-transparent! border-none px0"
             size="mini"
-            :default-value="nodeData.objectRef.name"
+            :default-value="nodeData.title"
             @blur="renameNodeKey = undefined"
-            @vnode-mounted="onInputMounted"
+            @vue:mounted="onInputMounted"
             @change="onInputChange"
             @press-enter="renameNodeKey = undefined"
           />

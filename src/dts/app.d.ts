@@ -6,5 +6,5 @@ declare module 'app' {
     | 'verticalTop'
     | 'verticalMiddle'
     | 'verticalBottom'
-  export type EditTool = 'move' | 'handMove' | 'rect' | 'ellipse' | 'star'
+  export type EditTool = 'move' | 'handMove' | 'rect' | 'ellipse' | 'triangle' | 'star' | 'text'
 }

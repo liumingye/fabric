@@ -1,9 +1,9 @@
-import { FabricObject, ObjectRef } from '@fabric'
+import { FabricObject, ObjectRef, Textbox } from '@fabric'
 
 /**
  * 元素添加相应式属性
  */
-const toRefObject = (object: FabricObject) => {
+const toRefObject = (object: Textbox & FabricObject) => {
   if (object.ref) return object
 
   const keyArr: (keyof ObjectRef)[] = [
@@ -78,11 +78,14 @@ const toRefObject = (object: FabricObject) => {
     'colorProperties',
     'inverted',
     'absolutePositioned',
+    'text',
   ]
 
   object.ref = reactive({}) as ObjectRef
 
   keyArr.forEach(<K extends keyof ObjectRef>(key: K) => {
+    if (!object[key]) return
+
     object.ref[key] = object[key]
 
     Object.defineProperty(object, key, {

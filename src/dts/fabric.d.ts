@@ -76,6 +76,7 @@ export declare module 'fabric' {
     | 'colorProperties'
     | 'inverted'
     | 'absolutePositioned'
+    | 'text'
   >
 
   export declare class Canvas {

@@ -25,10 +25,14 @@
       name: 'ellipse',
       icon: 'bx-circle',
     },
-    // {
-    //   name: 'star',
-    //   icon: 'bx-star',
-    // },
+    {
+      name: 'triangle',
+      icon: 'bx-triangle',
+    },
+    {
+      name: 'text',
+      icon: 'bx-text',
+    },
   ]
 
   const onClick = (toolName: EditTool) => {

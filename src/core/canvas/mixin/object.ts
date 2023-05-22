@@ -1,9 +1,8 @@
-import { Object as FabricObject, ActiveSelection, Group, TControlSet, util, Point } from '@fabric'
+import { Object as FabricObject, ActiveSelection, Group, util, Point } from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
 import NP from 'number-precision'
-import { randomText } from '@/utils/strings'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
@@ -15,7 +14,7 @@ Object.assign(FabricObject.ownDefaults, {
   borderColor: '#2A82E4',
   cornerStrokeColor: '#2A82E4',
   borderOpacityWhenMoving: 0,
-  controls: createObjectDefaultControls() as TControlSet,
+  controls: createObjectDefaultControls(),
 } as FabricObject)
 
 const mixin = {

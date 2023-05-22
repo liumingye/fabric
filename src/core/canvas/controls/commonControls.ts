@@ -1,5 +1,5 @@
 import { noop } from '@vueuse/core'
-import { Control, FabricObject, controlsUtils, Point } from '@fabric'
+import { Control, FabricObject, controlsUtils, Point, TControlSet } from '@fabric'
 import { toFixed } from '@/utils/math'
 
 const positionHandler: Control['positionHandler'] = (
@@ -66,7 +66,7 @@ const getHornControl = {
   actionName: 'scaling',
 }
 
-export const createObjectDefaultControls = () => ({
+export const createObjectDefaultControls = (): TControlSet => ({
   size: new Control({
     x: 0,
     y: 0.5,
@@ -196,4 +196,30 @@ export const createObjectDefaultControls = () => ({
     y: 0.5,
     ...getHornControl,
   }),
+})
+
+export const createResizeControls = (): TControlSet => ({
+  mr: new Control({
+    x: 0.5,
+    y: 0,
+    actionHandler: controlsUtils.changeWidth,
+    cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
+    actionName: 'resizing',
+    render: noop,
+    positionHandler: positionHandlerH,
+  }),
+  ml: new Control({
+    x: -0.5,
+    y: 0,
+    actionHandler: controlsUtils.changeWidth,
+    cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
+    actionName: 'resizing',
+    render: noop,
+    positionHandler: positionHandlerH,
+  }),
+})
+
+export const createTextboxDefaultControls = (): TControlSet => ({
+  ...createObjectDefaultControls(),
+  ...createResizeControls(),
 })
