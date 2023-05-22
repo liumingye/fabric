@@ -262,7 +262,6 @@
       const tempKeys: string[] = []
       canvas.activeObject.value.forEachObject((obj) => {
         tempKeys.push(obj.id)
-        console.log(obj)
       })
       selectedkeys.value = tempKeys
     } else {

@@ -1,10 +1,9 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, FabricObject, Point, Rect, Triangle, IText, Textbox } from '@fabric'
+import { Ellipse, Point, Rect, Triangle, Textbox } from '@fabric'
 import { useAppStore } from '@/store'
-import { EditTool } from 'app'
-import { useMagicKeys } from '@vueuse/core'
+import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 
 export class FabricTool extends Disposable {
@@ -30,21 +29,26 @@ export class FabricTool extends Disposable {
         swipeStop = undefined
         tempObject = undefined
       }
-      // 移动工具关闭元素选中
-      if (tool === 'move' || oldTool === 'handMove') {
+
+      if (oldTool === 'handMove') {
+        this.handMoveActivate = false
+      }
+
+      // 选择工具
+      if (tool === 'move') {
         canvas.defaultCursor = 'default'
-        canvas.setCursor(canvas.defaultCursor)
+        canvas.setCursor('default')
         canvas.skipTargetFind = false
         canvas.selection = true
       }
-      if (tool === 'handMove') {
-        canvas.defaultCursor = 'grab'
-        canvas.setCursor(canvas.defaultCursor)
-        canvas.skipTargetFind = true
-        canvas.selection = false
-      } else if (['rect', 'ellipse', 'triangle', 'text'].includes(tool)) {
+      // 移动工具
+      else if (tool === 'handMove') {
+        this.handMoveActivate = true
+      }
+      // 图形工具
+      else if (['rect', 'ellipse', 'triangle', 'text'].includes(tool)) {
         canvas.defaultCursor = 'crosshair'
-        canvas.setCursor(canvas.defaultCursor)
+        canvas.setCursor('crosshair')
         canvas.skipTargetFind = true
         canvas.selection = false
         const { min, max, abs, ceil } = Math
@@ -151,63 +155,75 @@ export class FabricTool extends Disposable {
     })
   }
 
+  private _handMoveActivate = false
+
+  private get handMoveActivate() {
+    return this._handMoveActivate
+  }
+
+  private set handMoveActivate(value) {
+    this._handMoveActivate = value
+    if (value) {
+      this.canvas.defaultCursor = 'grab'
+      this.canvas.setCursor('grab')
+      this.canvas.skipTargetFind = true
+      this.canvas.selection = false
+    } else {
+      this.canvas.defaultCursor = 'default'
+      this.canvas.setCursor('default')
+      this.canvas.skipTargetFind = false
+      this.canvas.selection = true
+    }
+  }
+
   private initHandMove() {
     const canvas = this.canvas
     const { space } = useMagicKeys()
     const { activeTool } = storeToRefs(useAppStore())
     // 鼠标中键拖动视窗
     let vpt = canvas.viewportTransform
-    let lastTool: EditTool | undefined
     let mouseDown = false
-    const { lengthX, lengthY, isSwiping } = useFabricSwipe({
+    const { lengthX, lengthY } = useFabricSwipe({
       onSwipeStart: (e) => {
-        // 判断isSwiping.value，修复双击中键卡在move工具上
-        if (!isSwiping.value) return
         vpt = canvas.viewportTransform
         if (e.button === 2 && activeTool.value !== 'handMove') {
-          lastTool = activeTool.value
-          activeTool.value = 'handMove'
-          canvas.setCursor('grabbing')
-        }
-        if (e.button === 1 && activeTool.value === 'handMove') {
+          this.handMoveActivate = true
           canvas.setCursor('grabbing')
         }
         mouseDown = true
       },
       onSwipe: () => {
-        if (activeTool.value === 'handMove') {
-          if (mouseDown) {
-            canvas.setCursor('grabbing')
-            const deltaPoint = new Point(lengthX.value, lengthY.value)
-              .scalarDivide(canvas.getZoom())
-              .transform(vpt)
-              .scalarMultiply(-1)
-            canvas.absolutePan(deltaPoint)
-          }
+        if (this.handMoveActivate && mouseDown) {
+          canvas.setCursor('grabbing')
+          const deltaPoint = new Point(lengthX.value, lengthY.value)
+            .scalarDivide(canvas.getZoom())
+            .transform(vpt)
+            .scalarMultiply(-1)
+          canvas.absolutePan(deltaPoint)
         }
       },
       onSwipeEnd: () => {
-        if (lastTool) {
-          if (!space.value) {
-            activeTool.value = lastTool
-          }
+        if (this.handMoveActivate && mouseDown) {
           canvas.setCursor(canvas.defaultCursor)
-          lastTool = undefined
+        }
+        if (activeTool.value !== 'handMove' && !space.value) {
+          this.handMoveActivate = false
         }
         mouseDown = false
       },
     })
+
     // 空格键切换移动工具
-    let _lastTool: EditTool | undefined
-    watch(space, (value) => {
-      if (value) {
-        _lastTool = activeTool.value
-        activeTool.value = 'handMove'
-      } else if (_lastTool) {
-        activeTool.value = _lastTool
-        _lastTool = undefined
-      }
-    })
+    const activeElement = useActiveElement()
+    const notUsingInput = computed(
+      () => activeElement.value?.tagName !== 'INPUT' && activeElement.value?.tagName !== 'TEXTAREA',
+    )
+    watch(
+      computed(() => [space.value, notUsingInput.value].every((i) => toValue(i))),
+      (value) => {
+        this.handMoveActivate = value
+      },
+    )
   }
 
   private initKeybinding() {
