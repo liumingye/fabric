@@ -2,12 +2,16 @@
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import TipContentKey from '@/components/tooltip/tipContentKey.vue'
+  import { useEditor } from '@/app'
 
   const left = useActiveObjectModel('left')
   const top = useActiveObjectModel('top')
   const angle = useActiveObjectModel('angle')
   const width = useActiveObjectModel('width')
   const height = useActiveObjectModel('height')
+
+  const { keybinding } = useEditor()
 </script>
 
 <template>
@@ -34,6 +38,30 @@
             <div class="absolute top-1 right-1">°</div>
           </template>
         </SwipeNumber>
+      </a-col>
+      <a-col :span="8">
+        <a-space size="mini">
+          <a-tooltip mini position="bottom">
+            <a-button size="small" @click="keybinding.trigger('shift+h')">
+              <template #icon>
+                <SvgIcon name="bx-reflect-horizontal" />
+              </template>
+            </a-button>
+            <template #content>
+              <TipContentKey content="水平翻转" :keys="['Shift', 'H']" />
+            </template>
+          </a-tooltip>
+          <a-tooltip mini position="bottom">
+            <a-button size="small" @click="keybinding.trigger('shift+v')">
+              <template #icon>
+                <SvgIcon name="bx-reflect-vertical" />
+              </template>
+            </a-button>
+            <template #content>
+              <TipContentKey content="垂直翻转" :keys="['Shift', 'V']" />
+            </template>
+          </a-tooltip>
+        </a-space>
       </a-col>
     </a-row>
   </div>

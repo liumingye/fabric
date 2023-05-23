@@ -114,32 +114,17 @@
     excludeGroupObject: boolean
   }) => {
     const { dragNodeKey, dropNodeKey, dropPosition, excludeGroupObject } = data
-    let dragIndex = -1
-    let dragObject: FabricObject | undefined
-    let dropIndex = -1
-    let dropObject: FabricObject | undefined
 
-    canvas.forEachObject(function add(obj, index) {
-      if (dragObject && dropObject) return
-      // 递归子对象
-      if (util.isCollection(obj)) {
-        obj.forEachObject(add)
-      }
-      if (obj.id == dragNodeKey) {
-        dragObject = obj
-        dragIndex = index
-      } else if (obj.id == dropNodeKey) {
-        dropObject = obj
-        if (dragIndex !== -1 && dragObject?.group === dropObject?.group) {
-          dropIndex = index - 1
-        } else {
-          dropIndex = index
-        }
-      }
-    })
+    // 通过key查找对象
+    const objects = canvas.findObjectsByIds([dragNodeKey.toString(), dropNodeKey.toString()])
+
+    // 没找到则退出
+    if (objects.includes(undefined)) return
+
+    const [dragObject, dropObject] = objects
 
     // 如果该对象属于的分组也在拖拽列表，则中止操作。
-    if (excludeGroupObject && dragObject) {
+    if (excludeGroupObject) {
       const checkNodeVisibility = (obj: FabricObject): boolean => {
         if (!obj.group || !selectedkeys.value.includes(obj.group.id)) {
           return false
@@ -153,19 +138,29 @@
       }
     }
 
-    if (dragIndex >= 0 && dropIndex >= 0 && dragObject && dropObject) {
-      const dragGroup = dragObject.getParent()
-      let dropGroup = dropObject.getParent()
-      // 进入组，dropObject是组
-      if (util.isCollection(dropObject) && [0, 1].includes(dropPosition)) {
-        dropGroup = dropObject
-        dropIndex = dragGroup._objects.length
+    // 获取对象的组
+    const dragGroup = dragObject.getParent()
+    let dropGroup = dropObject.getParent()
+
+    let dropIndex = dropGroup._objects.indexOf(dropObject)
+
+    // 对象同组
+    if (dragGroup === dropGroup) {
+      const dragIndex = dragGroup._objects.indexOf(dragObject)
+      if (dragIndex < dropIndex) {
+        dropIndex--
       }
-      const _dragObject = dragObject
-      dragGroup.remove(dragObject)
-      _dragObject.group?.exitGroup(_dragObject)
-      dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
     }
+
+    // 进入组，dropObject是组
+    if (util.isCollection(dropObject) && dropPosition === 0) {
+      dropGroup = dropObject
+      dropIndex = dragGroup._objects.length
+    }
+    const _dragObject = dragObject
+    dragGroup.remove(dragObject)
+    _dragObject.group?.exitGroup(_dragObject)
+    dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
   }
 
   /**

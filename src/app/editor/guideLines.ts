@@ -50,6 +50,7 @@ export class GuideLines extends Disposable {
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     super()
+    // todo: 添加缓存，缓存元素坐标
     canvas.on('before:render', this.clearGuideline.bind(this))
     canvas.on('after:render', this.drawGuideLines.bind(this))
     canvas.on('object:moving', this.objectMoving.bind(this))

@@ -13,7 +13,7 @@ export class Layer extends Disposable {
     @IEventbusService private readonly eventbusService: EventbusService,
   ) {
     super()
-    this.keybindingService.bind(['delete', 'backspace'], (e) => {
+    this.keybindingService.bind(['del', 'backspace'], (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -178,6 +178,7 @@ export class Layer extends Disposable {
       canvas.requestRenderAll()
     })
 
+    // 重命名
     this.keybindingService.bind('mod+r', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
@@ -185,6 +186,30 @@ export class Layer extends Disposable {
       eventbusService.emit('layerRename', {
         id: activeObject.id,
       })
+    })
+
+    // 水平翻转
+    this.keybindingService.bind('shift+h', (e) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const objects = this.getObjects(activeObject)
+      objects.forEach((obj) => {
+        obj.flipX = !obj.flipX
+      })
+      canvas.requestRenderAll()
+    })
+
+    // 垂直翻转
+    this.keybindingService.bind('shift+v', (e) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const objects = this.getObjects(activeObject)
+      objects.forEach((obj) => {
+        obj.flipY = !obj.flipY
+      })
+      canvas.requestRenderAll()
     })
 
     this.bindAlign()

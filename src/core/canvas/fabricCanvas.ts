@@ -119,18 +119,37 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.setActiveObject(activeSelection)
   }
 
-  public findObjectById(id: string) {
+  /**
+   * 根据ID查找对象
+   * @param id 要查找的对象的ID
+   * @returns 如果找到对象则返回一个FabricObject类型的对象，否则返回undefined
+   */
+  public findObjectById(id: string): FabricObject | undefined {
+    const object = this.findObjectsByIds([id])
+    return object.length ? object[0] : undefined
+  }
+
+  /**
+   * 根据ID数组查找对象
+   * @param ids 要查找的对象的ID数组
+   * @returns 返回一个包含FabricObject类型对象的数组，数组中每个元素的值为对应的ID在对象集合中的对象。如果没有找到对象，则相应的数组元素值为undefined。
+   */
+  public findObjectsByIds(ids: string[]) {
+    const result = Array(ids.length).fill(undefined)
     const stack = [...this._objects]
     while (stack.length) {
       const node = stack.pop()
-      if (node?.id === id) {
-        return node
+      if (node) {
+        const index = ids.indexOf(node.id)
+        if (index !== -1) {
+          result[index] = node
+        }
       }
       if (util.isCollection(node)) {
         stack.push(...node._objects)
       }
     }
-    return undefined
+    return result
   }
 
   // 重写 取消 preserveObjectStacking 逻辑
