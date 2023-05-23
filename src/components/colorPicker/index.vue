@@ -2,11 +2,11 @@
   <div class="ui-color-picker">
     <Gradient
       :mode="mode"
-      :points="props.gradient.points"
-      :type="props.gradient.type"
-      :on-change="props.onChange"
-      :on-start-change="props.onStartChange"
-      :on-end-change="props.onEndChange"
+      :points="gradient.points"
+      :type="gradient.type"
+      :on-change="onChange"
+      :on-start-change="onStartChange"
+      :on-end-change="onEndChange"
     />
   </div>
 </template>
@@ -16,12 +16,12 @@
   import { ColorPoint, Mode, ColorType } from '@/components/colorPicker/interface'
   import { noop } from '@vueuse/core'
 
-  const props = withDefaults(
+  withDefaults(
     defineProps<{
       mode?: Mode
-      gradient?: {
-        type?: ColorType
-        points?: ColorPoint[]
+      gradient: {
+        type: ColorType
+        points: ColorPoint[]
       }
       onChange?: (data: { points: ColorPoint[]; type: ColorType }) => void
       onStartChange?: (data: { points: ColorPoint[]; type: ColorType }) => void

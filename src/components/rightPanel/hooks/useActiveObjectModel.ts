@@ -22,7 +22,10 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   let lockChange = false
 
   watchEffect(() => {
-    if (!isDefined(activeObject)) return
+    if (!isDefined(activeObject)) {
+      modelValue.value = undefined
+      return
+    }
     // 锁定修改
     lockChange = true
     //
@@ -32,7 +35,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
       value = activeObject.value.getLeftTop()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
-      value = NP.times(activeObject.value[key] as number, 100)
+      value = NP.times(activeObject.value.opacity, 100)
     } else {
       value = activeObject.value[key]
     }
@@ -91,6 +94,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   }
 
   return computed(() => ({
+    disabled: !isDefined(activeObject),
     modelValue: modelValue.value as T,
     onSwipe: (value: T) => {
       changeValue(value, 'swipe')

@@ -87,8 +87,4 @@ export class Zoom extends Disposable {
       objects.getCenterPoint().scalarMultiply(zoom).subtract(this.canvas.getCenterPoint()),
     )
   }
-
-  dispose() {
-    console.log('dispose')
-  }
 }

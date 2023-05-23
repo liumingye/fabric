@@ -12,12 +12,12 @@
     {
       name: 'LayoutAlign',
       component: LayoutAlign,
-      visual: isDefined(canvas.activeObject),
+      visual: true,
     },
     {
       name: 'BaseAttr',
       component: BaseAttr,
-      visual: isDefined(canvas.activeObject),
+      visual: true,
     },
     {
       name: 'LayerAttr',
@@ -60,6 +60,9 @@
   :deep(.arco-select-view-value) {
     line-height: initial !important;
     font-size: 12px !important;
+  }
+  :deep(.arco-select-view-suffix) {
+    padding-left: 4px;
   }
 
   :deep(.arco-input-prefix) {

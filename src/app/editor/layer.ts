@@ -10,7 +10,7 @@ export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybindingService: KeybindingService,
-    @IEventbusService private readonly eventbusService: EventbusService,
+    @IEventbusService readonly eventbusService: EventbusService,
   ) {
     super()
     this.keybindingService.bind(['del', 'backspace'], (e) => {
@@ -193,7 +193,7 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      const objects = this.getObjects(activeObject)
+      const objects = this.getSelectionObjects(activeObject)
       objects.forEach((obj) => {
         obj.flipX = !obj.flipX
       })
@@ -205,7 +205,7 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      const objects = this.getObjects(activeObject)
+      const objects = this.getSelectionObjects(activeObject)
       objects.forEach((obj) => {
         obj.flipY = !obj.flipY
       })
@@ -213,6 +213,72 @@ export class Layer extends Disposable {
     })
 
     this.bindAlign()
+    this.bindArrow()
+  }
+
+  private bindArrow() {
+    // 上下左右
+    const move = (e: KeyboardEvent) => {
+      const activeObject = this.canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const amount = e.shiftKey ? 10 : 1
+      const { top, left } = activeObject
+      switch (e.key) {
+        case 'ArrowUp':
+          activeObject.top = top - amount
+          break
+        case 'ArrowRight':
+          activeObject.left = left + amount
+          break
+        case 'ArrowDown':
+          activeObject.top = top + amount
+          break
+        case 'ArrowLeft':
+          activeObject.left = left - amount
+          break
+      }
+      this.canvas.requestRenderAll()
+    }
+    const resize = (e: KeyboardEvent) => {
+      const activeObject = this.canvas.getActiveObject()
+      if (!activeObject) return
+      e.preventDefault?.()
+      const amount = e.shiftKey ? 10 : 1
+      switch (e.key) {
+        case 'ArrowUp':
+          activeObject.setHeight(activeObject.getHeight() - amount)
+          break
+        case 'ArrowRight':
+          activeObject.setWidth(activeObject.getWidth() + amount)
+          break
+        case 'ArrowDown':
+          activeObject.setHeight(activeObject.getHeight() + amount)
+          break
+        case 'ArrowLeft':
+          activeObject.setWidth(activeObject.getWidth() - amount)
+          break
+      }
+      this.canvas.requestRenderAll()
+    }
+    this.keybindingService.bind({
+      up: move,
+      right: move,
+      down: move,
+      left: move,
+      'shift+up': move,
+      'shift+right': move,
+      'shift+down': move,
+      'shift+left': move,
+      'mod+up': resize,
+      'mod+right': resize,
+      'mod+down': resize,
+      'mod+left': resize,
+      'shift+mod+up': resize,
+      'shift+mod+right': resize,
+      'shift+mod+down': resize,
+      'shift+mod+left': resize,
+    })
   }
 
   private bindAlign() {

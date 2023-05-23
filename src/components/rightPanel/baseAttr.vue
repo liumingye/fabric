@@ -4,6 +4,7 @@
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
   import { useEditor } from '@/app'
+  import { isDefined } from '@vueuse/core'
 
   const left = useActiveObjectModel('left')
   const top = useActiveObjectModel('top')
@@ -11,7 +12,7 @@
   const width = useActiveObjectModel('width')
   const height = useActiveObjectModel('height')
 
-  const { keybinding } = useEditor()
+  const { keybinding, canvas } = useEditor()
 </script>
 
 <template>
@@ -42,7 +43,11 @@
       <a-col :span="8">
         <a-space size="mini">
           <a-tooltip mini position="bottom">
-            <a-button size="small" @click="keybinding.trigger('shift+h')">
+            <a-button
+              size="small"
+              :disabled="!isDefined(canvas.activeObject)"
+              @click="keybinding.trigger('shift+h')"
+            >
               <template #icon>
                 <SvgIcon name="bx-reflect-horizontal" />
               </template>
@@ -52,7 +57,11 @@
             </template>
           </a-tooltip>
           <a-tooltip mini position="bottom">
-            <a-button size="small" @click="keybinding.trigger('shift+v')">
+            <a-button
+              size="small"
+              :disabled="!isDefined(canvas.activeObject)"
+              @click="keybinding.trigger('shift+v')"
+            >
               <template #icon>
                 <SvgIcon name="bx-reflect-vertical" />
               </template>

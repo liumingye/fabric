@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, Point, Rect, Triangle, Textbox } from '@fabric'
+import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject } from '@fabric'
 import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
@@ -104,19 +104,22 @@ export class FabricTool extends Disposable {
           },
           onSwipe() {
             requestAnimationFrame(() => {
+              const zoom = canvas.getZoom()
+              const _lengthX = lengthX.value / zoom
+              const _lengthY = lengthY.value / zoom
               if (!tempObject) return
-              let opt: Partial<Rect | Ellipse> = {
-                left: min(startLeft, startLeft + lengthX.value),
-                top: min(startTop, startTop + lengthY.value),
-                width: max(abs(ceil(lengthX.value)), 1),
-                height: max(abs(ceil(lengthY.value)), 1),
+              let opt: Partial<FabricObject & Ellipse> = {
+                left: abs(min(startLeft, startLeft + _lengthX)),
+                top: abs(min(startTop, startTop + _lengthY)),
+                width: abs(max(ceil(_lengthX)), 1),
+                height: abs(max(ceil(_lengthY)), 1),
               }
               tempObject.set({})
               if (tool === 'ellipse') {
                 opt = {
                   ...opt,
-                  rx: max(abs(ceil(lengthX.value)) / 2, 0.5),
-                  ry: max(abs(ceil(lengthY.value)) / 2, 0.5),
+                  rx: max(abs(ceil(_lengthX)) / 2, 0.5),
+                  ry: max(abs(ceil(_lengthY)) / 2, 0.5),
                 }
               }
               tempObject.set(opt)

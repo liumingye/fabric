@@ -1,10 +1,11 @@
 import { FabricTool } from '@/app/editor/fabricTool'
 import { HoverObjectBorder } from '@/app/editor/hoverObjectBorder'
 import { HandleWheelScroll } from '@/app/editor/handleWheelScroll'
+import { Layer } from '@/app/editor/layer'
+import { Ruler } from '@/app/editor/ruler'
 import { ContextMenu } from '@/app/editor/contextMenu'
 import { Zoom } from '@/app/editor/zoom'
 import { GuideLines } from '@/app/editor/guideLines'
-import { Layer } from '@/app/editor/layer'
 import { SyncDescriptor } from '@/core/instantiation/descriptors'
 import { IInstantiationService, ServiceIdentifier } from '@/core/instantiation/instantiation'
 import { ServiceCollection } from '@/core/instantiation/serviceCollection'
@@ -34,6 +35,7 @@ export class EditorMain extends Disposable {
         this.service.createInstance(GuideLines),
         this.service.createInstance(Zoom),
         this.service.createInstance(ContextMenu),
+        this.service.createInstance(Ruler),
       ]
       instances.forEach((instance) => {
         this._register(instance)

@@ -1,4 +1,4 @@
-import { Canvas, Object as FabricObject, Point, TPointerEvent, util } from '@fabric'
+import { Canvas, Object as FabricObject, Point, TPointerEvent, util, Textbox } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { toRefObject } from '@/core/canvas/toRefObject'
@@ -16,7 +16,7 @@ export interface IFabricCanvas extends FabricCanvas {
 export class FabricCanvas extends createCollectionMixin(Canvas) {
   declare readonly _serviceBrand: undefined
 
-  public activeObject = shallowRef<FabricObject>()
+  public activeObject = shallowRef<FabricObject & Textbox>()
 
   public ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),

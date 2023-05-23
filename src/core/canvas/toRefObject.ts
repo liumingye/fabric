@@ -78,14 +78,15 @@ const toRefObject = (object: Textbox & FabricObject) => {
     'colorProperties',
     'inverted',
     'absolutePositioned',
-    'text',
   ]
+
+  if (object.isType('Text', 'IText', 'Textbox')) {
+    keyArr.push('text')
+  }
 
   object.ref = reactive({}) as ObjectRef
 
   keyArr.forEach(<K extends keyof ObjectRef>(key: K) => {
-    if (!object[key]) return
-
     object.ref[key] = object[key]
 
     Object.defineProperty(object, key, {

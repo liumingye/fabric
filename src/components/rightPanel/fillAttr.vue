@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
-  import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import { isString } from 'lodash'
   import { util, Color as FabricColor, Gradient, Pattern } from '@fabric'
@@ -42,7 +41,7 @@
     return hex.padEnd(6, hex)
   }
 
-  const onChange = (value: string) => {
+  const fillChange = (value: string) => {
     value = value.replace(/^#/, '')
     if (value.length < 6) {
       value = fillHexColor(value)
@@ -51,17 +50,20 @@
     fill.value.onChange(`#${value}`)
   }
 
-  const modelValue = ref('')
+  const fillValue = ref('')
   watchEffect(() => {
     let value = fill.value.modelValue
     if (isString(value)) {
-      modelValue.value = new FabricColor(value).toHex().toUpperCase()
+      fillValue.value = new FabricColor(value).toHex().toUpperCase()
       return
     } else if (util.isGradient(value)) {
-      modelValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
+      fillValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
+      return
+    } else if (util.isPattern(value)) {
+      fillValue.value = '图案填充'
       return
     }
-    modelValue.value = '图案填充'
+    fillValue.value = ''
   })
 
   const readonly = computed(() => !isString(fill.value.modelValue))
@@ -163,17 +165,16 @@
 </script>
 
 <template>
-  <Panel>
-    <PanelTitle title="填充" />
+  <Panel title="填充" :disable-add="!!fill.modelValue" @click-add="fill.onChange('#cccccc')">
     <!-- <div>点击 + 重置并修改多个内容</div> -->
-    <a-row :gutter="[4, 4]" align="center">
+    <a-row v-if="!!fill.modelValue" :gutter="[4, 4]" align="center" justify="space-between">
       <a-col :span="10">
-        <a-input size="mini" v-model="modelValue" :readonly="readonly" @change="onChange">
+        <a-input size="mini" v-model="fillValue" :readonly="readonly" @change="fillChange">
           <template #prefix>
             <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>
                 <div
-                  class="w16px h16px rd-4px"
+                  class="w18px h18px rd-4px"
                   :style="{
                     background,
                   }"
@@ -182,6 +183,13 @@
             </a-button>
           </template>
         </a-input>
+      </a-col>
+      <a-col :span="3.5">
+        <a-button size="small" class="icon-btn" @click="fill.onChange(null)">
+          <template #icon>
+            <icon-minus />
+          </template>
+        </a-button>
       </a-col>
     </a-row>
   </Panel>

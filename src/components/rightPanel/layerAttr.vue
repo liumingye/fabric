@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
-  import PanelTitle from './panelTitle.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
 
   const opacity = useActiveObjectModel('opacity')
@@ -16,64 +15,98 @@
       name: '正常',
     },
     {
-      key: 'darken',
-      name: '变暗',
+      isGroup: true,
+      label: '暗色',
+      options: [
+        {
+          key: 'darken',
+          name: '变暗',
+        },
+        {
+          key: 'multiply',
+          name: '正片叠底',
+        },
+        {
+          key: 'color-burn',
+          name: '颜色加深',
+        },
+      ],
     },
     {
-      key: 'multiply',
-      name: '正片叠底',
+      isGroup: true,
+      label: '亮色',
+      options: [
+        {
+          key: 'lighten',
+          name: '变亮',
+        },
+        {
+          key: 'screen',
+          name: '滤色',
+        },
+        {
+          key: 'color-dodge',
+          name: '颜色减淡',
+        },
+        {
+          key: 'lighter',
+          name: '提亮',
+        },
+      ],
     },
     {
-      key: 'color-burn',
-      name: '颜色加深',
+      isGroup: true,
+      label: '对比',
+      options: [
+        {
+          key: 'overlay',
+          name: '叠加',
+        },
+        {
+          key: 'soft-light',
+          name: '柔光',
+        },
+        {
+          key: 'hard-light',
+          name: '强光',
+        },
+      ],
     },
     {
-      key: 'lighten',
-      name: '变亮',
+      isGroup: true,
+      label: '比较',
+      options: [
+        {
+          key: 'difference',
+          name: '差集',
+        },
+        {
+          key: 'exclusion',
+          name: '排除',
+        },
+      ],
     },
     {
-      key: 'screen',
-      name: '滤色',
-    },
-    {
-      key: 'color-dodge',
-      name: '颜色减淡',
-    },
-    {
-      key: 'overlay',
-      name: '叠加',
-    },
-    {
-      key: 'soft-light',
-      name: '柔光',
-    },
-    {
-      key: 'hard-light',
-      name: '强光',
-    },
-    {
-      key: 'difference',
-      name: '差集',
-    },
-    {
-      key: 'exclusion',
-      name: '排除',
-    },
-    {
-      key: 'hue',
-      name: '色相',
-    },
-    {
-      key: 'saturation',
-      name: '饱和度',
-    },
-    {
-      key: 'color',
-      name: '颜色',
-    },
-    {
-      key: 'luminosity',
-      name: '明度',
+      isGroup: true,
+      label: '颜色',
+      options: [
+        {
+          key: 'hue',
+          name: '色相',
+        },
+        {
+          key: 'saturation',
+          name: '饱和度',
+        },
+        {
+          key: 'color',
+          name: '颜色',
+        },
+        {
+          key: 'luminosity',
+          name: '明度',
+        },
+      ],
     },
   ])
 
@@ -89,8 +122,7 @@
 </script>
 
 <template>
-  <Panel>
-    <PanelTitle title="图层" />
+  <Panel title="图层" hidden-add>
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
         <a-select

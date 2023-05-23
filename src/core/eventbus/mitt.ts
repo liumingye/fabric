@@ -37,6 +37,8 @@ export interface Emitter<Events extends Record<EventType, unknown>> {
  * @returns {Mitt}
  */
 export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<Events> {
+  declare readonly _serviceBrand: undefined
+
   public all = new Map()
 
   /**
@@ -48,11 +50,11 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
   public on<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
   public on(type: '*', handler: WildcardHandler<Events>): void
   public on(type: any, handler: any) {
-    const handlers = this.all!.get(type)
+    const handlers = this.all.get(type)
     if (handlers) {
       handlers.push(handler)
     } else {
-      this.all!.set(type, [handler] as EventHandlerList<Events[keyof Events]>)
+      this.all.set(type, [handler] as EventHandlerList<Events[keyof Events]>)
     }
   }
 
@@ -67,12 +69,12 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
   public off(type: '*', handler: WildcardHandler<Events>): void
   public off(type: any, handler: any) {
     const handlers: Array<Handler<Events[keyof Events]> | WildcardHandler<Events>> | undefined =
-      this.all!.get(type)
+      this.all.get(type)
     if (handlers) {
       if (handler) {
         handlers.splice(handlers.indexOf(handler) >>> 0, 1)
       } else {
-        this.all!.set(type, [])
+        this.all.set(type, [])
       }
     }
   }
@@ -90,16 +92,16 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
   public emit<Key extends keyof Events>(type: Key, evt: Events[Key]): void
   public emit<Key extends keyof Events>(type: undefined extends Events[Key] ? Key : never): void
   public emit(type: any, evt?: any) {
-    let handlers = this.all!.get(type)
-    if (handlers) {
-      ;(handlers as EventHandlerList<Events[keyof Events]>).slice().map((handler) => {
+    const handlers1 = this.all.get(type) as EventHandlerList<Events[keyof Events]>
+    if (handlers1) {
+      handlers1.slice().map((handler) => {
         handler(evt!)
       })
     }
 
-    handlers = this.all!.get('*')
-    if (handlers) {
-      ;(handlers as WildCardEventHandlerList<Events>).slice().map((handler) => {
+    const handlers2 = this.all.get('*') as WildCardEventHandlerList<Events>
+    if (handlers2) {
+      handlers2.slice().map((handler) => {
         handler(type, evt!)
       })
     }

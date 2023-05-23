@@ -9,14 +9,14 @@ import { Disposable } from '@/utils/lifecycle'
 export class HandleWheelScroll extends Disposable {
   constructor(@IFabricCanvas readonly canvas: FabricCanvas) {
     super()
-    const { ctrl, shift } = useMagicKeys()
+    const { ctrl, cmd, shift } = useMagicKeys()
 
     canvas.on('mouse:wheel', (e) => {
       e.e.preventDefault()
       e.e.stopPropagation()
       const { deltaX, deltaY, offsetX, offsetY } = e.e
       // 缩放视窗
-      if (ctrl.value) {
+      if (ctrl.value || cmd.value) {
         const zoomFactor = Math.abs(deltaY) < 10 ? deltaY * 2 : deltaY / 3
         const newZoom = canvas.getZoom() * (1 - zoomFactor / 200)
         canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom)

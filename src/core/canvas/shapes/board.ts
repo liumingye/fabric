@@ -51,14 +51,14 @@ export class Board extends Group {
     })
   }
 
-  updateSelectable() {
+  private updateSelectable() {
     // 画板内没有元素开启selectable，否则关闭
     if (this.ref) {
       this.ref.selectable = !this.size()
     }
   }
 
-  setClipPath() {
+  private setClipPath() {
     this.clipPath = new Rect({
       top: 0,
       left: 0,
@@ -69,16 +69,16 @@ export class Board extends Group {
     })
   }
 
-  setCoords() {
+  override setCoords() {
     super.setCoords()
     this.clipPath && this.clipPath.setCoords()
   }
 
-  _renderBackground(ctx: CanvasRenderingContext2D) {
+  override _renderBackground(ctx: CanvasRenderingContext2D) {
     Rect.prototype._render.call(this, ctx)
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  override render(ctx: CanvasRenderingContext2D) {
     super.render(ctx)
 
     if (this.visible) {
@@ -95,18 +95,25 @@ export class Board extends Group {
     }
   }
 
-  _watchObject(_watch: boolean, _object: FabricObject) {
+  override _watchObject(_watch: boolean, _object: FabricObject) {
     // noop
   }
 
-  _onObjectAdded(object: FabricObject) {
+  override _onObjectAdded(object: FabricObject) {
     super._onObjectAdded(object)
     this.updateSelectable()
   }
 
-  _onObjectRemoved(object: FabricObject) {
+  override _onObjectRemoved(object: FabricObject) {
     super._onObjectAdded(object)
     this.updateSelectable()
+  }
+
+  override toObject(propertiesToInclude: any[] = []): any {
+    const res = super.toObject(propertiesToInclude)
+    // 移除clipPath
+    delete res.clipPath
+    return res
   }
 }
 

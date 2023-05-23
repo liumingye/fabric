@@ -17,9 +17,6 @@ export class HoverObjectBorder extends Disposable {
 
   private clearContextTop(target: FabricObject, restoreManually = false) {
     const ctx = this.canvas.contextTop
-    if (!ctx) {
-      return
-    }
     const vpt = this.canvas.viewportTransform
     ctx.save()
     ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5])
@@ -37,7 +34,6 @@ export class HoverObjectBorder extends Disposable {
     if (this.canvas.contextTopDirty) {
       this.clearContextTop(e.target)
     }
-    // this.canvas.contextTopDirty = true
   }
 
   private drawBorder(e: CanvasEvents['mouse:out']) {

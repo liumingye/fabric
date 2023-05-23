@@ -20,7 +20,7 @@ const positionHandlerH: Control['positionHandler'] = (
   fabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getScaledHeight()
+  const size = fabricObject.getBoundingRect().height
   currentControl.sizeX = fabricObject.cornerSize
   currentControl.sizeY = size
   currentControl.touchSizeX = fabricObject.touchCornerSize
@@ -34,7 +34,7 @@ const positionHandlerV: Control['positionHandler'] = (
   fabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getScaledWidth()
+  const size = fabricObject.getBoundingRect().width
   currentControl.sizeX = size
   currentControl.sizeY = fabricObject.cornerSize
   currentControl.touchSizeX = size + 8
