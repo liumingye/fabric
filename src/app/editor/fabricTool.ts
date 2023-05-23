@@ -109,10 +109,10 @@ export class FabricTool extends Disposable {
               const _lengthY = lengthY.value / zoom
               if (!tempObject) return
               let opt: Partial<FabricObject & Ellipse> = {
-                left: abs(min(startLeft, startLeft + _lengthX)),
-                top: abs(min(startTop, startTop + _lengthY)),
-                width: abs(max(ceil(_lengthX)), 1),
-                height: abs(max(ceil(_lengthY)), 1),
+                left: ceil(min(startLeft, startLeft + _lengthX)),
+                top: ceil(min(startTop, startTop + _lengthY)),
+                width: max(ceil(abs(_lengthX)), 1),
+                height: max(ceil(abs(_lengthY)), 1),
               }
               tempObject.set({})
               if (tool === 'ellipse') {
