@@ -199,15 +199,4 @@
   :deep(.arco-input-wrapper) {
     padding-left: 0 !important;
   }
-
-  :deep(.arco-input-prefix) {
-    padding-right: 0 !important;
-    margin-left: -1px;
-    margin-right: 4px;
-    justify-content: center;
-
-    .arco-btn {
-      width: 32px;
-    }
-  }
 </style>

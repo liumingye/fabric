@@ -19,16 +19,30 @@ Object.assign(FabricObject.ownDefaults, {
 
 const mixin = {
   getHeight() {
-    return toFixed(this.getScaledHeight())
+    return toFixed(this.getBoundingRect(true, true).height)
   },
   getWidth() {
-    return toFixed(this.getScaledWidth())
+    return toFixed(this.getBoundingRect(true, true).width)
   },
   setHeight(value: number) {
-    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), this.height))
+    const boundingRectFactor = NP.divide(
+      this.getBoundingRect(true, true).height,
+      this.getScaledHeight(),
+    )
+    this.set(
+      'scaleY',
+      NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.height), boundingRectFactor),
+    )
   },
   setWidth(value: number) {
-    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), this.width))
+    const boundingRectFactor = NP.divide(
+      this.getBoundingRect(true, true).width,
+      this.getScaledWidth(),
+    )
+    this.set(
+      'scaleX',
+      NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.width), boundingRectFactor),
+    )
   },
   setAngle(value: number) {
     this.rotate(toFixed(clampAngle(value)))
@@ -36,9 +50,7 @@ const mixin = {
   getLeftTop() {
     const relativePosition = this.getRelativeXY()
     if (this.group) {
-      return relativePosition
-        .subtract(this.group.getRelativeXY())
-        .transform(this.group.calcTransformMatrix())
+      return relativePosition.transform(this.group.calcTransformMatrix())
     }
     return relativePosition
   },
@@ -50,11 +62,7 @@ const mixin = {
   },
   setLeftTop(point: Point) {
     if (this.group) {
-      point = point
-        .add(this.group.getRelativeXY())
-        .transform(util.invertTransform(this.group.calcTransformMatrix()))
-      // this.group.updateLayout()
-      // this.group.setCoords()
+      point = point.transform(util.invertTransform(this.group.calcTransformMatrix()))
     }
     this.setRelativeXY(point)
   },

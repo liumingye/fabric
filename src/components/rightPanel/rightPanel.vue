@@ -66,13 +66,14 @@
   }
 
   :deep(.arco-input-prefix) {
+    padding-right: 0 !important;
     margin-left: -1px;
     margin-right: 4px;
     justify-content: center;
 
     .arco-btn {
       height: 28px;
-      width: 30px;
+      width: 28px;
     }
   }
 </style>

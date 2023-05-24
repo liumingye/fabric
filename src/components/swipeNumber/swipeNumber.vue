@@ -94,7 +94,7 @@
     @change="change"
   >
     <template #prefix v-if="hasLabel">
-      <div ref="labelRef" class="w-7.5 text-center cursor-ew-resize">
+      <div ref="labelRef" class="w26px text-center cursor-ew-resize">
         <slot v-if="$slots.label" name="label"></slot>
         <template v-else>{{ label }}</template>
       </div>

@@ -11,6 +11,10 @@ const myPlugin = createEditorPlugin((editor) => {
     setup() {
       console.log('myPlugin setup')
       console.log(editor)
+      function getRandomColor() {
+        return '#' + Math.random().toString(16).substring(2, 8)
+      }
+
       const board1 = new Board([], {
         top: 0,
         left: 0,
@@ -32,21 +36,21 @@ const myPlugin = createEditorPlugin((editor) => {
         [
           new Rect({
             top: random(400, 500),
-            left: random(0, 200),
+            left: random(300, 400),
             width: random(50, 100),
             height: random(50, 100),
-            fill: '#' + Math.random().toString(16).substring(2, 8),
+            fill: getRandomColor(),
             strokeWidth: random(0, 10),
-            stroke: '#' + Math.random().toString(16).substring(2, 8),
+            stroke: getRandomColor(),
           }),
           new Rect({
             top: random(400, 500),
-            left: random(0, 200),
+            left: random(350, 450),
             width: random(50, 100),
             height: random(50, 100),
-            fill: '#' + Math.random().toString(16).substring(2, 8),
+            fill: getRandomColor(),
             strokeWidth: random(0, 10),
-            stroke: '#' + Math.random().toString(16).substring(2, 8),
+            stroke: getRandomColor(),
           }),
         ],
         {
@@ -56,37 +60,40 @@ const myPlugin = createEditorPlugin((editor) => {
       )
       canvas.add(group)
 
-      for (let index = 0; index < 1; index++) {
-        canvas.add(
+      const rects = []
+
+      for (let index = 0; index < 75; index++) {
+        rects.push(
           new Rect({
             top: random(200, 300),
             left: random(400, 600),
             width: random(50, 100),
             height: random(50, 100),
-            fill: 'rgb(244,244,244)',
+            fill: getRandomColor(),
             // strokeWidth: random(0, 10),
-            // stroke: '#' + Math.random().toString(16).substring(2, 8),
+            // stroke:getRandomColor(),
             // globalCompositeOperation: 'luminosity',
           }),
         )
-        board1.add(
-          new Rect({
-            top: random(0, 200),
-            left: random(0, 200),
-            width: random(50, 100),
-            height: random(50, 100),
-            fill: new Gradient({
-              type: 'radial',
-              coords: { x1: 50, y1: 50, r1: 0, x2: 50, y2: 50, r2: 50 },
-              colorStops: [
-                { color: '#000000', offset: 0 },
-                { color: '#ffffff', offset: 1 },
-              ],
-            }),
-            strokeWidth: random(0, 10),
-            stroke: '#' + Math.random().toString(16).substring(2, 8),
-          }),
-        )
+
+        // board1.add(
+        //   new Rect({
+        //     top: random(0, 200),
+        //     left: random(0, 200),
+        //     width: random(50, 100),
+        //     height: random(50, 100),
+        //     fill: new Gradient({
+        //       type: 'radial',
+        //       coords: { x1: 50, y1: 50, r1: 0, x2: 50, y2: 50, r2: 50 },
+        //       colorStops: [
+        //         { color: '#000000', offset: 0 },
+        //         { color: '#ffffff', offset: 1 },
+        //       ],
+        //     }),
+        //     strokeWidth: random(0, 10),
+        //     stroke:getRandomColor(),
+        //   }),
+        // )
         board2.add(
           new Rect({
             top: random(400, 500),
@@ -98,20 +105,21 @@ const myPlugin = createEditorPlugin((editor) => {
               coords: { x1: 0, y1: 0, x2: 100, y2: 100 },
               colorStops: [
                 {
-                  color: '#' + Math.random().toString(16).substring(2, 8),
+                  color: getRandomColor(),
                   offset: 0,
                 },
                 {
-                  color: '#' + Math.random().toString(16).substring(2, 8),
+                  color: getRandomColor(),
                   offset: 1,
                 },
               ],
             }),
             strokeWidth: random(0, 10),
-            stroke: '#' + Math.random().toString(16).substring(2, 8),
+            stroke: getRandomColor(),
           }),
         )
       }
+      canvas.add(...rects)
     },
     dispose() {
       console.log('myPlugin dispose')

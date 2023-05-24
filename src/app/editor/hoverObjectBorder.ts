@@ -1,13 +1,13 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { FabricObject, util, CanvasEvents, Rect } from '@fabric'
-import { cloneDeep } from 'lodash'
+import { clone } from 'lodash'
 import { Disposable } from '@/utils/lifecycle'
 
 /**
  * 对象获得焦点后在外围显示一个边框
  */
 export class HoverObjectBorder extends Disposable {
-  private lineWidth = 2
+  private lineWidth = 3
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     super()
@@ -21,9 +21,10 @@ export class HoverObjectBorder extends Disposable {
     ctx.save()
     ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5])
     target.transform(ctx)
+    const { strokeWidth, scaleX, scaleY, strokeUniform } = target
     // we add 4 pixel, to be sure to do not leave any pixel out
-    const width = target.width + 4 + target.strokeWidth,
-      height = target.height + 4 + target.strokeWidth
+    const width = target.width + 4 + (strokeUniform ? strokeWidth / scaleX : strokeWidth)
+    const height = target.height + 4 + (strokeUniform ? strokeWidth / scaleY : strokeWidth)
     ctx.clearRect(-width / 2, -height / 2, width, height)
     restoreManually || ctx.restore()
     return ctx
@@ -46,29 +47,50 @@ export class HoverObjectBorder extends Disposable {
     if (!ctx) return
     // ctx.save()
 
-    const object = cloneDeep(target)
+    const object = clone(target)
 
     if (util.isCollection(object)) {
       object._render = Rect.prototype._render
     }
 
-    const { width, height, strokeWidth, scaleX, scaleY, strokeUniform } = object
+    const { strokeWidth, strokeUniform } = object
+
+    let { width, height } = object
+
+    width += strokeUniform ? strokeWidth / object.scaleX : strokeWidth
+    height += strokeUniform ? strokeWidth / object.scaleY : strokeWidth
+
+    const totalObjectScaling = object.getTotalObjectScaling()
+
+    const lineWidth = Math.min(
+      this.lineWidth,
+      width * totalObjectScaling.x,
+      height * totalObjectScaling.y,
+    )
+
+    width -= lineWidth / totalObjectScaling.x
+    height -= lineWidth / totalObjectScaling.y
 
     object.set({
-      width: width + strokeWidth / (strokeUniform ? scaleX * (object.group?.scaleX ?? 1) : 1),
-      height: height + strokeWidth / (strokeUniform ? scaleY * (object.group?.scaleY ?? 1) : 1),
-      stroke: this.canvas.selectionBorderColor,
-      strokeWidth: this.lineWidth,
+      width,
+      height,
+      stroke: 'rgb(60,126,255)',
+      strokeWidth: lineWidth,
       strokeDashArray: null,
       strokeDashOffset: 0,
       strokeLineCap: 'butt',
       strokeLineJoin: 'miter',
       strokeMiterLimit: 4,
-      strokeUniform: true,
     })
 
     object._renderPaintInOrder = () => {
-      object._renderStroke(ctx)
+      ctx.save()
+      const scaling = object.getTotalObjectScaling()
+      ctx.scale(1 / scaling.x, 1 / scaling.y)
+      object._setLineDash(ctx, object.strokeDashArray)
+      object._setStrokeStyles(ctx, object)
+      ctx.stroke()
+      ctx.restore()
     }
 
     object._render(ctx)

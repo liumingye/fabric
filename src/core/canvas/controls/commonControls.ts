@@ -84,12 +84,12 @@ export const createObjectDefaultControls = (): TControlSet => ({
       ctx.rotate((angle * Math.PI) / 180)
       const fontSize = 12
       ctx.font = `${fontSize}px Tahoma`
-      const { x, y } = fabricObject._getTransformedDimensions()
-      const text = `${toFixed(x)} × ${toFixed(y)}`
-      const width = ctx.measureText(text).width + 8
-      const height = fontSize + 6
+      const { width, height } = fabricObject.getBoundingRect(true, true)
+      const text = `${toFixed(width)} × ${toFixed(height)}`
+      const width2 = ctx.measureText(text).width + 8
+      const height2 = fontSize + 6
       // 背景
-      ctx.roundRect(-width / 2, -height / 2, width, height, 4)
+      ctx.roundRect(-width2 / 2, -height2 / 2, width2, height2, 4)
       ctx.fillStyle = '#0066ff'
       ctx.fill()
       // 文字
