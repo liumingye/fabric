@@ -9,11 +9,11 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
-    @IKeybindingService private readonly keybindingService: KeybindingService,
-    @IEventbusService readonly eventbusService: EventbusService,
+    @IKeybindingService private readonly keybinding: KeybindingService,
+    @IEventbusService readonly eventbus: EventbusService,
   ) {
     super()
-    this.keybindingService.bind(['del', 'backspace'], (e) => {
+    this.keybinding.bind(['del', 'backspace'], (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -23,7 +23,7 @@ export class Layer extends Disposable {
     })
 
     // 移至底层
-    this.keybindingService.bind('[', (e) => {
+    this.keybinding.bind('[', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -39,7 +39,7 @@ export class Layer extends Disposable {
     })
 
     // 移至顶层
-    this.keybindingService.bind(']', (e) => {
+    this.keybinding.bind(']', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -51,7 +51,7 @@ export class Layer extends Disposable {
     })
 
     // 向下移动一层
-    this.keybindingService.bind('mod+[', (e) => {
+    this.keybinding.bind('mod+[', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -71,7 +71,7 @@ export class Layer extends Disposable {
     })
 
     // 向上移动一层
-    this.keybindingService.bind('mod+]', (e) => {
+    this.keybinding.bind('mod+]', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -96,7 +96,7 @@ export class Layer extends Disposable {
     })
 
     // 创建分组
-    this.keybindingService.bind('mod+g', (e) => {
+    this.keybinding.bind('mod+g', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -128,7 +128,7 @@ export class Layer extends Disposable {
     })
 
     // 解除分组
-    this.keybindingService.bind('mod+shift+g', (e) => {
+    this.keybinding.bind('mod+shift+g', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject || !util.isCollection(activeObject)) return
       e.preventDefault?.()
@@ -143,7 +143,7 @@ export class Layer extends Disposable {
     })
 
     // 选择全部
-    this.keybindingService.bind('mod+a', (e) => {
+    this.keybinding.bind('mod+a', (e) => {
       e.preventDefault?.()
       const activeObject = canvas.getActiveObject()
       const parent = activeObject?.getParent() || canvas
@@ -152,7 +152,7 @@ export class Layer extends Disposable {
     })
 
     // 显示/隐藏
-    this.keybindingService.bind('mod+shift+h', (e) => {
+    this.keybinding.bind('mod+shift+h', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -165,7 +165,7 @@ export class Layer extends Disposable {
     })
 
     // 锁定/解锁
-    this.keybindingService.bind('mod+shift+l', (e) => {
+    this.keybinding.bind('mod+shift+l', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -179,17 +179,17 @@ export class Layer extends Disposable {
     })
 
     // 重命名
-    this.keybindingService.bind('mod+r', (e) => {
+    this.keybinding.bind('mod+r', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      eventbusService.emit('layerRename', {
+      eventbus.emit('layerRename', {
         id: activeObject.id,
       })
     })
 
     // 水平翻转
-    this.keybindingService.bind('shift+h', (e) => {
+    this.keybinding.bind('shift+h', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -201,7 +201,7 @@ export class Layer extends Disposable {
     })
 
     // 垂直翻转
-    this.keybindingService.bind('shift+v', (e) => {
+    this.keybinding.bind('shift+v', (e) => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
@@ -261,7 +261,7 @@ export class Layer extends Disposable {
       }
       this.canvas.requestRenderAll()
     }
-    this.keybindingService.bind({
+    this.keybinding.bind({
       up: move,
       right: move,
       down: move,
@@ -289,7 +289,7 @@ export class Layer extends Disposable {
       activeObject[method]()
       useEditor().undoRedo.saveState()
     }
-    this.keybindingService.bind({
+    this.keybinding.bind({
       'alt+a': (e) => align(e, 'alignLeft'),
       'alt+d': (e) => align(e, 'alignRight'),
       'alt+h': (e) => align(e, 'alignCenter'),

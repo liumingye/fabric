@@ -5,11 +5,13 @@ import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject } from '@fabric'
 import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
+import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
 export class FabricTool extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
+    @IEventbusService private readonly eventbus: EventbusService,
   ) {
     super()
     this.initWatch()
@@ -171,11 +173,13 @@ export class FabricTool extends Disposable {
       this.canvas.setCursor('grab')
       this.canvas.skipTargetFind = true
       this.canvas.selection = false
+      this.eventbus.emit('setEdgeMoveStatus', false)
     } else {
       this.canvas.defaultCursor = 'default'
       this.canvas.setCursor('default')
       this.canvas.skipTargetFind = false
       this.canvas.selection = true
+      this.eventbus.emit('setEdgeMoveStatus', true)
     }
   }
 
@@ -185,18 +189,16 @@ export class FabricTool extends Disposable {
     const { activeTool } = storeToRefs(useAppStore())
     // 鼠标中键拖动视窗
     let vpt = canvas.viewportTransform
-    let mouseDown = false
     const { lengthX, lengthY } = useFabricSwipe({
       onSwipeStart: (e) => {
-        vpt = canvas.viewportTransform
-        if (e.button === 2 && activeTool.value !== 'handMove') {
+        if (e.button === 2 || (space.value && e.button === 1) || activeTool.value === 'handMove') {
+          vpt = canvas.viewportTransform
           this.handMoveActivate = true
           canvas.setCursor('grabbing')
         }
-        mouseDown = true
       },
       onSwipe: () => {
-        if (this.handMoveActivate && mouseDown) {
+        if (this.handMoveActivate) {
           canvas.setCursor('grabbing')
           const deltaPoint = new Point(lengthX.value, lengthY.value)
             .scalarDivide(canvas.getZoom())
@@ -206,13 +208,13 @@ export class FabricTool extends Disposable {
         }
       },
       onSwipeEnd: () => {
-        if (this.handMoveActivate && mouseDown) {
+        if (this.handMoveActivate) {
           canvas.setCursor(canvas.defaultCursor)
+
+          if (activeTool.value !== 'handMove' && !space.value) {
+            this.handMoveActivate = false
+          }
         }
-        if (activeTool.value !== 'handMove' && !space.value) {
-          this.handMoveActivate = false
-        }
-        mouseDown = false
       },
     })
 

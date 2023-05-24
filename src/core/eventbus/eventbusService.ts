@@ -5,6 +5,7 @@ import { Mitt } from '@/core/eventbus/mitt'
 export type Events = {
   undoRedoStackChange: undefined
   layerRename: { id: string }
+  setEdgeMoveStatus: boolean
 }
 
 export type EventbusService = Mitt<Events>

@@ -99,7 +99,7 @@ export class Ruler extends Disposable {
               textColor: '#222',
             }),
       }
-      this.render({ ctx: this.canvas.contextTop })
+      this.render()
     })
 
     useFabricEvent({
@@ -117,9 +117,8 @@ export class Ruler extends Disposable {
     }
   }
 
-  private render({ ctx }: { ctx: CanvasRenderingContext2D }) {
-    const vpt = this.canvas.viewportTransform
-    if (!vpt) return
+  private render() {
+    const { viewportTransform: vpt, contextTop: ctx } = this.canvas
 
     // 计算元素矩形
     this.calcObjectRect()

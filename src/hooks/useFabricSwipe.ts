@@ -14,6 +14,9 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
   const coordsStart = reactive({ x: 0, y: 0 })
   const coordsEnd = reactive({ x: 0, y: 0 })
 
+  const isSwiping = ref(false)
+  const isPointerDown = ref(false)
+
   const diffX = computed(() => coordsEnd.x - coordsStart.x)
   const diffY = computed(() => coordsEnd.y - coordsStart.y)
 
@@ -41,19 +44,26 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
+    isPointerDown.value = true
     const [x, y] = getTouchEventCoords(e.e)
     updateCoordsStart(x, y)
     updateCoordsEnd(x, y)
     onSwipeStart?.(e)
   }
   const mouseMove = (e: TPointerEventInfo<TPointerEvent>) => {
+    if (!isPointerDown.value) return
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
     const [x, y] = getTouchEventCoords(e.e)
     updateCoordsEnd(x, y)
+    isSwiping.value = true
     onSwipe?.(e)
   }
   const mouseUp = (e: TPointerEventInfo<TPointerEvent>) => {
-    onSwipeEnd?.(e)
+    if (isSwiping.value) {
+      onSwipeEnd?.(e)
+    }
+    isPointerDown.value = false
+    isSwiping.value = false
   }
 
   canvas.on('mouse:down', mouseDown)
@@ -69,6 +79,7 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
   tryOnScopeDispose(stop)
 
   return {
+    isSwiping,
     coordsStart,
     coordsEnd,
     lengthX: diffX,

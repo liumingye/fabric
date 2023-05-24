@@ -3,7 +3,6 @@ import { Graph } from './graph'
 import { IInstantiationService, ServiceIdentifier, ServicesAccessor, _util } from './instantiation'
 import { ServiceCollection } from './serviceCollection'
 import { IdleValue } from '@/utils/async'
-import { illegalState } from '@/utils/error'
 
 // TRACING
 const _enableTracing = false
@@ -49,7 +48,7 @@ export class InstantiationService implements IInstantiationService {
       const accessor: ServicesAccessor = {
         get: <T>(id: ServiceIdentifier<T>) => {
           if (_done) {
-            throw illegalState(
+            throw new Error(
               'service accessor is only valid during the invocation of its target method',
             )
           }
