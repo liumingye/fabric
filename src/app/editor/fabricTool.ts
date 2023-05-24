@@ -54,27 +54,32 @@ export class FabricTool extends Disposable {
         canvas.skipTargetFind = true
         canvas.selection = false
         const { min, max, abs, ceil } = Math
-        let startLeft: number
-        let startTop: number
-        const { stop, lengthX, lengthY } = useFabricSwipe({
+        let coordsStart: Point | undefined
+        const { stop, isSwiping } = useFabricSwipe({
           onSwipeStart(e) {
             if (e.button !== 1) return
-            const { x, y } = canvas.getPointer(e.e)
-            startLeft = ceil(x)
-            startTop = ceil(y)
+            /*
+             * 只有mouseMove的时候isSwiping才会为true
+             * mouseUp会判断isSwiping的值来决定是否执行onSwipeEnd
+             * 这里强制设置成true，让点击也可执行onSwipeEnd
+             */
+            isSwiping.value = true
+            // 获得坐标
+            coordsStart = canvas.getPointer(e.e)
+            // 创建形状
             switch (tool as 'rect' | 'ellipse' | 'triangle' | 'text') {
               case 'rect':
                 tempObject = new Rect({
-                  left: startLeft,
-                  top: startTop,
+                  left: coordsStart.x,
+                  top: coordsStart.y,
                   width: 1,
                   height: 1,
                 })
                 break
               case 'ellipse':
                 tempObject = new Ellipse({
-                  left: startLeft,
-                  top: startTop,
+                  left: coordsStart.x,
+                  top: coordsStart.y,
                   width: 1,
                   height: 1,
                   rx: 0.5,
@@ -83,53 +88,61 @@ export class FabricTool extends Disposable {
                 break
               case 'triangle':
                 tempObject = new Triangle({
-                  left: startLeft,
-                  top: startTop,
+                  left: coordsStart.x,
+                  top: coordsStart.y,
                   width: 1,
                   height: 1,
                 })
                 break
               case 'text':
                 tempObject = new Textbox('', {
-                  left: startLeft,
-                  top: startTop,
+                  left: coordsStart.x,
+                  top: coordsStart.y,
                   width: 1,
                   height: 1,
                   splitByGrapheme: true,
                 })
                 break
             }
+            // 不发送ObjectAdded事件
             tempObject.set('noEventObjectAdded', true)
+            // 添加对象到画板
             canvas.add(tempObject)
+            // 取消不发生
             tempObject.set('noEventObjectAdded', false)
+            // 设置激活对象
             canvas.setActiveObject(tempObject)
           },
-          onSwipe() {
+          onSwipe(e) {
             requestAnimationFrame(() => {
-              const zoom = canvas.getZoom()
-              const _lengthX = lengthX.value / zoom
-              const _lengthY = lengthY.value / zoom
-              if (!tempObject) return
+              if (!tempObject || !coordsStart) return
+              // 获得坐标
+              const pointerPoint = canvas.getPointer(e.e)
+              // 获取移动长度
+              const lengthPoint = pointerPoint.subtract(coordsStart)
+              const lengthX = ceil(abs(lengthPoint.x))
+              const lengthY = ceil(abs(lengthPoint.y))
+              // 构建配置
               let opt: Partial<FabricObject & Ellipse> = {
-                left: ceil(min(startLeft, startLeft + _lengthX)),
-                top: ceil(min(startTop, startTop + _lengthY)),
-                width: max(ceil(abs(_lengthX)), 1),
-                height: max(ceil(abs(_lengthY)), 1),
+                left: ceil(min(coordsStart.x, pointerPoint.x)),
+                top: ceil(min(coordsStart.y, pointerPoint.y)),
+                width: max(lengthX, 1),
+                height: max(lengthY, 1),
               }
-              tempObject.set({})
               if (tool === 'ellipse') {
                 opt = {
                   ...opt,
-                  rx: max(abs(ceil(_lengthX)) / 2, 0.5),
-                  ry: max(abs(ceil(_lengthY)) / 2, 0.5),
+                  rx: max(lengthX / 2, 0.5),
+                  ry: max(lengthY / 2, 0.5),
                 }
               }
               tempObject.set(opt)
-              canvas.renderAll()
+              canvas.requestRenderAll()
             })
           },
           onSwipeEnd() {
             if (tempObject) {
+              // 如果点击画板，没有移动，设置默认宽高
               if (tempObject.width <= 1 && tempObject.height <= 1) {
                 tempObject.set({
                   left: tempObject.left - 50,
