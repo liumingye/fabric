@@ -133,12 +133,12 @@
           @popup-visible-change="popupVisibleChange"
         />
       </a-col>
-      <a-col :span="8">
+      <a-col :span="7">
         <a-inputNumber size="small" v-bind="opacity" hide-button :min="0" :max="100">
           <template #suffix>%</template>
         </a-inputNumber>
       </a-col>
-      <a-col :span="6" class="text-end">
+      <a-col :span="7" class="text-end">
         <a-button size="small" class="icon-btn" @click="visible.onChange(!visible.modelValue)">
           <template #icon>
             <icon-eye v-if="visible.modelValue === true" />

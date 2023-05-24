@@ -113,7 +113,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     }
     const activeSelection = this.getActiveSelection()
     activeSelection.removeAll()
-    activeSelection.multiSelectAdd(...objects)
+    activeSelection.add(...objects)
     this._hoveredTarget = activeSelection
     this._hoveredTargets = [...objects]
     this.setActiveObject(activeSelection)
