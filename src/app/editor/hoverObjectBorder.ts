@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { FabricObject, util, CanvasEvents, Rect } from '@fabric'
+import { FabricObject, util, CanvasEvents, Rect, Textbox } from '@fabric'
 import { clone } from 'lodash'
 import { Disposable } from '@/utils/lifecycle'
 
@@ -49,6 +49,18 @@ export class HoverObjectBorder extends Disposable {
 
     const object = clone(target)
 
+    // 文字特殊处理，显示下划线
+    if (object instanceof Textbox) {
+      object.underline = true
+      object.fill = 'rgb(60,126,255)'
+      object._renderTextDecoration(ctx, 'underline')
+      object._drawClipPath(ctx, object.clipPath)
+      ctx.restore()
+      this.canvas.contextTopDirty = true
+      return
+    }
+
+    // 分组特殊处理，显示矩形边框
     if (util.isCollection(object)) {
       object._render = Rect.prototype._render
     }

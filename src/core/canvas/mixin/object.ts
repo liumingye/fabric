@@ -33,6 +33,7 @@ const mixin = {
       'scaleY',
       NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.height), boundingRectFactor),
     )
+    this.fire('scaling')
   },
   setWidth(value: number) {
     const boundingRectFactor = NP.divide(
@@ -43,6 +44,7 @@ const mixin = {
       'scaleX',
       NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.width), boundingRectFactor),
     )
+    this.fire('scaling')
   },
   setAngle(value: number) {
     this.rotate(toFixed(clampAngle(value)))

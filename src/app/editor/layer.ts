@@ -5,12 +5,14 @@ import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
+import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
 
 export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService readonly eventbus: EventbusService,
+    @IUndoRedoService private readonly undoRedo: UndoRedoService,
   ) {
     super()
     this.keybinding.bind(['del', 'backspace'], (e) => {
@@ -20,6 +22,7 @@ export class Layer extends Disposable {
       this.deleteLayer(this.getObjects(activeObject))
       canvas.discardActiveObject()
       canvas.requestRenderAll()
+      this.undoRedo.saveState()
     })
 
     // 移至底层
@@ -125,6 +128,7 @@ export class Layer extends Disposable {
       insertGroup.insertAt(index, group)
       // 设置激活对象
       canvas.setActiveObject(group)
+      this.undoRedo.saveState()
     })
 
     // 解除分组
@@ -139,7 +143,8 @@ export class Layer extends Disposable {
       parentGroup.remove(activeObject)
       parentGroup.insertAt(index, ...this.deleteLayer(objects))
       // 设置激活对象
-      canvas.setActiveObjects(objects)
+      canvas.setActiveObjects(objects.reverse())
+      this.undoRedo.saveState()
     })
 
     // 选择全部
@@ -326,6 +331,7 @@ export class Layer extends Disposable {
   }
 
   private deleteLayer(objects: FabricObject[]): FabricObject[] {
-    return objects.flatMap((obj) => obj.getParent().remove(obj)) as FabricObject[]
+    const removed = objects.flatMap((obj) => obj.getParent().remove(obj)) as FabricObject[]
+    return removed
   }
 }

@@ -1,5 +1,5 @@
 import { Textbox as TextboxOrigin } from 'fabric'
-import { classRegistry } from '@fabric'
+import { classRegistry, Rect } from '@fabric'
 import { createTextboxDefaultControls } from '@/core/canvas/controls/commonControls'
 
 export class Textbox extends TextboxOrigin {
@@ -16,6 +16,8 @@ export class Textbox extends TextboxOrigin {
   constructor(text: string, options: object) {
     super(text, options)
 
+    this.setClipPath()
+
     this.on('scaling', () => {
       const { y: height, x: width } = this._getTransformedDimensions()
       this.set({
@@ -24,6 +26,18 @@ export class Textbox extends TextboxOrigin {
         scaleX: 1,
         scaleY: 1,
       })
+      this.setClipPath()
+    })
+  }
+
+  private setClipPath() {
+    this.clipPath = new Rect({
+      top: 0,
+      left: 0,
+      width: this.width,
+      height: this.height,
+      originX: 'center',
+      originY: 'center',
     })
   }
 
@@ -45,6 +59,13 @@ export class Textbox extends TextboxOrigin {
       // once text is measured we need to make space fatter to make justified text.
       this.enlargeSpaces()
     }
+  }
+
+  override toObject(propertiesToInclude: any[] = []): any {
+    const res = super.toObject(propertiesToInclude) as any
+    // 移除clipPath
+    delete res.clipPath
+    return res
   }
 }
 

@@ -21,9 +21,7 @@ export class UndoRedoService extends UndoRedo {
     keybindingServices.bind('mod+z', this.undo.bind(this))
     keybindingServices.bind(['mod+y', 'mod+shift+z'], this.redo.bind(this))
 
-    canvas.on('object:added', this.saveState.bind(this))
     canvas.on('object:modified', this.saveState.bind(this))
-    canvas.on('object:removed', this.saveState.bind(this))
   }
 
   public push(state: any) {

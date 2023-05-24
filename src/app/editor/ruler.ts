@@ -118,7 +118,7 @@ export class Ruler extends Disposable {
   }
 
   private render() {
-    const { viewportTransform: vpt, contextTop: ctx } = this.canvas
+    const { viewportTransform: vpt, contextContainer: ctx } = this.canvas
 
     // 计算元素矩形
     this.calcObjectRect()

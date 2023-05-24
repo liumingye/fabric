@@ -6,12 +6,14 @@ import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
+import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
 
 export class FabricTool extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService private readonly eventbus: EventbusService,
+    @IUndoRedoService private readonly undoRedo: UndoRedoService,
   ) {
     super()
     this.initWatch()
@@ -24,7 +26,7 @@ export class FabricTool extends Disposable {
     const { activeTool } = storeToRefs(useAppStore())
     // 监听activeTool
     let swipeStop: (() => void) | undefined
-    let tempObject: Ellipse | Rect | Triangle | Textbox | undefined
+    let tempObject: FabricObject | undefined
     watch(activeTool, (tool, oldTool) => {
       if (swipeStop) {
         swipeStop()
@@ -56,7 +58,7 @@ export class FabricTool extends Disposable {
         const { min, max, abs, ceil } = Math
         let coordsStart: Point | undefined
         const { stop, isSwiping } = useFabricSwipe({
-          onSwipeStart(e) {
+          onSwipeStart: (e) => {
             if (e.button !== 1) return
             /*
              * 只有mouseMove的时候isSwiping才会为true
@@ -113,7 +115,7 @@ export class FabricTool extends Disposable {
             // 设置激活对象
             canvas.setActiveObject(tempObject)
           },
-          onSwipe(e) {
+          onSwipe: (e) => {
             requestAnimationFrame(() => {
               if (!tempObject || !coordsStart) return
               // 获得坐标
@@ -137,10 +139,15 @@ export class FabricTool extends Disposable {
                 }
               }
               tempObject.set(opt)
+              tempObject.fire('scaling', {
+                e: e.e,
+                transform: this.canvas._currentTransform!,
+                pointer: pointerPoint,
+              })
               canvas.requestRenderAll()
             })
           },
-          onSwipeEnd() {
+          onSwipeEnd: () => {
             if (tempObject) {
               // 如果点击画板，没有移动，设置默认宽高
               if (tempObject.width <= 1 && tempObject.height <= 1) {
@@ -163,6 +170,7 @@ export class FabricTool extends Disposable {
               } else {
                 canvas._onObjectAdded(tempObject)
               }
+              this.undoRedo.saveState()
             }
             tempObject = undefined
             activeTool.value = 'move'

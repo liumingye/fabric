@@ -20,7 +20,7 @@ const positionHandlerH: Control['positionHandler'] = (
   fabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getBoundingRect().height
+  const size = fabricObject.getBoundingRect(false, true).height
   currentControl.sizeX = fabricObject.cornerSize
   currentControl.sizeY = size
   currentControl.touchSizeX = fabricObject.touchCornerSize
@@ -34,7 +34,7 @@ const positionHandlerV: Control['positionHandler'] = (
   fabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getBoundingRect().width
+  const size = fabricObject.getBoundingRect(false, true).width
   currentControl.sizeX = size
   currentControl.sizeY = fabricObject.cornerSize
   currentControl.touchSizeX = size + 8
@@ -198,22 +198,25 @@ export const createObjectDefaultControls = (): TControlSet => ({
   }),
 })
 
+const changeWidth = controlsUtils.wrapWithFireEvent(
+  'scaling',
+  controlsUtils.wrapWithFixedAnchor(controlsUtils.changeWidth),
+)
+
 export const createResizeControls = (): TControlSet => ({
   mr: new Control({
     x: 0.5,
     y: 0,
-    actionHandler: controlsUtils.changeWidth,
+    actionHandler: changeWidth,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
     render: noop,
     positionHandler: positionHandlerH,
   }),
   ml: new Control({
     x: -0.5,
     y: 0,
-    actionHandler: controlsUtils.changeWidth,
+    actionHandler: changeWidth,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
-    actionName: 'resizing',
     render: noop,
     positionHandler: positionHandlerH,
   }),

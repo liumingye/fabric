@@ -6,23 +6,17 @@ import { clamp } from '@vueuse/core'
 import { toFixed } from '@/utils/math'
 import { createCollectionMixin } from '@/core/canvas/Collection'
 import './mixin'
+import { isObject } from 'lodash'
 
-export const IFabricCanvas = createDecorator<IFabricCanvas>('fabricCanvas')
-
-export interface IFabricCanvas extends FabricCanvas {
-  readonly _serviceBrand: undefined
-}
+export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
 export class FabricCanvas extends createCollectionMixin(Canvas) {
   declare readonly _serviceBrand: undefined
 
-  public activeObject = shallowRef<FabricObject & Textbox>()
+  public activeObject = shallowRef<FabricObject | Textbox>()
 
   public ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),
-  }
-
-  public computed = {
     objects: computed(() => this._objects),
   }
 
@@ -75,16 +69,45 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         })
         target.on('object:added', objectAdded)
       }
-      triggerRef(this.computed.objects)
     }
 
     this.on({
       'object:added': objectAdded,
-      'object:removed': () => triggerRef(this.computed.objects),
     })
 
     // @ts-ignore
     this._activeSelection = toRefObject(this._activeSelection)
+
+    // 响应式
+    const objectsProxy = <K extends keyof FabricCanvas['ref']>(targetKey: any, refKey: K) => {
+      return new Proxy(targetKey, {
+        get: (target, key, receiver) => {
+          return Reflect.get(target, key, receiver)
+        },
+        set: (target, key, value) => {
+          const res = Reflect.set(target, key, value)
+          triggerRef(this.ref[refKey])
+          return res
+        },
+      })
+    }
+    this._objects = new Proxy(this._objects, {
+      get: (target, key, receiver) => {
+        const res = Reflect.get(target, key, receiver)
+        // 分组对象
+        if ((isObject(res) as any) && res._objects && !res._isRef_objects) {
+          res._isRef_objects = true
+          res._objects = objectsProxy(res._objects, 'objects')
+          return res
+        }
+        return res
+      },
+      set: (target, key, value, receiver) => {
+        const res = Reflect.set(target, key, value, receiver)
+        triggerRef(this.ref.objects)
+        return res
+      },
+    })
   }
 
   // @ts-ignore
@@ -96,7 +119,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.activeObject.value = value
   }
 
-  override zoomToPoint(point: Point, value: number) {
+  public zoomToPoint(point: Point, value: number) {
     value = clamp(value, 0.02, 256)
     super.zoomToPoint(point, value)
     this.ref.zoom.value = toFixed(this.getZoom(), 2)
@@ -134,7 +157,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
    * @param ids 要查找的对象的ID数组
    * @returns 返回一个包含FabricObject类型对象的数组，数组中每个元素的值为对应的ID在对象集合中的对象。如果没有找到对象，则相应的数组元素值为undefined。
    */
-  public findObjectsByIds(ids: string[]) {
+  public findObjectsByIds(ids: string[]): (FabricObject | undefined)[] {
     const result = Array(ids.length).fill(undefined)
     const stack = [...this._objects]
     while (stack.length) {

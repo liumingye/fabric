@@ -83,10 +83,11 @@ export declare module 'fabric' {
     _objects: FabricObject[]
     ref: {
       zoom: Ref<number>
-    }
-    computed: {
       objects: ComputedRef<FabricObject[]>
     }
+    // computed: {
+    //   objects: ComputedRef<FabricObject[]>
+    // }
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
@@ -137,9 +138,6 @@ export declare module 'fabric' {
     canvas: Canvas | undefined
     group: this | undefined
     _objects: FabricObject[]
-    computed: {
-      objects: ComputedRef<FabricObject[]>
-    }
     setDirty(): void
     updateLayout(): void
     forEachObject(

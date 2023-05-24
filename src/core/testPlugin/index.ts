@@ -1,11 +1,12 @@
 import { createEditorPlugin } from '@/core'
-import { IFabricCanvas } from '../canvas/fabricCanvas'
+import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
+import { IUndoRedoService } from '@/core/undoRedo/undoRedoService'
 import { Board, Gradient, Group, Rect } from '@fabric'
 import { random } from 'lodash'
 
 const myPlugin = createEditorPlugin((editor) => {
-  const canvas = editor.service.invokeFunction((accessor) => {
-    return accessor.get(IFabricCanvas)
+  const [canvas, undoRedo] = editor.service.invokeFunction((accessor) => {
+    return [accessor.get(IFabricCanvas), accessor.get(IUndoRedoService)]
   })
   return {
     setup() {
@@ -120,6 +121,8 @@ const myPlugin = createEditorPlugin((editor) => {
         )
       }
       canvas.add(...rects)
+
+      undoRedo.saveState()
     },
     dispose() {
       console.log('myPlugin dispose')

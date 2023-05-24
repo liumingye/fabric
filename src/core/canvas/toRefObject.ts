@@ -3,7 +3,7 @@ import { FabricObject, ObjectRef, Textbox } from '@fabric'
 /**
  * 元素添加相应式属性
  */
-const toRefObject = (object: Textbox & FabricObject) => {
+const toRefObject = (object: Textbox | FabricObject) => {
   if (object.ref) return object
 
   const keyArr: (keyof ObjectRef)[] = [
@@ -80,14 +80,14 @@ const toRefObject = (object: Textbox & FabricObject) => {
     'absolutePositioned',
   ]
 
-  if (object.isType('Text', 'IText', 'Textbox')) {
+  if (object.isType('Text', 'Textbox')) {
     keyArr.push('text')
   }
 
   object.ref = reactive({}) as ObjectRef
 
   keyArr.forEach(<K extends keyof ObjectRef>(key: K) => {
-    object.ref[key] = object[key]
+    object.ref[key] = (object as Textbox & FabricObject)[key]
 
     Object.defineProperty(object, key, {
       get() {

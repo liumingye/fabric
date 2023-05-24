@@ -20,8 +20,11 @@
 
   const { canvas, event } = useEditor()
 
+  // 搜索词
   const searchKey = ref('')
-
+  // 重命名
+  const renameNodeKey = ref<string | number | undefined>(undefined)
+  // 展开的节点
   const expandedKeys = ref<TreeNodeKey[]>([])
 
   /**
@@ -60,7 +63,7 @@
   const treeData: Ref<ITreeNodeData[]> = ref([])
 
   watchEffect(() => {
-    treeData.value = getTreeData(canvas.computed.objects.value, searchKey.value)
+    treeData.value = getTreeData(canvas.ref.objects.value, searchKey.value)
   })
 
   /**
@@ -121,7 +124,7 @@
     // 没找到则退出
     if (objects.includes(undefined)) return
 
-    const [dragObject, dropObject] = objects
+    const [dragObject, dropObject] = objects as FabricObject[]
 
     // 如果该对象属于的分组也在拖拽列表，则中止操作。
     if (excludeGroupObject) {
@@ -157,8 +160,7 @@
       dropGroup = dropObject
       dropIndex = dragGroup._objects.length
     }
-    const _dragObject = dragObject
-    dragGroup.remove(dragObject)
+    const [_dragObject] = dragGroup.remove(dragObject) as FabricObject[]
     _dragObject.group?.exitGroup(_dragObject)
     dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
   }
@@ -321,9 +323,6 @@
       items: layerItems(),
     })
   }
-
-  // 重命名
-  const renameNodeKey = ref<string | number>()
 
   event.on('layerRename', (e) => {
     renameNodeKey.value = e.id

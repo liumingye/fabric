@@ -38,8 +38,6 @@ export class Board extends Group {
       this.setClipPath()
     })
 
-    this.setCoords()
-
     this.on('added', () => {
       this.updateSelectable()
       watchEffect(() => {
