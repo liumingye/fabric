@@ -1,8 +1,7 @@
 <template>
   <div
-    :class="
-      'mx-context-menu ' + (options.customClass ? options.customClass : '') + ' ' + globalTheme
-    "
+    class="mx-context-menu"
+    :class="[options.customClass, globalTheme]"
     :style="{
       maxWidth: maxWidth ? maxWidth : `${constOptions.defaultMaxWidth}px`,
       minWidth: minWidth ? minWidth : `${constOptions.defaultMinWidth}px`,
@@ -13,6 +12,7 @@
     }"
     data-type="ContextSubMenu"
     @click="onSubMenuBodyClick"
+    @contextmenu="(e) => e.preventDefault()"
   >
     <!--Child menu items-->
     <div

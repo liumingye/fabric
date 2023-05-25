@@ -15,6 +15,7 @@ Object.assign(FabricObject.ownDefaults, {
   cornerStrokeColor: '#2A82E4',
   borderOpacityWhenMoving: 0,
   controls: createObjectDefaultControls(),
+  includeDefaultValues: false,
 } as FabricObject)
 
 const mixin = {

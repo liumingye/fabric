@@ -1,6 +1,7 @@
 import { FabricTool } from '@/app/editor/fabricTool'
 import { HoverObjectBorder } from '@/app/editor/hoverObjectBorder'
 import { HandleWheelScroll } from '@/app/editor/handleWheelScroll'
+import { Clipboard } from '@/app/editor/clipboard'
 import { Layer } from '@/app/editor/layer'
 import { Ruler } from '@/app/editor/ruler'
 import { ContextMenu } from '@/app/editor/contextMenu'
@@ -28,6 +29,7 @@ export class EditorMain extends Disposable {
   public startup() {
     this.scope.run(() => {
       const instances = [
+        this.service.createInstance(Ruler),
         this.service.createInstance(Layer),
         this.service.createInstance(FabricTool),
         this.service.createInstance(HoverObjectBorder),
@@ -35,7 +37,7 @@ export class EditorMain extends Disposable {
         this.service.createInstance(GuideLines),
         this.service.createInstance(Zoom),
         this.service.createInstance(ContextMenu),
-        this.service.createInstance(Ruler),
+        this.service.createInstance(Clipboard),
       ]
       instances.forEach((instance) => {
         this._register(instance)

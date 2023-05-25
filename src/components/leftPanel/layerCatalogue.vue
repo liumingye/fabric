@@ -4,7 +4,7 @@
   import { ActiveSelection, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
-  import { useMagicKeys, useResizeObserver, useThrottleFn } from '@vueuse/core'
+  import { useMagicKeys, useResizeObserver, useThrottleFn, isDefined } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
   import { layerItems } from '@/utils/contextMenu'
@@ -382,7 +382,7 @@
       >
         <template #title="nodeData">
           <a-input
-            v-if="renameNodeKey === nodeData.key"
+            v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
             class="bg-transparent! border-none px0"
             size="mini"
             :default-value="nodeData.title"

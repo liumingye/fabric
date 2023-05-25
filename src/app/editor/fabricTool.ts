@@ -102,7 +102,6 @@ export class FabricTool extends Disposable {
                   top: coordsStart.y,
                   width: 1,
                   height: 1,
-                  splitByGrapheme: true,
                 })
                 break
             }

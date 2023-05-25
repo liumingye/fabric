@@ -30,15 +30,11 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      this.objForEach(
-        activeObject,
-        (obj) => {
-          const group = obj.getParent()
-          group.sendObjectToBack(obj)
-          useEditor().undoRedo.saveState()
-        },
-        true,
-      )
+      this.objForEach((obj) => {
+        const group = obj.getParent()
+        group.sendObjectToBack(obj)
+        useEditor().undoRedo.saveState()
+      }, true)
     })
 
     // 移至顶层
@@ -46,7 +42,7 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      this.objForEach(activeObject, (obj) => {
+      this.objForEach((obj) => {
         const group = obj.getParent()
         group.bringObjectToFront(obj)
         useEditor().undoRedo.saveState()
@@ -59,7 +55,7 @@ export class Layer extends Disposable {
       if (!activeObject) return
       e.preventDefault?.()
       const isActiveSelection = activeObject instanceof ActiveSelection
-      this.objForEach(activeObject, (obj) => {
+      this.objForEach((obj) => {
         const group = obj.getParent()
         // 排除已经在最底层的元素
         if (
@@ -79,23 +75,19 @@ export class Layer extends Disposable {
       if (!activeObject) return
       e.preventDefault?.()
       const isActiveSelection = activeObject instanceof ActiveSelection
-      this.objForEach(
-        activeObject,
-        (obj) => {
-          const group = obj.getParent()
-          // 排除已经在最顶层的元素
-          if (
-            isActiveSelection &&
-            group._objects.indexOf(obj) + activeObject._objects.length ===
-              activeObject._objects.indexOf(obj) + group._objects.length
-          ) {
-            return
-          }
-          group.bringObjectForward(obj)
-          useEditor().undoRedo.saveState()
-        },
-        true,
-      )
+      this.objForEach((obj) => {
+        const group = obj.getParent()
+        // 排除已经在最顶层的元素
+        if (
+          isActiveSelection &&
+          group._objects.indexOf(obj) + activeObject._objects.length ===
+            activeObject._objects.indexOf(obj) + group._objects.length
+        ) {
+          return
+        }
+        group.bringObjectForward(obj)
+        useEditor().undoRedo.saveState()
+      }, true)
     })
 
     // 创建分组
@@ -152,7 +144,7 @@ export class Layer extends Disposable {
       e.preventDefault?.()
       const activeObject = canvas.getActiveObject()
       const parent = activeObject?.getParent() || canvas
-      canvas.setActiveObjects(parent.getObjects())
+      canvas.setActiveObjects(parent.getObjects().reverse())
       canvas.requestRenderAll()
     })
 
@@ -195,11 +187,10 @@ export class Layer extends Disposable {
 
     // 水平翻转
     this.keybinding.bind('shift+h', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
+      const activeObjects = canvas.getActiveObjects()
+      if (activeObjects.length === 0) return
       e.preventDefault?.()
-      const objects = this.getSelectionObjects(activeObject)
-      objects.forEach((obj) => {
+      activeObjects.forEach((obj) => {
         obj.flipX = !obj.flipX
       })
       canvas.requestRenderAll()
@@ -207,11 +198,10 @@ export class Layer extends Disposable {
 
     // 垂直翻转
     this.keybinding.bind('shift+v', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
+      const activeObjects = canvas.getActiveObjects()
+      if (activeObjects.length === 0) return
       e.preventDefault?.()
-      const objects = this.getSelectionObjects(activeObject)
-      objects.forEach((obj) => {
+      activeObjects.forEach((obj) => {
         obj.flipY = !obj.flipY
       })
       canvas.requestRenderAll()
@@ -306,21 +296,18 @@ export class Layer extends Disposable {
 
   /**
    * 获取激活选区或组内全部元素
+   * this.canvas.getActiveObjects 会获取 ActiveSelection 里的元素，不会获取自身
    */
   private getObjects(target: FabricObject) {
-    return util.isCollection(target) ? target.getObjects() : [target]
+    return util.isCollection(target)
+      ? target.size() === 0
+        ? [target]
+        : target.getObjects()
+      : [target]
   }
 
-  /**
-   * 获取激活选区内全部元素
-   */
-  private getSelectionObjects(target: FabricObject) {
-    return target instanceof ActiveSelection ? target.getObjects() : [target]
-  }
-
-  private objForEach(target: FabricObject, fn: (obj: FabricObject) => void, reverse = false) {
-    // 不能用getObjects，不然激活元素为组无法进行图层移动
-    const objects = this.getSelectionObjects(target)
+  private objForEach(fn: (obj: FabricObject) => void, reverse = false) {
+    const objects = this.canvas.getActiveObjects()
     if (reverse) {
       objects.reverse()
     }

@@ -2,21 +2,16 @@ import { Textbox as TextboxOrigin } from 'fabric'
 import { classRegistry, Rect } from '@fabric'
 import { createTextboxDefaultControls } from '@/core/canvas/controls/commonControls'
 
+Object.assign(TextboxOrigin.ownDefaults, {
+  controls: createTextboxDefaultControls(),
+  splitByGrapheme: true,
+})
+
 export class Textbox extends TextboxOrigin {
   declare _styleMap: object
 
-  static getDefaults() {
-    return {
-      ...super.getDefaults(),
-      controls: createTextboxDefaultControls() as any,
-      ...Textbox.ownDefaults,
-    }
-  }
-
   constructor(text: string, options: object) {
     super(text, options)
-
-    this.setClipPath()
 
     this.on('scaling', () => {
       const { y: height, x: width } = this._getTransformedDimensions()
@@ -26,6 +21,10 @@ export class Textbox extends TextboxOrigin {
         scaleX: 1,
         scaleY: 1,
       })
+      this.setClipPath()
+    })
+
+    this.on('added', () => {
       this.setClipPath()
     })
   }

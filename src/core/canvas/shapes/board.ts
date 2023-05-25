@@ -1,6 +1,7 @@
 import { Rect, classRegistry, FabricObject } from '@fabric'
-import { Group } from './group'
 import type { GroupProps } from 'fabric/src/shapes/Group'
+import { Group as GroupOrigin } from 'fabric'
+import { toRefObject } from '@/core/canvas/toRefObject'
 
 export const boardDefaultValues = {
   padding: 5,
@@ -8,7 +9,10 @@ export const boardDefaultValues = {
   layout: 'fixed',
 }
 
-export class Board extends Group {
+export class Board extends GroupOrigin {
+  public subTargetCheck = true
+  public interactive = true
+
   static ownDefaults: Record<string, any> = boardDefaultValues
 
   static getDefaults(): Record<string, any> {
@@ -19,13 +23,13 @@ export class Board extends Group {
   }
 
   constructor(
-    objects: FabricObject[] = [],
-    options: Partial<GroupProps> = {},
+    objects?: FabricObject[],
+    options?: Partial<GroupProps>,
     objectsRelativeToGroup?: boolean,
   ) {
-    super(objects, options as any, objectsRelativeToGroup)
+    const newObjects = objects?.map((obj) => toRefObject(obj))
 
-    this.setClipPath()
+    super(newObjects, options, objectsRelativeToGroup)
 
     this.on('scaling', () => {
       const { y: height, x: width } = this._getTransformedDimensions()
@@ -39,6 +43,7 @@ export class Board extends Group {
     })
 
     this.on('added', () => {
+      this.setClipPath()
       this.updateSelectable()
       watchEffect(() => {
         // 锁定selectable

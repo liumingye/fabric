@@ -55,8 +55,8 @@ const myPlugin = createEditorPlugin((editor) => {
           }),
         ],
         {
-          subTargetCheck: true,
-          interactive: true,
+          // subTargetCheck: true,
+          // interactive: true,
         },
       )
       canvas.add(group)

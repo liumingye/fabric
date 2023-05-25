@@ -82,32 +82,22 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     const objectsProxy = <K extends keyof FabricCanvas['ref']>(targetKey: any, refKey: K) => {
       return new Proxy(targetKey, {
         get: (target, key, receiver) => {
-          return Reflect.get(target, key, receiver)
+          const res = Reflect.get(target, key, receiver)
+          // 分组对象
+          if ((isObject(res) as any) && res._objects && !res._isRef_objects) {
+            res._isRef_objects = true
+            res._objects = objectsProxy(res._objects, 'objects')
+          }
+          return res
         },
-        set: (target, key, value) => {
-          const res = Reflect.set(target, key, value)
+        set: (target, key, value, receiver) => {
+          const res = Reflect.set(target, key, value, receiver)
           triggerRef(this.ref[refKey])
           return res
         },
       })
     }
-    this._objects = new Proxy(this._objects, {
-      get: (target, key, receiver) => {
-        const res = Reflect.get(target, key, receiver)
-        // 分组对象
-        if ((isObject(res) as any) && res._objects && !res._isRef_objects) {
-          res._isRef_objects = true
-          res._objects = objectsProxy(res._objects, 'objects')
-          return res
-        }
-        return res
-      },
-      set: (target, key, value, receiver) => {
-        const res = Reflect.set(target, key, value, receiver)
-        triggerRef(this.ref.objects)
-        return res
-      },
-    })
+    this._objects = objectsProxy(this._objects, 'objects')
   }
 
   // @ts-ignore
@@ -199,7 +189,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         // active selection does not select sub targets like normal groups
         return activeObject
       } else if (activeObject === this.searchPossibleTargets([activeObject], pointer)) {
-        // active object is not an active selection
         // 取消 preserveObjectStacking 逻辑
         return activeObject
       }

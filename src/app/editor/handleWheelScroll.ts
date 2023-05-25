@@ -67,10 +67,10 @@ export class HandleWheelScroll extends Disposable {
         if (pos & 2) deltaPoint.x = -amount
         if (pos & 4) deltaPoint.y = amount
         if (pos & 8) deltaPoint.y = -amount
-        this.canvas.relativePan(deltaPoint)
         this.canvas._onMouseMove(event.e)
+        this.canvas.relativePan(deltaPoint)
       },
-      17, // 60帧间隔
+      10,
       {
         immediate: false,
       },
