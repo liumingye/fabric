@@ -16,49 +16,57 @@ export class WorkspacesService extends Disposable {
 
   constructor(@IEventbusService private readonly eventbus: EventbusService) {
     super()
-    this.setCurrentWorkspaceId(this.addWorkspace('页面 1'))
-    this.setCurrentWorkspaceId(this.addWorkspace('页面 2'))
+    this.setCurrentId(this.add('页面 1'))
   }
 
-  public getCurrentWorkspaceId(): string {
+  public getCurrentId(): string {
     return this.currentId
   }
 
-  public setCurrentWorkspaceId(workspaceId: string): void {
-    if (!this.getWorkspace(workspaceId)) return
+  public setCurrentId(workspaceId: string): void {
+    if (!this.get(workspaceId)) return
     if (this.currentId === workspaceId) return
-    this.eventbus.emit('workspaceChangeBefore', this.getCurrentWorkspaceId())
+    this.eventbus.emit('workspaceChangeBefore', this.currentId)
     this.currentId = workspaceId
-    this.eventbus.emit('workspaceChangeAfter', this.getCurrentWorkspaceId())
+    this.eventbus.emit('workspaceChangeAfter', this.currentId)
   }
 
-  public getAllWorkspaces(): IWorkspace[] {
+  public all(): IWorkspace[] {
     return this.workspaces
   }
 
-  public setWorkspaceName(workspaceId: string, name: string) {
-    const workspace = this.getWorkspace(workspaceId)
+  public set(workspaceId: string, name: string) {
+    const workspace = this.get(workspaceId)
     if (!workspace || workspace.name === name) return
-    this.eventbus.emit('workspaceChangeBefore', this.getCurrentWorkspaceId())
     workspace.name = name
-    this.eventbus.emit('workspaceChangeAfter', this.getCurrentWorkspaceId())
   }
 
-  public getWorkspace(workspaceId: string) {
+  public get(workspaceId: string) {
     return this.workspaces.find((workspace) => workspace.id === workspaceId)
   }
 
-  public addWorkspace(name: string): string {
+  public add(name: string): string {
     const id = randomText()
     this.workspaces.push({ id, name })
     this.eventbus.emit('workspaceAdd', id)
     return id
   }
 
-  public removeWorkspace(workspaceId: string) {
-    if (!this.getWorkspace(workspaceId)) return
+  public remove(workspaceId: string) {
+    if (!this.get(workspaceId)) return
     const index = this.workspaces.findIndex((workspace) => workspace.id === workspaceId)
     this.workspaces.splice(index, 1)
     this.eventbus.emit('workspaceRemove', workspaceId)
+    if (workspaceId === this.currentId) {
+      if (this.workspaces[index]) {
+        this.setCurrentId(this.workspaces[index].id)
+      } else if (this.workspaces[index - 1]) {
+        this.setCurrentId(this.workspaces[index - 1].id)
+      }
+    }
+  }
+
+  public size(): number {
+    return this.workspaces.length
   }
 }

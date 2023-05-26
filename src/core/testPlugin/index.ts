@@ -63,7 +63,7 @@ const myPlugin = createEditorPlugin((editor) => {
 
       const rects = []
 
-      for (let index = 0; index < 75; index++) {
+      for (let index = 0; index < 200; index++) {
         rects.push(
           new Rect({
             top: random(200, 300),

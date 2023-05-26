@@ -29,7 +29,7 @@ export class UndoRedoService {
 
     canvas.on('object:modified', this.saveState.bind(this))
 
-    this.pageId = this.workspacesService.getCurrentWorkspaceId()
+    this.pageId = this.workspacesService.getCurrentId()
 
     this.initWorkspace()
   }
@@ -112,19 +112,18 @@ export class UndoRedoService {
 
   // 工作区 | 页面管理
   private initWorkspace() {
-    this.workspacesService.getAllWorkspaces().forEach((workspace) => {
+    this.workspacesService.all().forEach((workspace) => {
       this.undoRedos.set(workspace.id, {
         instantiation: new UndoRedo(),
         lastState:
-          this.pageId === this.workspacesService.getCurrentWorkspaceId()
-            ? this.getJson()
-            : undefined,
+          this.pageId === this.workspacesService.getCurrentId() ? this.getJson() : undefined,
       })
     })
     this.eventbus.on('workspaceAdd', (id) => {
       this.undoRedos.set(id, {
         instantiation: new UndoRedo(),
-        lastState: undefined,
+        lastState:
+          this.pageId === this.workspacesService.getCurrentId() ? this.getJson() : undefined,
       })
     })
     this.eventbus.on('workspaceRemove', (id) => {

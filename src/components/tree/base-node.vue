@@ -77,7 +77,7 @@
       @dragover="onDragOver"
       @dragleave="onDragLeave"
       @drop="onDrop"
-      @mousedown="onTitleClick"
+      @click="onTitleClick"
       @dblclick="onTitleDbclick"
     >
       <component :is="ReuseTemplate" v-if="blockNode" />

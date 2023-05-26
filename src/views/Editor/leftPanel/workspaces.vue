@@ -2,20 +2,21 @@
   import { useEditor } from '@/app'
   import Tree from '@/components/tree'
   import type { TreeNodeData } from '@/components/tree'
+  import ContextMenu from '@/components/contextMenu'
 
-  const { event, workspaces } = useEditor()
+  const { canvas, event, workspaces, undoRedo } = useEditor()
 
   const workspacesData = ref<TreeNodeData[]>([])
   const selectedkeys = ref<(string | number)[]>([])
 
   const updateWorkspaces = () => {
-    workspacesData.value = workspaces.getAllWorkspaces().map((workspace) => {
+    workspacesData.value = workspaces.all().map((workspace) => {
       return {
         key: workspace.id,
         title: workspace.name,
       }
     })
-    selectedkeys.value = [workspaces.getCurrentWorkspaceId()]
+    selectedkeys.value = [workspaces.getCurrentId()]
   }
 
   event.on('workspaceChangeAfter', updateWorkspaces)
@@ -25,7 +26,7 @@
   updateWorkspaces()
 
   const onSelect = (_selectedkeys: (string | number)[]) => {
-    workspaces.setCurrentWorkspaceId(_selectedkeys[0].toString())
+    workspaces.setCurrentId(_selectedkeys[0].toString())
   }
 
   onUnmounted(() => {
@@ -35,13 +36,50 @@
   })
 
   const addOnClick = () => {
-    workspaces.setCurrentWorkspaceId(workspaces.addWorkspace('页面'))
+    workspaces.setCurrentId(workspaces.add('页面'))
+  }
+
+  const openContextMenu = (e: MouseEvent, node: TreeNodeData) => {
+    ContextMenu.showContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      preserveIconWidth: false,
+      items: [
+        {
+          label: '复制',
+          onClick: () => {
+            if (!node.key) return
+            const workspace = workspaces.get(node.key.toString())
+            if (!workspace) return
+            const id = workspaces.add(workspace.name + ' 拷贝')
+            const json = canvas.getPageJSON(node.key.toString())
+            canvas.setPageJSON(id, json)
+            workspaces.setCurrentId(id)
+          },
+        },
+        {
+          label: '删除',
+          hidden: workspaces.size() <= 1,
+          onClick: () => {
+            if (!node.key) return
+            workspaces.remove(node.key.toString())
+          },
+          divided: true,
+        },
+        {
+          label: '重命名',
+          onClick: () => {
+            //
+          },
+        },
+      ],
+    })
   }
 </script>
 
 <template>
   <div>
-    <div class="h28px px0.5 font-bold flex justify-between items-center">
+    <div class="sticky top-0 bg-$color-bg-4 z1 h28px px0.5 flex justify-between items-center">
       <span class="pl3 color-$color-text-2">页面</span>
       <div>
         <a-button class="icon-btn" size="mini" @click="addOnClick">
@@ -57,6 +95,7 @@
       @select="onSelect"
       :data="workspacesData"
       size="small"
+      @node-contextmenu="openContextMenu"
     />
   </div>
 </template>

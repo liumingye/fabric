@@ -73,10 +73,10 @@ export class Board extends createCollectionMixin(GroupOrigin) {
     })
   }
 
-  override setCoords() {
-    super.setCoords()
-    this.clipPath && this.clipPath.setCoords()
-  }
+  // 开启interactive性能差，待优化
+  // override setCoords() {
+  //   super.setCoords()
+  // }
 
   override _renderBackground(ctx: CanvasRenderingContext2D) {
     Rect.prototype._render.call(this, ctx)

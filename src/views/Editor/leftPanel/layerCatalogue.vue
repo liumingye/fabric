@@ -155,7 +155,6 @@
       dropIndex = dragGroup._objects.length
     }
     const [_dragObject] = dragGroup.remove(dragObject) as FabricObject[]
-    _dragObject.group?.exitGroup(_dragObject)
     dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
   }
 

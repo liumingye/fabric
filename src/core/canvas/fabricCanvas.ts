@@ -17,7 +17,8 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public activeObject = shallowRef<FabricObject | Textbox>()
 
-  private pageId: string
+  public pageId: string
+
   private pages: Map<string, string | undefined> = new Map()
 
   public ref = {
@@ -109,7 +110,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     }
     this._objects = objectsProxy(this._objects, 'objects')
 
-    this.pageId = this.workspacesService.getCurrentWorkspaceId()
+    this.pageId = this.workspacesService.getCurrentId()
     this.initWorkspace()
   }
 
@@ -143,6 +144,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this._hoveredTarget = activeSelection
     this._hoveredTargets = [...objects]
     this.setActiveObject(activeSelection)
+    this._fireSelectionEvents([activeSelection])
   }
 
   /**
@@ -212,11 +214,11 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   // 工作区 | 页面管理
   private initWorkspace() {
-    this.workspacesService.getAllWorkspaces().forEach((workspace) => {
-      this.pages.set(workspace.id, undefined)
+    this.workspacesService.all().forEach((workspace) => {
+      this.setPageJSON(workspace.id, undefined)
     })
     this.eventbus.on('workspaceAdd', (id) => {
-      this.pages.set(id, undefined)
+      this.setPageJSON(id, undefined)
     })
     this.eventbus.on('workspaceRemove', (id) => {
       this.pages.delete(id)
@@ -224,7 +226,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.eventbus.on('workspaceChangeBefore', (id) => {
       // 切换前保存当前工作区
       if (this.pageId === id) {
-        this.pages.set(id, this.toObject())
+        this.setPageJSON(id, this.toObject())
       }
     })
     this.eventbus.on('workspaceChangeAfter', (id) => {
@@ -232,10 +234,26 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       if (this.pageId !== id) {
         const json = this.pages.get(id)
         this.loadFromJSON(json || {}).then(() => {
-          this.renderAll()
+          this.requestRenderAll()
         })
         this.pageId = id
       }
     })
   }
+
+  public setPageJSON(id: string, json: string | undefined) {
+    this.pages.set(id, json)
+  }
+
+  public getPageJSON(id: string) {
+    if (id === this.pageId) {
+      return this.toObject()
+    }
+    return this.pages.get(id) || '{}'
+  }
+
+  // override renderCanvas(ctx: CanvasRenderingContext2D, objects: FabricObject[]): void {
+  //   super.renderCanvas(ctx, objects)
+  //   console.log('render')
+  // }
 }

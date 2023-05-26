@@ -219,12 +219,14 @@ export class FabricTool extends Disposable {
       },
       onSwipe: () => {
         if (this.handMoveActivate) {
-          canvas.setCursor('grabbing')
-          const deltaPoint = new Point(lengthX.value, lengthY.value)
-            .scalarDivide(canvas.getZoom())
-            .transform(vpt)
-            .scalarMultiply(-1)
-          canvas.absolutePan(deltaPoint)
+          requestAnimationFrame(() => {
+            canvas.setCursor('grabbing')
+            const deltaPoint = new Point(lengthX.value, lengthY.value)
+              .scalarDivide(canvas.getZoom())
+              .transform(vpt)
+              .scalarMultiply(-1)
+            canvas.absolutePan(deltaPoint)
+          })
         }
       },
       onSwipeEnd: () => {
