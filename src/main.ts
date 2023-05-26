@@ -1,4 +1,4 @@
-import { App as App2, createApp } from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import router from '@/router'
 import pinia from '@/store'
@@ -11,19 +11,13 @@ import '@/assets/style/global.less'
 import 'virtual:uno.css'
 import 'virtual:svg-icons-register'
 
-import { Notification, Modal, Message } from '@arco-design/web-vue'
+import { arcoPatch } from '@/utils/arco'
 
 const core = createCore()
 // debug code
 import { myPlugin } from './core/testPlugin'
 core.use(myPlugin)
 
-const patch = (app: App2) => {
-  Notification._context = app._context
-  Modal._context = app._context
-  Message._context = app._context
-}
-
 NP.enableBoundaryChecking(false)
 
-createApp(App).use(pinia).use(router).use(core).use(patch).mount('#app')
+createApp(App).use(pinia).use(router).use(core).use(arcoPatch).mount('#app')

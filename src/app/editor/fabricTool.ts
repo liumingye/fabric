@@ -104,7 +104,7 @@ export class FabricTool extends Disposable {
             tempObject.__corner = 'br'
             canvas._setupCurrentTransform(e.e, tempObject, true)
           },
-          onSwipeEnd: () => {
+          onSwipeEnd: (e) => {
             if (tempObject) {
               // 如果点击画板，没有移动，设置默认宽高
               if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
@@ -114,19 +114,35 @@ export class FabricTool extends Disposable {
                   scaleX: 1,
                   scaleY: 1,
                 })
-                canvas.requestRenderAll()
               }
+              // 设置宽高缩放
               tempObject.set({
                 width: tempObject.getScaledWidth(),
                 height: tempObject.getScaledHeight(),
                 scaleX: 1,
                 scaleY: 1,
               })
+              // 特殊形状处理
+              if (tempObject instanceof Ellipse) {
+                tempObject.set({
+                  rx: tempObject.width / 2,
+                  ry: tempObject.height / 2,
+                })
+              } else if (tempObject instanceof Textbox) {
+                tempObject.set({
+                  text: '输入文本',
+                })
+                this.canvas.defaultCursor = 'default'
+                tempObject.enterEditing(e.e)
+                tempObject.selectAll()
+              }
+              // 通知事件
               if (tempObject.group) {
                 tempObject.group._onObjectAdded(tempObject)
               } else {
                 canvas._onObjectAdded(tempObject)
               }
+              // canvas.requestRenderAll()
               this.undoRedo.saveState()
               tempObject = undefined
             }

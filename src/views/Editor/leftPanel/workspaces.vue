@@ -3,6 +3,7 @@
   import Tree from '@/components/tree'
   import type { TreeNodeData } from '@/components/tree'
   import ContextMenu from '@/components/contextMenu'
+  import { iMatrix } from '@/utils/constants'
 
   const number = ref(0)
 
@@ -40,6 +41,7 @@
 
   const addOnClick = () => {
     workspaces.setCurrentId(workspaces.add('页面'))
+    canvas.setViewportTransform(iMatrix)
   }
 
   const openContextMenu = (e: MouseEvent, node: TreeNodeData) => {

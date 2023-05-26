@@ -81,7 +81,22 @@ const toRefObject = (object: Textbox | FabricObject) => {
   ]
 
   if (object.isType('Text', 'Textbox')) {
-    keyArr.push('text')
+    keyArr.push(
+      'text',
+      'charSpacing',
+      'lineHeight',
+      'fontSize',
+      'fontWeight',
+      'fontFamily',
+      'fontStyle',
+      'pathSide',
+      'pathAlign',
+      'underline',
+      'overline',
+      'linethrough',
+      'textAlign',
+      'direction',
+    )
   }
 
   object.ref = reactive({}) as ObjectRef

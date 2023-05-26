@@ -47,7 +47,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
           stopContextMenu: true,
           fireMiddleClick: true,
           includeDefaultValues: false,
-          // selectionFullyContained: true,
         },
         options,
       ),
@@ -226,7 +225,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.eventbus.on('workspaceChangeBefore', (id) => {
       // 切换前保存当前工作区
       if (this.pageId === id) {
-        this.setPageJSON(id, this.toObject())
+        this.setPageJSON(id, this.toObject(['viewportTransform']))
       }
     })
     this.eventbus.on('workspaceChangeAfter', (id) => {
@@ -235,6 +234,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         const json = this.pages.get(id)
         this.loadFromJSON(json || {}).then(() => {
           this.requestRenderAll()
+          this.ref.zoom.value = toFixed(this.getZoom())
         })
         this.pageId = id
       }
@@ -247,7 +247,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public getPageJSON(id: string) {
     if (id === this.pageId) {
-      return this.toObject()
+      return this.toObject(['viewportTransform'])
     }
     return this.pages.get(id) || '{}'
   }

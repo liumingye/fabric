@@ -6,6 +6,7 @@ import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { noop } from '@vueuse/core'
 
 export class Layer extends Disposable {
   constructor(
@@ -98,18 +99,14 @@ export class Layer extends Disposable {
       // 获取要插入的分组，在deleteLayer前获取，不然获取不到
       const insertGroup = objects[0].getParent()
       const index = insertGroup._objects.indexOf(objects[0])
+      // discardActiveObject 修复选中一个组内元素一个组外元素，打组位置偏移
+      canvas.discardActiveObject()
       // 创建组
-      // 不能直接 new Group(this.deleteLayer(objects))，objects有组的话x和y会偏移
-      const group = new Group()
-      group.add(
-        ...this.deleteLayer(
+      const group = new Group(
+        this.deleteLayer(
           objects
             .filter((obj, index, array) => {
               const parent = obj.getParent(true)
-              // 修复选中一个组内元素一个组外元素，打组位置偏移
-              if (obj.group) {
-                obj.group.remove(obj)
-              }
               // 如果元素的组也在objects里，则排除该元素
               return !parent || !array.includes(parent)
             })
@@ -128,11 +125,10 @@ export class Layer extends Disposable {
       if (!activeObject || !util.isCollection(activeObject)) return
       e.preventDefault?.()
       const parentGroup = activeObject.getParent()
-      const objects = this.getObjects(activeObject)
       const index = parentGroup._objects.indexOf(activeObject)
       // 移除组
-      parentGroup.remove(activeObject)
-      parentGroup.insertAt(index, ...this.deleteLayer(objects))
+      const objects = activeObject.removeAll() as FabricObject[]
+      parentGroup.insertAt(index, ...objects)
       // 设置激活对象
       canvas.setActiveObjects(objects.reverse())
       this.undoRedo.saveState()

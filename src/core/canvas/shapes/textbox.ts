@@ -5,6 +5,8 @@ import { createTextboxDefaultControls } from '@/core/canvas/controls/commonContr
 Object.assign(TextboxOrigin.ownDefaults, {
   controls: createTextboxDefaultControls(),
   splitByGrapheme: true,
+  fontSize: 36,
+  fontFamily: 'arial',
 })
 
 export class Textbox extends TextboxOrigin {

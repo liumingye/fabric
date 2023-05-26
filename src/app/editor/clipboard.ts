@@ -3,7 +3,7 @@ import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { ClipboardService, IClipboardService } from '@/core/clipboard/clipboardService'
 import { encode, decode } from '@/utils/steganography'
-import { ActiveSelection, FabricObject, Group, Textbox, util } from '@fabric'
+import { ActiveSelection, FabricObject, Group, Image, Textbox, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
@@ -65,11 +65,28 @@ export class Clipboard extends Disposable {
     this.canvas.add(textbox)
   }
 
+  private async readImage(blob: Blob) {
+    const center = this.canvas.getVpCenter()
+    const img = new window.Image()
+
+    img.onload = () => {
+      const image = new Image(img, {
+        width: img.width,
+        height: img.height,
+        left: center.x - img.width / 2,
+        top: center.y - img.height / 2,
+      })
+      this.canvas.add(image)
+    }
+
+    img.src = URL.createObjectURL(blob)
+  }
+
   private paste() {
     this.clipboard.readBlob().then(async (blob) => {
       if (!blob) return
 
-      // todo 图片格式
+      // 文本格式
       if (blob.type === 'text/plain') {
         this.readText()
         return
@@ -77,7 +94,15 @@ export class Clipboard extends Disposable {
 
       // 图片读取json
       const deJson = await decode(blob)
-      if (!deJson) return
+
+      // 无json
+      if (!deJson) {
+        // 图片格式
+        if (['image/png', 'image/jpeg'].includes(blob.type)) {
+          this.readImage(blob)
+        }
+        return
+      }
 
       const serialized = typeof deJson === 'string' ? JSON.parse(deJson) : deJson
 

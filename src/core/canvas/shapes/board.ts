@@ -1,9 +1,7 @@
 import { Rect, classRegistry, FabricObject } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
-import { Group as GroupOrigin } from 'fabric'
-import { toRefObject } from '@/core/canvas/toRefObject'
-import { createCollectionMixin } from '@/core/canvas/Collection'
 import { PiBy180 } from '@/utils/constants'
+import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
 export const boardDefaultValues = {
   padding: 5,
@@ -11,7 +9,7 @@ export const boardDefaultValues = {
   layout: 'fixed',
 }
 
-export class Board extends createCollectionMixin(GroupOrigin) {
+export class Board extends CommonGroup {
   public subTargetCheck = true
 
   public interactive = true
@@ -30,9 +28,7 @@ export class Board extends createCollectionMixin(GroupOrigin) {
     options?: Partial<GroupProps>,
     objectsRelativeToGroup?: boolean,
   ) {
-    const newObjects = objects?.map((obj) => toRefObject(obj))
-
-    super(newObjects, options, objectsRelativeToGroup)
+    super(objects, options, objectsRelativeToGroup)
 
     this.on('scaling', () => {
       const { y: height, x: width } = this._getTransformedDimensions()
@@ -73,14 +69,6 @@ export class Board extends createCollectionMixin(GroupOrigin) {
       originX: 'center',
       originY: 'center',
     })
-  }
-
-  override _shouldSetNestedCoords() {
-    // 开启interactive性能差，优化
-    if (!this.canvas || this.canvas.selection === true || this.canvas.skipTargetFind === false) {
-      return super._shouldSetNestedCoords()
-    }
-    return false
   }
 
   override _renderBackground(ctx: CanvasRenderingContext2D) {

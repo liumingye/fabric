@@ -1,18 +1,14 @@
-import { Group as GroupOrigin } from 'fabric'
 import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
-import { toRefObject } from '@/core/canvas/toRefObject'
-import { createCollectionMixin } from '@/core/canvas/Collection'
+import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
-export class Group extends createCollectionMixin(GroupOrigin) {
+export class Group extends CommonGroup {
   constructor(
     objects?: FabricObject[],
     options?: Partial<GroupProps>,
     objectsRelativeToGroup?: boolean,
   ) {
-    const newObjects = objects?.map((obj) => toRefObject(obj))
-
-    super(newObjects, options, objectsRelativeToGroup)
+    super(objects, options, objectsRelativeToGroup)
 
     this.on('mousedblclick', this.doubleClickHandler.bind(this))
   }
@@ -56,10 +52,11 @@ export class Group extends createCollectionMixin(GroupOrigin) {
       parent && parent.remove(this)
     }
   }
-}
 
-Object.assign(Group.ownDefaults, {
-  subTargetCheck: true,
-})
+  // override setCoords(): void {
+  //   super.setCoords()
+  //   console.log('setCoords')
+  // }
+}
 
 classRegistry.setClass(Group)

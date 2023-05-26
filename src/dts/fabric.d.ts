@@ -77,6 +77,19 @@ export declare module 'fabric' {
     | 'inverted'
     | 'absolutePositioned'
     | 'text'
+    | 'charSpacing'
+    | 'lineHeight'
+    | 'fontSize'
+    | 'fontWeight'
+    | 'fontFamily'
+    | 'fontStyle'
+    | 'pathSide'
+    | 'pathAlign'
+    | 'underline'
+    | 'overline'
+    | 'linethrough'
+    | 'textAlign'
+    | 'direction'
   >
 
   export declare class Canvas {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { popupMaxHeight } from '@/utils/arco'
 
   const opacity = useActiveObjectModel('opacity')
   const globalCompositeOperation = useActiveObjectModel<
@@ -11,24 +12,24 @@
 
   const options = reactive([
     {
-      key: 'source-over',
-      name: '正常',
+      value: 'source-over',
+      label: '正常',
     },
     {
       isGroup: true,
       label: '暗色',
       options: [
         {
-          key: 'darken',
-          name: '变暗',
+          value: 'darken',
+          label: '变暗',
         },
         {
-          key: 'multiply',
-          name: '正片叠底',
+          value: 'multiply',
+          label: '正片叠底',
         },
         {
-          key: 'color-burn',
-          name: '颜色加深',
+          value: 'color-burn',
+          label: '颜色加深',
         },
       ],
     },
@@ -37,20 +38,20 @@
       label: '亮色',
       options: [
         {
-          key: 'lighten',
-          name: '变亮',
+          value: 'lighten',
+          label: '变亮',
         },
         {
-          key: 'screen',
-          name: '滤色',
+          value: 'screen',
+          label: '滤色',
         },
         {
-          key: 'color-dodge',
-          name: '颜色减淡',
+          value: 'color-dodge',
+          label: '颜色减淡',
         },
         {
-          key: 'lighter',
-          name: '提亮',
+          value: 'lighter',
+          label: '提亮',
         },
       ],
     },
@@ -59,16 +60,16 @@
       label: '对比',
       options: [
         {
-          key: 'overlay',
-          name: '叠加',
+          value: 'overlay',
+          label: '叠加',
         },
         {
-          key: 'soft-light',
-          name: '柔光',
+          value: 'soft-light',
+          label: '柔光',
         },
         {
-          key: 'hard-light',
-          name: '强光',
+          value: 'hard-light',
+          label: '强光',
         },
       ],
     },
@@ -77,12 +78,12 @@
       label: '比较',
       options: [
         {
-          key: 'difference',
-          name: '差集',
+          value: 'difference',
+          label: '差集',
         },
         {
-          key: 'exclusion',
-          name: '排除',
+          value: 'exclusion',
+          label: '排除',
         },
       ],
     },
@@ -91,34 +92,24 @@
       label: '颜色',
       options: [
         {
-          key: 'hue',
-          name: '色相',
+          value: 'hue',
+          label: '色相',
         },
         {
-          key: 'saturation',
-          name: '饱和度',
+          value: 'saturation',
+          label: '饱和度',
         },
         {
-          key: 'color',
-          name: '颜色',
+          value: 'color',
+          label: '颜色',
         },
         {
-          key: 'luminosity',
-          name: '明度',
+          value: 'luminosity',
+          label: '明度',
         },
       ],
     },
   ])
-
-  const popupVisibleChange = (visible: boolean) => {
-    if (!visible) return
-    // 修改下拉列表最大高度到屏幕最下面
-    nextTick(() => {
-      const wrapper = document.querySelector<HTMLDivElement>('.arco-select-dropdown-list-wrapper')
-      if (!wrapper) return
-      wrapper.style.maxHeight = `${window.innerHeight - wrapper.getBoundingClientRect().top - 8}px`
-    })
-  }
 </script>
 
 <template>
@@ -127,10 +118,8 @@
       <a-col :span="10">
         <a-select
           size="small"
-          v-bind="globalCompositeOperation"
+          v-bind="{ ...globalCompositeOperation, ...popupMaxHeight() }"
           :options="options"
-          :field-names="{ value: 'key', label: 'name' }"
-          @popup-visible-change="popupVisibleChange"
         />
       </a-col>
       <a-col :span="7">

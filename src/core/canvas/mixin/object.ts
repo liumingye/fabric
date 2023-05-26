@@ -21,31 +21,17 @@ Object.assign(FabricObject.ownDefaults, {
 
 const mixin = {
   getHeight() {
-    return toFixed(this.getBoundingRect(true, true).height)
+    return toFixed(this.getScaledHeight())
   },
   getWidth() {
-    return toFixed(this.getBoundingRect(true, true).width)
+    return toFixed(this.getScaledWidth())
   },
   setHeight(value: number) {
-    const boundingRectFactor = NP.divide(
-      this.getBoundingRect(true, true).height,
-      this.getScaledHeight(),
-    )
-    this.set(
-      'scaleY',
-      NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.height), boundingRectFactor),
-    )
+    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), this.height))
     this.fire('scaling')
   },
   setWidth(value: number) {
-    const boundingRectFactor = NP.divide(
-      this.getBoundingRect(true, true).width,
-      this.getScaledWidth(),
-    )
-    this.set(
-      'scaleX',
-      NP.divide(NP.divide(NP.minus(value, this.strokeWidth), this.width), boundingRectFactor),
-    )
+    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), this.width))
     this.fire('scaling')
   },
   setAngle(value: number) {
