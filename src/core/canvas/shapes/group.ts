@@ -18,7 +18,7 @@ export class Group extends createCollectionMixin(GroupOrigin) {
   }
 
   // 双击后启用interactive，离开组后关闭
-  private doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
+  public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
     if (e.subTargets && e.subTargets.length > 0) {
       this.set('interactive', true)
       const addDeselectedEvent = (obj: FabricObject) => {

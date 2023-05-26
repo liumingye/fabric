@@ -55,7 +55,6 @@ export class FabricTool extends Disposable {
         canvas.setCursor('crosshair')
         canvas.skipTargetFind = true
         canvas.selection = false
-        const { min, max, abs, ceil } = Math
         let coordsStart: Point | undefined
         const { stop, isSwiping } = useFabricSwipe({
           onSwipeStart: (e) => {
@@ -71,40 +70,29 @@ export class FabricTool extends Disposable {
             // 创建形状
             switch (tool as 'rect' | 'ellipse' | 'triangle' | 'text') {
               case 'rect':
-                tempObject = new Rect({
-                  left: coordsStart.x,
-                  top: coordsStart.y,
-                  width: 1,
-                  height: 1,
-                })
+                tempObject = new Rect({})
                 break
               case 'ellipse':
                 tempObject = new Ellipse({
-                  left: coordsStart.x,
-                  top: coordsStart.y,
-                  width: 1,
-                  height: 1,
-                  rx: 0.5,
-                  ry: 0.5,
+                  rx: 50,
+                  ry: 50,
                 })
                 break
               case 'triangle':
-                tempObject = new Triangle({
-                  left: coordsStart.x,
-                  top: coordsStart.y,
-                  width: 1,
-                  height: 1,
-                })
+                tempObject = new Triangle({})
                 break
               case 'text':
-                tempObject = new Textbox('', {
-                  left: coordsStart.x,
-                  top: coordsStart.y,
-                  width: 1,
-                  height: 1,
-                })
+                tempObject = new Textbox('', {})
                 break
             }
+            tempObject.set({
+              left: coordsStart.x,
+              top: coordsStart.y,
+              width: 100,
+              height: 100,
+              scaleX: 0.01,
+              scaleY: 0.01,
+            })
             // 不发送ObjectAdded事件
             tempObject.set('noEventObjectAdded', true)
             // 添加对象到画板
@@ -113,65 +101,35 @@ export class FabricTool extends Disposable {
             tempObject.set('noEventObjectAdded', false)
             // 设置激活对象
             canvas.setActiveObject(tempObject)
-          },
-          onSwipe: (e) => {
-            requestAnimationFrame(() => {
-              if (!tempObject || !coordsStart) return
-              // 获得坐标
-              const pointerPoint = canvas.getPointer(e.e)
-              // 获取移动长度
-              const lengthPoint = pointerPoint.subtract(coordsStart)
-              const lengthX = ceil(abs(lengthPoint.x))
-              const lengthY = ceil(abs(lengthPoint.y))
-              // 构建配置
-              let opt: Partial<FabricObject & Ellipse> = {
-                left: ceil(min(coordsStart.x, pointerPoint.x)),
-                top: ceil(min(coordsStart.y, pointerPoint.y)),
-                width: max(lengthX, 1),
-                height: max(lengthY, 1),
-              }
-              if (tool === 'ellipse') {
-                opt = {
-                  ...opt,
-                  rx: max(lengthX / 2, 0.5),
-                  ry: max(lengthY / 2, 0.5),
-                }
-              }
-              tempObject.set(opt)
-              tempObject.fire('scaling', {
-                e: e.e,
-                transform: this.canvas._currentTransform!,
-                pointer: pointerPoint,
-              })
-              canvas.requestRenderAll()
-            })
+            tempObject.__corner = 'br'
+            canvas._setupCurrentTransform(e.e, tempObject, true)
           },
           onSwipeEnd: () => {
             if (tempObject) {
               // 如果点击画板，没有移动，设置默认宽高
-              if (tempObject.width <= 1 && tempObject.height <= 1) {
+              if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
                 tempObject.set({
                   left: tempObject.left - 50,
                   top: tempObject.top - 50,
-                  width: 100,
-                  height: 100,
+                  scaleX: 1,
+                  scaleY: 1,
                 })
-                if (tool === 'ellipse') {
-                  tempObject.set({
-                    rx: 50,
-                    ry: 50,
-                  })
-                }
                 canvas.requestRenderAll()
               }
+              tempObject.set({
+                width: tempObject.getScaledWidth(),
+                height: tempObject.getScaledHeight(),
+                scaleX: 1,
+                scaleY: 1,
+              })
               if (tempObject.group) {
                 tempObject.group._onObjectAdded(tempObject)
               } else {
                 canvas._onObjectAdded(tempObject)
               }
               this.undoRedo.saveState()
+              tempObject = undefined
             }
-            tempObject = undefined
             activeTool.value = 'move'
           },
         })

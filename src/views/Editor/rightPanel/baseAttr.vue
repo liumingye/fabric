@@ -49,7 +49,7 @@
               @click="keybinding.trigger('shift+h')"
             >
               <template #icon>
-                <SvgIcon name="bx-reflect-horizontal" />
+                <SvgIcon name="bx-reflect-vertical" />
               </template>
             </a-button>
             <template #content>
@@ -63,7 +63,7 @@
               @click="keybinding.trigger('shift+v')"
             >
               <template #icon>
-                <SvgIcon name="bx-reflect-vertical" />
+                <SvgIcon name="bx-reflect-horizontal" />
               </template>
             </a-button>
             <template #content>

@@ -4,7 +4,9 @@
   import type { TreeNodeData } from '@/components/tree'
   import ContextMenu from '@/components/contextMenu'
 
-  const { canvas, event, workspaces, undoRedo } = useEditor()
+  const number = ref(0)
+
+  const { canvas, event, workspaces } = useEditor()
 
   const workspacesData = ref<TreeNodeData[]>([])
   const selectedkeys = ref<(string | number)[]>([])
@@ -17,23 +19,24 @@
       }
     })
     selectedkeys.value = [workspaces.getCurrentId()]
+    number.value = workspaces.size()
   }
+
+  updateWorkspaces()
 
   event.on('workspaceChangeAfter', updateWorkspaces)
   event.on('workspaceAdd', updateWorkspaces)
   event.on('workspaceRemove', updateWorkspaces)
-
-  updateWorkspaces()
-
-  const onSelect = (_selectedkeys: (string | number)[]) => {
-    workspaces.setCurrentId(_selectedkeys[0].toString())
-  }
 
   onUnmounted(() => {
     event.off('workspaceChangeAfter', updateWorkspaces)
     event.off('workspaceAdd', updateWorkspaces)
     event.off('workspaceRemove', updateWorkspaces)
   })
+
+  const onSelect = (_selectedkeys: (string | number)[]) => {
+    workspaces.setCurrentId(_selectedkeys[0].toString())
+  }
 
   const addOnClick = () => {
     workspaces.setCurrentId(workspaces.add('页面'))
@@ -80,7 +83,7 @@
 <template>
   <div>
     <div class="sticky top-0 bg-$color-bg-4 z1 h28px px0.5 flex justify-between items-center">
-      <span class="pl3 color-$color-text-2">页面</span>
+      <span class="pl3 color-$color-text-2">页面 ({{ number }})</span>
       <div>
         <a-button class="icon-btn" size="mini" @click="addOnClick">
           <template #icon>

@@ -2,6 +2,7 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Disposable } from '@/utils/lifecycle'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 import { useThemes } from '@/hooks/useThemes'
+import { PiBy180 } from '@/utils/constants'
 
 type Rect = { left: number; top: number; width: number; height: number }
 
@@ -329,7 +330,7 @@ export class Ruler extends Disposable {
     ctx.font = `${fontSize ?? 12}px Helvetica`
     if (angle) {
       ctx.translate(left, top)
-      ctx.rotate((Math.PI / 180) * angle)
+      ctx.rotate(PiBy180 * angle)
       ctx.translate(-left, -top)
     }
     ctx.fillText(text, left, top)

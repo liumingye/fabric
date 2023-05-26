@@ -8,6 +8,8 @@ import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspa
 export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoService')
 
 export class UndoRedoService {
+  declare readonly _serviceBrand: undefined
+
   private pageId: string
 
   private undoRedos: Map<

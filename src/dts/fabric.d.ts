@@ -1,5 +1,5 @@
 import type { AlignMethod } from 'app'
-import type { FabricObject, Point } from '@fabric'
+import type { FabricObject, Point, TPointerEventInfo, TPointerEvent } from '@fabric'
 import 'fabric/src/typedefs'
 
 export declare module 'fabric' {
@@ -144,6 +144,7 @@ export declare module 'fabric' {
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
     getObjects(): FabricObject[]
+    doubleClickHandler(e: TPointerEventInfo<TPointerEvent>): void
   }
 
   export declare class StaticCanvas {

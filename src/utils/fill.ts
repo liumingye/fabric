@@ -1,5 +1,6 @@
 import type { ColorPoint } from '@/components/colorPicker/interface'
 import { Color, Gradient } from '@fabric'
+import { PiBy180 } from '@/utils/constants'
 // import type { GradientCoords } from 'fabric/src/gradient/typedefs'
 
 /**
@@ -17,7 +18,7 @@ import { Color, Gradient } from '@fabric'
 
 // 角度转换坐标
 export const gradAngleToCoords = (paramsAngle: number) => {
-  const anglePI = -parseInt(paramsAngle + '', 10) * (Math.PI / 180)
+  const anglePI = -parseInt(paramsAngle + '', 10) * PiBy180
   const angleCoords = {
     x1: Math.round(50 + Math.sin(anglePI) * 50) / 100,
     y1: Math.round(50 + Math.cos(anglePI) * 50) / 100,

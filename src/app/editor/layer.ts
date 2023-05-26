@@ -16,10 +16,10 @@ export class Layer extends Disposable {
   ) {
     super()
     this.keybinding.bind(['del', 'backspace'], (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
+      const objects = canvas.getActiveObjects()
+      if (objects.length === 0) return
       e.preventDefault?.()
-      this.deleteLayer(this.getObjects(activeObject))
+      this.deleteLayer(objects)
       canvas.discardActiveObject()
       canvas.requestRenderAll()
       this.undoRedo.saveState()
@@ -92,10 +92,9 @@ export class Layer extends Disposable {
 
     // 创建分组
     this.keybinding.bind('mod+g', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
+      const objects = canvas.getActiveObjects()
+      if (objects.length === 0) return
       e.preventDefault?.()
-      const objects = this.getObjects(activeObject)
       // 获取要插入的分组，在deleteLayer前获取，不然获取不到
       const insertGroup = objects[0].getParent()
       const index = insertGroup._objects.indexOf(objects[0])
@@ -150,11 +149,8 @@ export class Layer extends Disposable {
 
     // 显示/隐藏
     this.keybinding.bind('mod+shift+h', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
       e.preventDefault?.()
-      const objects = this.getObjects(activeObject)
-      objects.forEach((obj) => {
+      this.objForEach((obj) => {
         obj.visible = !obj.visible
         obj.getParent(true)?.setDirty()
       })
@@ -163,11 +159,8 @@ export class Layer extends Disposable {
 
     // 锁定/解锁
     this.keybinding.bind('mod+shift+l', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
       e.preventDefault?.()
-      const objects = this.getObjects(activeObject)
-      objects.forEach((obj) => {
+      this.objForEach((obj) => {
         obj.evented = !obj.evented
         obj.hasControls = obj.evented
         obj.selectable = obj.evented

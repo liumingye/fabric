@@ -16,6 +16,7 @@ Object.assign(FabricObject.ownDefaults, {
   borderOpacityWhenMoving: 0,
   controls: createObjectDefaultControls(),
   includeDefaultValues: false,
+  snapAngle: 1,
 } as FabricObject)
 
 const mixin = {

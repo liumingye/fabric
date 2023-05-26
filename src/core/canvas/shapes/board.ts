@@ -3,6 +3,7 @@ import type { GroupProps } from 'fabric/src/shapes/Group'
 import { Group as GroupOrigin } from 'fabric'
 import { toRefObject } from '@/core/canvas/toRefObject'
 import { createCollectionMixin } from '@/core/canvas/Collection'
+import { PiBy180 } from '@/utils/constants'
 
 export const boardDefaultValues = {
   padding: 5,
@@ -12,6 +13,7 @@ export const boardDefaultValues = {
 
 export class Board extends createCollectionMixin(GroupOrigin) {
   public subTargetCheck = true
+
   public interactive = true
 
   static ownDefaults: Record<string, any> = boardDefaultValues
@@ -73,10 +75,13 @@ export class Board extends createCollectionMixin(GroupOrigin) {
     })
   }
 
-  // 开启interactive性能差，待优化
-  // override setCoords() {
-  //   super.setCoords()
-  // }
+  override _shouldSetNestedCoords() {
+    // 开启interactive性能差，优化
+    if (!this.canvas || this.canvas.selection === true || this.canvas.skipTargetFind === false) {
+      return super._shouldSetNestedCoords()
+    }
+    return false
+  }
 
   override _renderBackground(ctx: CanvasRenderingContext2D) {
     Rect.prototype._render.call(this, ctx)
@@ -89,12 +94,25 @@ export class Board extends createCollectionMixin(GroupOrigin) {
       // 左上角文字
       ctx.save()
       this.transform(ctx)
-      ctx.translate(-this.width / 2, -this.height / 2)
       ctx.scale(1 / (this.zoomX ?? 1), 1 / (this.zoomY ?? 1))
+      const angleInRadians = this.angle * PiBy180
+      const x = Math.sin(angleInRadians)
+      const y = Math.cos(angleInRadians)
+      const absX = Math.abs(x)
+      const absY = Math.abs(y)
+      if (absX > absY) {
+        ctx.rotate(Math.sign(x) * -90 * PiBy180)
+      } else {
+        ctx.rotate((Math.sign(y) * -90 + 90) * PiBy180)
+      }
       ctx.font = '12px Helvetica'
       ctx.fillStyle = '#888'
       ctx.textBaseline = 'bottom'
-      ctx.fillText(this.name, 0, -2)
+      ctx.fillText(
+        this.name,
+        (-this.width * (this.zoomX ?? 1)) / 2,
+        (-this.height * (this.zoomY ?? 1)) / 2 - 2,
+      )
       ctx.restore()
     }
   }

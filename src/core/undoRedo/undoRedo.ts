@@ -19,8 +19,6 @@ class UndoQueue {
 }
 
 export class UndoRedo {
-  declare readonly _serviceBrand: undefined
-
   private undoStates: UndoQueue = new UndoQueue()
   private redoStates: UndoQueue = new UndoQueue()
   private isUndoing = false

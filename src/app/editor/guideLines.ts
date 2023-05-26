@@ -71,7 +71,7 @@ export class GuideLines extends Disposable {
     const activeObject = e.target
     this.activeObj = activeObject
     const canvasObjects: FabricObject[] = []
-    const add = (group: Group | Canvas) => {
+    const add = (group: Group | Canvas | Board) => {
       const objects = group.getObjects().filter((obj) => {
         if (this.ignoreObjTypes.length) {
           return !this.ignoreObjTypes.some((item) => obj.get(item.key) === item.value)

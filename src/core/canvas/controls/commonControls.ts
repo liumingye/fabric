@@ -1,6 +1,16 @@
 import { noop } from '@vueuse/core'
-import { Control, FabricObject, controlsUtils, Point, TControlSet } from '@fabric'
+import {
+  Control,
+  FabricObject,
+  controlsUtils,
+  Point,
+  TControlSet,
+  TPointerEvent,
+  Transform,
+  TDegree,
+} from '@fabric'
 import { toFixed } from '@/utils/math'
+import { PiBy180 } from '@/utils/constants'
 
 const positionHandler: Control['positionHandler'] = (
   dim,
@@ -46,12 +56,31 @@ const rotateIcon = (angle: number) => {
   return `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 16 16)'><path fill='white' d='M18.24 5.37C11.41 6.04 5.98 11.46 5.32 18.26L0 18.26L7.8 26L15.61 18.27L10.6 18.27C11.21 14.35 14.31 11.25 18.24 10.64L18.24 15.55L26 7.78L18.24 0L18.24 5.37Z'></path><path fill='black' d='M19.5463 6.61441C12.4063 6.68441 6.61632 12.4444 6.56632 19.5644L3.17632 19.5644L7.80632 24.1444L12.4363 19.5644L9.18632 19.5644C9.24632 13.8844 13.8563 9.28441 19.5463 9.22441L19.5463 12.3844L24.1463 7.78441L19.5463 3.16441L19.5463 6.61441Z'></path></g></svg>") 12 12,auto`
 }
 
+const rotationWithSnapping = (
+  eventData: TPointerEvent,
+  transform: Transform,
+  x: number,
+  y: number,
+) => {
+  const { shiftKey } = eventData
+  const { target } = transform
+  const { rotationWithSnapping } = controlsUtils
+  let snapAngle: TDegree | undefined
+  if (shiftKey) {
+    snapAngle = target.snapAngle
+    target.snapAngle = 15
+  }
+  const res = rotationWithSnapping(eventData, transform, x, y)
+  snapAngle && (target.snapAngle = snapAngle)
+  return res
+}
+
 const getRotateControl = (angle: number): Partial<Control> => ({
   sizeX: 16,
   sizeY: 16,
   actionHandler: (eventData, transformData, x, y) => {
     transformData.target.canvas?.setCursor(rotateIcon(transformData.target.angle + angle))
-    return controlsUtils.rotationWithSnapping(eventData, transformData, x, y)
+    return rotationWithSnapping(eventData, transformData, x, y)
   },
   cursorStyleHandler: (eventData, control, fabricObject) => {
     return rotateIcon(fabricObject.angle + angle)
@@ -81,8 +110,8 @@ export const createObjectDefaultControls = (): TControlSet => ({
       ctx.save()
       ctx.translate(left, top)
 
-      const objectAngle = fabricObject.getTotalAngle()
-      const angleInRadians = objectAngle * (Math.PI / 180)
+      const objectAngle = fabricObject.group ? fabricObject.getTotalAngle() : fabricObject.angle
+      const angleInRadians = objectAngle * PiBy180
       const x = Math.sin(angleInRadians)
       const y = Math.cos(angleInRadians)
 
@@ -90,9 +119,9 @@ export const createObjectDefaultControls = (): TControlSet => ({
       const absY = Math.abs(y)
 
       if (absX > absY) {
-        ctx.rotate(((objectAngle - Math.sign(x) * 90) * Math.PI) / 180)
+        ctx.rotate((objectAngle - Math.sign(x) * 90) * PiBy180)
       } else {
-        ctx.rotate(((objectAngle - Math.sign(y) * 90 + 90) * Math.PI) / 180)
+        ctx.rotate((objectAngle - Math.sign(y) * 90 + 90) * PiBy180)
       }
 
       const fontSize = 12
@@ -115,7 +144,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
     positionHandler: (dim, finalMatrix, fabricObject, currentControl) => {
       const angle = fabricObject.getTotalAngle()
 
-      const angleInRadians = angle * (Math.PI / 180)
+      const angleInRadians = angle * PiBy180
 
       const x = Math.sin(angleInRadians)
       const y = Math.cos(angleInRadians)
