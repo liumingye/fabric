@@ -69,6 +69,7 @@ export class Clipboard extends Disposable {
     this.clipboard.readBlob().then(async (blob) => {
       if (!blob) return
 
+      // todo 图片格式
       if (blob.type === 'text/plain') {
         this.readText()
         return

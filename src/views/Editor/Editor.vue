@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import HeaderBar from '@/components/headerBar'
-  import CanvasEdit from '@/components/canvasEdit'
-  import LeftPanel from '@/components/leftPanel'
-  import RightPanel from '@/components/rightPanel'
+  import HeaderBar from '@/views/Editor/headerBar'
+  import CanvasEdit from '@/views/Editor/canvasEdit'
+  import LeftPanel from '@/views/Editor/leftPanel'
+  import RightPanel from '@/views/Editor/rightPanel'
   import { getActiveCore } from '@/core'
 
   const onContextmenu = (e: MouseEvent) => {
@@ -44,6 +44,14 @@
 </template>
 
 <style scoped lang="less">
+  // :global(#app) {
+  //   position: absolute;
+  //   left: 0;
+  //   right: 0;
+  //   top: 0;
+  //   bottom: 0;
+  // }
+
   :global(body) {
     overflow: hidden;
   }

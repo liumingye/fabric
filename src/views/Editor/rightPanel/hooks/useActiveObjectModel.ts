@@ -1,8 +1,8 @@
 import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
-import { ObjectRef } from '@fabric'
+import { ObjectRef, Textbox } from '@fabric'
 import type { WritableComputedRef } from 'vue'
-import { toFixed } from '@/utils/math'
+import { clampAngle, toFixed } from '@/utils/math'
 import { isNumber } from 'lodash'
 import { FabricObject, util } from '@fabric'
 import NP from 'number-precision'
@@ -36,8 +36,10 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       value = activeObject.value.getLeftTop()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
       value = NP.times(activeObject.value.opacity, 100)
+    } else if (key === 'angle') {
+      value = clampAngle(activeObject.value.angle)
     } else {
-      value = activeObject.value[key]
+      value = (activeObject.value as FabricObject & Textbox)[key]
     }
     modelValue.value = isNumber(value) ? toFixed(value) : value
     requestAnimationFrame(() => (lockChange = false))

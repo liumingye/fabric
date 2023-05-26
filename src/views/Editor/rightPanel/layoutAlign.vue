@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import svgIcon from '../svgIcon/svgIcon.vue'
+  import svgIcon from '@/components/svgIcon/svgIcon.vue'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
   import { ActiveSelection } from 'fabric'
   import { useEditor } from '@/app'

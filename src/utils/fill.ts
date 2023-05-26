@@ -27,16 +27,6 @@ export const gradAngleToCoords = (paramsAngle: number) => {
   return angleCoords
 }
 
-const reRGBa =
-  /^rgba?\(\s*(\d{1,3}(?:\.\d+)?%?)\s*,\s*(\d{1,3}(?:\.\d+)?%?)\s*,\s*(\d{1,3}(?:\.\d+)?%?)\s*(?:\s*,\s*((?:\d*\.?\d+)?)\s*)?\)$/i
-const reHSLa =
-  /^hsla?\(\s*(\d{1,3})\s*,\s*(\d{1,3}%)\s*,\s*(\d{1,3}%)\s*(?:\s*,\s*(\d+(?:\.\d+)?)\s*)?\)$/i
-const reHex = /^#?([0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})$/i
-
-export const validateColor = (color: string) => {
-  return reRGBa.test(color) || reHSLa.test(color) || reHex.test(color)
-}
-
 export const pointsToColorStops = (points: ColorPoint[]) => {
   return points.map((item) => ({
     offset: item.left / 100,
@@ -56,4 +46,13 @@ export const fabricGradientToPoints = (val: Gradient<'linear' | 'radial'>): Colo
       alpha,
     }
   })
+}
+
+/**
+ * 将不足6位的十六进制颜色代码转换为6位的格式。
+ * @param {string} hex - 十六进制颜色代码
+ * @returns {string} - 6位的十六进制颜色代码
+ */
+export const padHexColor = (hex: string): string => {
+  return hex.padEnd(6, hex)
 }

@@ -2,6 +2,7 @@ import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService } from '@/core/undoRedo/undoRedoService'
 import { IKeybindingService } from '@/core/keybinding/keybindingService'
 import { IEventbusService } from '@/core/eventbus/eventbusService'
+import { IWorkspacesService } from '@/core/workspaces/workspacesService'
 import { getActiveCore } from '@/core/root'
 
 export const useEditor = () => {
@@ -13,6 +14,7 @@ export const useEditor = () => {
       keybinding: accessor.get(IKeybindingService),
       undoRedo: accessor.get(IUndoRedoService),
       event: accessor.get(IEventbusService),
+      workspaces: accessor.get(IWorkspacesService),
     }
   })
 }

@@ -2,6 +2,7 @@
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
   import LayerAttr from './layerAttr.vue'
+  import TextAttr from './textAttr.vue'
   import FillAttr from './fillAttr.vue'
   import { isDefined } from '@vueuse/core'
   import { useEditor } from '@/app'
@@ -23,6 +24,12 @@
       name: 'LayerAttr',
       component: LayerAttr,
       visual: isDefined(canvas.activeObject),
+    },
+    {
+      name: 'TextAttr',
+      component: TextAttr,
+      visual:
+        isDefined(canvas.activeObject) && canvas.activeObject.value.isType('IText', 'Textbox'),
     },
     {
       name: 'FillAttr',

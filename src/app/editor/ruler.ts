@@ -1,7 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { Disposable } from '@/utils/lifecycle'
-import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 import { useThemes } from '@/hooks/useThemes'
 

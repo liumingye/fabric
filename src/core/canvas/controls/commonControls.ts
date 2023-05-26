@@ -77,11 +77,24 @@ export const createObjectDefaultControls = (): TControlSet => ({
     touchSizeX: 0,
     touchSizeY: 0,
     render: (ctx, left, top, styleOverride, fabricObject) => {
-      // todo: 支持反转的对象，始终保持在底部
+      // todo: 支持组内反转的对象
       ctx.save()
       ctx.translate(left, top)
-      const angle = fabricObject.getTotalAngle()
-      ctx.rotate((angle * Math.PI) / 180)
+
+      const objectAngle = fabricObject.getTotalAngle()
+      const angleInRadians = objectAngle * (Math.PI / 180)
+      const x = Math.sin(angleInRadians)
+      const y = Math.cos(angleInRadians)
+
+      const absX = Math.abs(x)
+      const absY = Math.abs(y)
+
+      if (absX > absY) {
+        ctx.rotate(((objectAngle - Math.sign(x) * 90) * Math.PI) / 180)
+      } else {
+        ctx.rotate(((objectAngle - Math.sign(y) * 90 + 90) * Math.PI) / 180)
+      }
+
       const fontSize = 12
       ctx.font = `${fontSize}px Tahoma`
       const { width, height } = fabricObject.getBoundingRect(true, true)
@@ -98,6 +111,33 @@ export const createObjectDefaultControls = (): TControlSet => ({
       ctx.textBaseline = 'middle'
       ctx.fillText(text, 0, 1)
       ctx.restore()
+    },
+    positionHandler: (dim, finalMatrix, fabricObject, currentControl) => {
+      const angle = fabricObject.getTotalAngle()
+
+      const angleInRadians = angle * (Math.PI / 180)
+
+      const x = Math.sin(angleInRadians)
+      const y = Math.cos(angleInRadians)
+
+      const absX = Math.abs(x)
+      const absY = Math.abs(y)
+
+      if (absX >= absY) {
+        const sign = Math.sign(x)
+        currentControl.x = sign / 2
+        currentControl.y = 0
+        currentControl.offsetX = sign * 20
+        currentControl.offsetY = 0
+      } else {
+        const sign = Math.sign(y)
+        currentControl.x = 0
+        currentControl.y = sign / 2
+        currentControl.offsetX = 0
+        currentControl.offsetY = sign * 20
+      }
+
+      return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
     },
   }),
 

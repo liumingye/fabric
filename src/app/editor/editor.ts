@@ -15,6 +15,7 @@ import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoServi
 import { EditorPlugin, IEditorPluginContext, getActiveCore } from '@/core'
 import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService } from '@/core/keybinding/keybindingService'
+import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 
 export class EditorMain extends Disposable {
   public service: IInstantiationService
@@ -68,6 +69,7 @@ export class EditorMain extends Disposable {
         services.set(id, new SyncDescriptor(ctor))
       }
     }
+    define(IWorkspacesService, WorkspacesService)
     define(IFabricCanvas, FabricCanvas)
     define(IUndoRedoService, UndoRedoService)
 

@@ -2,6 +2,7 @@ import { Rect, classRegistry, FabricObject } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 import { Group as GroupOrigin } from 'fabric'
 import { toRefObject } from '@/core/canvas/toRefObject'
+import { createCollectionMixin } from '@/core/canvas/Collection'
 
 export const boardDefaultValues = {
   padding: 5,
@@ -9,7 +10,7 @@ export const boardDefaultValues = {
   layout: 'fixed',
 }
 
-export class Board extends GroupOrigin {
+export class Board extends createCollectionMixin(GroupOrigin) {
   public subTargetCheck = true
   public interactive = true
 

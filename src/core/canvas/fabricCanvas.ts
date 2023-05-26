@@ -7,6 +7,8 @@ import { toFixed } from '@/utils/math'
 import { createCollectionMixin } from '@/core/canvas/Collection'
 import './mixin'
 import { isObject } from 'lodash'
+import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
@@ -15,6 +17,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public activeObject = shallowRef<FabricObject | Textbox>()
 
+  private pageId: string
+  private pages: Map<string, string | undefined> = new Map()
+
   public ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),
     objects: computed(() => this._objects),
@@ -22,7 +27,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   private uniqueIds = new Map<string, number>()
 
-  constructor(el?: string | HTMLCanvasElement, options?: Partial<Canvas>) {
+  constructor(
+    @IWorkspacesService private readonly workspacesService: WorkspacesService,
+    @IEventbusService private readonly eventbus: EventbusService,
+    el?: string | HTMLCanvasElement,
+    options?: Partial<Canvas>,
+  ) {
     const createCanvasElement = () => document.createElement('canvas')
     super(
       el || createCanvasElement(),
@@ -98,6 +108,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       })
     }
     this._objects = objectsProxy(this._objects, 'objects')
+
+    this.pageId = this.workspacesService.getCurrentWorkspaceId()
+    this.initWorkspace()
   }
 
   // @ts-ignore
@@ -195,5 +208,34 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     }
 
     return this.searchPossibleTargets(this._objects, pointer)
+  }
+
+  // 工作区 | 页面管理
+  private initWorkspace() {
+    this.workspacesService.getAllWorkspaces().forEach((workspace) => {
+      this.pages.set(workspace.id, undefined)
+    })
+    this.eventbus.on('workspaceAdd', (id) => {
+      this.pages.set(id, undefined)
+    })
+    this.eventbus.on('workspaceRemove', (id) => {
+      this.pages.delete(id)
+    })
+    this.eventbus.on('workspaceChangeBefore', (id) => {
+      // 切换前保存当前工作区
+      if (this.pageId === id) {
+        this.pages.set(id, this.toObject())
+      }
+    })
+    this.eventbus.on('workspaceChangeAfter', (id) => {
+      // 切换后恢复当前工作区
+      if (this.pageId !== id) {
+        const json = this.pages.get(id)
+        this.loadFromJSON(json || {}).then(() => {
+          this.renderAll()
+        })
+        this.pageId = id
+      }
+    })
   }
 }

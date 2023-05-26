@@ -9,6 +9,7 @@
   import ContextMenu from '@/components/contextMenu'
   import { layerItems } from '@/utils/contextMenu'
   import { useFabricEvent } from '@/hooks/useFabricEvent'
+  import Workspaces from './workspaces.vue'
 
   type ITreeNodeData = TreeNodeData & {
     isCollection: boolean
@@ -91,13 +92,6 @@
     }
     return false
   }
-
-  const treeData2 = [
-    {
-      title: '页面 1',
-      key: '0-0',
-    },
-  ]
 
   /**
    * 节点是否允许放置
@@ -283,12 +277,11 @@
     })
 
     // 更新tree组件的高度
-    const throttledFn = useThrottleFn((entries) => {
+    useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, (entries) => {
       const entry = entries[0]
       const { height } = entry.contentRect
       secondHeight.value = height - 32
-    }, 15)
-    useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, throttledFn)
+    })
   })
 
   // 多选
@@ -355,17 +348,27 @@
 </script>
 
 <template>
-  <a-split ref="splitRef" direction="vertical" min="40px" :default-size="0.2">
+  <a-split
+    ref="splitRef"
+    class="h-[calc(100vh-90px)]"
+    direction="vertical"
+    min="40px"
+    :default-size="0.2"
+  >
     <template #first>
-      <Tree blockNode :data="treeData2" draggable size="small" />
+      <Workspaces />
     </template>
     <template #second>
-      <a-input v-model="searchKey" placeholder="Search..." class="bg-transparent! border-none!" />
+      <a-input v-model="searchKey" placeholder="Search..." class="bg-transparent! border-none!">
+        <template #prefix>
+          <icon-search />
+        </template>
+      </a-input>
       <Tree
         size="small"
         blockNode
         draggable
-        v-model:selected-keys="selectedkeys"
+        :selected-keys="selectedkeys"
         v-model:expanded-keys="expandedKeys"
         :animation="false"
         :multiple="multiple"
@@ -437,11 +440,6 @@
           </div>
         </template>
       </Tree>
-    </template>
-    <template #resize-trigger>
-      <div class="pt4">
-        <a-divider :margin="0" />
-      </div>
     </template>
   </a-split>
 </template>

@@ -2,7 +2,7 @@
   import Panel from './panel.vue'
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import { isString } from 'lodash'
-  import { util, Color as FabricColor, Gradient, Pattern } from '@fabric'
+  import { util, Color as FabricColor, Gradient, Pattern, Color } from '@fabric'
   import type { GradientCoords } from 'fabric/src/gradient/typedefs'
   import Modal from '@/components/modal'
   import ColorPicker from '@/components/colorPicker/index.vue'
@@ -11,9 +11,9 @@
   import { ColorPoint, ColorType } from '@/components/colorPicker/interface'
   import {
     gradAngleToCoords,
-    validateColor,
     pointsToColorStops,
     fabricGradientToPoints,
+    padHexColor,
   } from '@/utils/fill'
 
   const fill = useActiveObjectModel('fill')
@@ -37,17 +37,13 @@
     return css || '#fff'
   })
 
-  const fillHexColor = (hex: string) => {
-    return hex.padEnd(6, hex)
-  }
-
   const fillChange = (value: string) => {
     value = value.replace(/^#/, '')
     if (value.length < 6) {
-      value = fillHexColor(value)
+      value = padHexColor(value)
     }
-    if (!validateColor(value)) return
-    fill.value.onChange(`#${value}`)
+    const color = new Color(value)
+    fill.value.onChange(`#${color.toHex()}`)
   }
 
   const fillValue = ref('')

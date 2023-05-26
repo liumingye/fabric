@@ -3,9 +3,9 @@
 </script>
 
 <template>
-  <a-tabs default-active-key="1" class="leftPanel h-full flex flex-col">
-    <a-tab-pane key="1" title="图层" class="h-full">
-      <layerCatalogue class="h-full" />
+  <a-tabs default-active-key="1" class="leftPanel flex flex-col">
+    <a-tab-pane key="1" title="图层">
+      <layerCatalogue />
     </a-tab-pane>
     <a-tab-pane key="2" title="资源">
       <div class="p2">资源</div>

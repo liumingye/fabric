@@ -6,6 +6,10 @@ export type Events = {
   undoRedoStackChange: undefined
   layerRename: { id: string }
   setEdgeMoveStatus: boolean
+  workspaceChangeBefore: string
+  workspaceChangeAfter: string
+  workspaceAdd: string
+  workspaceRemove: string
 }
 
 export type EventbusService = Mitt<Events>
