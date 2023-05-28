@@ -1,5 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { Point, TPointerEvent, TPointerEventInfo } from '@fabric'
+import { Point, TMat2D, TPointerEvent, TPointerEventInfo } from '@fabric'
 import { useIntervalFn, useMagicKeys } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
@@ -54,31 +54,46 @@ export class HandleWheelScroll extends Disposable {
   private initEdgeMove() {
     let event: TPointerEventInfo<TPointerEvent> | undefined
 
+    /** 是否需要执行setCoords */
+    let needSetCoords = false
+
     const { pause, resume } = useIntervalFn(
       () => {
         if (!event) return
+
         const A = new Point(24, 24)
         const B = new Point(this.canvas.width, this.canvas.height).subtract(A)
         const [pos, distance] = this.judgePosition(event.absolutePointer, A, B)
         if (pos === 0) return
+
         const deltaPoint = new Point()
         const amount = Math.min(distance, 20)
         if (pos & 1) deltaPoint.x = amount
         if (pos & 2) deltaPoint.x = -amount
         if (pos & 4) deltaPoint.y = amount
         if (pos & 8) deltaPoint.y = -amount
+
+        // relativePan 会执行 setCoords 导致卡顿，不使用
+
+        const vpt: TMat2D = [...this.canvas.viewportTransform]
+        vpt[4] += deltaPoint.x
+        vpt[5] += deltaPoint.y
+        this.canvas.viewportTransform = vpt
+        this.canvas.calcViewportBoundaries()
+        this.canvas.requestRenderAll()
         this.canvas._onMouseMove(event.e)
-        this.canvas.relativePan(deltaPoint)
+        needSetCoords = true
       },
-      10,
+      16,
       {
         immediate: false,
       },
     )
 
-    useFabricSwipe({
+    const { isSwiping } = useFabricSwipe({
       onSwipeStart: () => {
         if (!this.edgeMoveStatus) return
+        isSwiping.value = true
         resume()
       },
       onSwipe: (e) => {
@@ -88,6 +103,10 @@ export class HandleWheelScroll extends Disposable {
       onSwipeEnd: () => {
         pause()
         event = undefined
+        if (needSetCoords) {
+          this.canvas.setViewportTransform(this.canvas.viewportTransform)
+          needSetCoords = false
+        }
       },
     })
 

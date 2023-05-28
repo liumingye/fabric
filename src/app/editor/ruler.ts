@@ -315,9 +315,7 @@ export class Ruler extends Disposable {
       top: number
       text: string
       fill?: string | CanvasGradient | CanvasPattern
-      // eslint-disable-next-line no-undef
       align?: CanvasTextAlign
-      // eslint-disable-next-line no-undef
       baseline?: CanvasTextBaseline
       angle?: number
       fontSize?: number

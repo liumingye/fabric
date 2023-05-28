@@ -1,12 +1,13 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject } from '@fabric'
+import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, TMat2D } from '@fabric'
 import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import NP from 'number-precision'
 
 export class FabricTool extends Disposable {
   constructor(
@@ -177,15 +178,25 @@ export class FabricTool extends Disposable {
     }
   }
 
+  /**
+   *鼠标中键拖动视窗
+   */
   private initHandMove() {
     const canvas = this.canvas
     const { space } = useMagicKeys()
     const { activeTool } = storeToRefs(useAppStore())
-    // 鼠标中键拖动视窗
+
+    /** 是否需要执行setCoords */
+    let needSetCoords = false
+
+    /** 鼠标移动开始的vpt */
     let vpt = canvas.viewportTransform
-    const { lengthX, lengthY } = useFabricSwipe({
+
+    const { lengthX, lengthY, isSwiping } = useFabricSwipe({
       onSwipeStart: (e) => {
+        // 鼠标中键 | 空格键+鼠标左键 | 移动工具
         if (e.button === 2 || (space.value && e.button === 1) || activeTool.value === 'handMove') {
+          isSwiping.value = true
           vpt = canvas.viewportTransform
           this.handMoveActivate = true
           canvas.setCursor('grabbing')
@@ -195,11 +206,16 @@ export class FabricTool extends Disposable {
         if (this.handMoveActivate) {
           requestAnimationFrame(() => {
             canvas.setCursor('grabbing')
-            const deltaPoint = new Point(lengthX.value, lengthY.value)
-              .scalarDivide(canvas.getZoom())
-              .transform(vpt)
-              .scalarMultiply(-1)
-            canvas.absolutePan(deltaPoint)
+
+            // absolutePan 会执行 setCoords 导致卡顿，不使用
+            const zoom = canvas.getZoom()
+            const deltaVpt: TMat2D = [...vpt]
+            deltaVpt[4] += NP.times(lengthX.value, zoom)
+            deltaVpt[5] += NP.times(lengthY.value, zoom)
+            canvas.viewportTransform = deltaVpt
+            canvas.requestRenderAll()
+
+            needSetCoords = true
           })
         }
       },
@@ -210,6 +226,11 @@ export class FabricTool extends Disposable {
           if (activeTool.value !== 'handMove' && !space.value) {
             this.handMoveActivate = false
           }
+        }
+
+        if (needSetCoords) {
+          canvas.setViewportTransform(canvas.viewportTransform)
+          needSetCoords = false
         }
       },
     })

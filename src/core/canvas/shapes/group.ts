@@ -24,13 +24,14 @@ export class Group extends CommonGroup {
             // 关闭
             this.set('interactive', false)
           } else {
-            // 事件接力
+            // 事件传递
             addDeselectedEvent(activeObject)
           }
         })
       }
-      addDeselectedEvent(e.subTargets[0])
-      this.canvas?.setActiveObject(e.subTargets[0])
+      const subTargets = e.subTargets[0]
+      addDeselectedEvent(subTargets)
+      this.canvas?.setActiveObject(subTargets)
       this.canvas?.requestRenderAll()
     }
   }
@@ -52,11 +53,6 @@ export class Group extends CommonGroup {
       parent && parent.remove(this)
     }
   }
-
-  // override setCoords(): void {
-  //   super.setCoords()
-  //   console.log('setCoords')
-  // }
 }
 
 classRegistry.setClass(Group)

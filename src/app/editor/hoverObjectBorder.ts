@@ -2,17 +2,28 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { FabricObject, util, CanvasEvents, Rect, Textbox } from '@fabric'
 import { clone } from 'lodash'
 import { Disposable } from '@/utils/lifecycle'
+import { addDisposableListener } from '@/utils/dom'
 
 /**
  * 对象获得焦点后在外围显示一个边框
  */
 export class HoverObjectBorder extends Disposable {
   private lineWidth = 3
+  private hoveredTarget: FabricObject | undefined
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     super()
     canvas.on('mouse:out', this.drawBorder.bind(this))
     canvas.on('mouse:over', this.clearBorder.bind(this))
+
+    this._register(
+      addDisposableListener(this.canvas.upperCanvasEl, 'mouseout', () => {
+        if (this.canvas.contextTopDirty && this.hoveredTarget) {
+          this.clearContextTop(this.hoveredTarget.group || this.hoveredTarget)
+          this.hoveredTarget = undefined
+        }
+      }),
+    )
   }
 
   private clearContextTop(target: FabricObject, restoreManually = false) {
@@ -31,7 +42,10 @@ export class HoverObjectBorder extends Disposable {
   }
 
   private clearBorder(e: CanvasEvents['mouse:over']) {
+    this.hoveredTarget = undefined
+
     if (!e.target) return
+
     if (this.canvas.contextTopDirty) {
       this.clearContextTop(e.target)
     }
@@ -41,11 +55,12 @@ export class HoverObjectBorder extends Disposable {
     if (!e.target) return
     const target = e.target
 
+    this.hoveredTarget = target
+
     if (util.isBoard(target) || target === this.canvas._activeObject) return
 
     const ctx = this.clearContextTop(target, true)
     if (!ctx) return
-    // ctx.save()
 
     const object = clone(target)
 

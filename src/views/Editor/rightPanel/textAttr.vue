@@ -3,6 +3,8 @@
   import { useActiveObjectModel } from './hooks/useActiveObjectModel'
   import type { SelectProps } from '@arco-design/web-vue/es/select'
   import { popupMaxHeight } from '@/utils/arco'
+  import { useEditor } from '@/app'
+  import { isDefined } from '@vueuse/core'
 
   const fontOptions = reactive([
     {
@@ -21,21 +23,25 @@
 
   const styleOptions = reactive([
     {
-      value: '1',
+      value: 'normal',
       label: '常规体',
     },
     {
-      value: '2',
+      value: 'lighter',
+      label: '细体',
+    },
+    {
+      value: 'bold',
       label: '粗体',
     },
     {
-      value: '3',
+      value: 'italic',
       label: '斜体',
     },
   ])
 
   const sizeOptions = reactive(
-    [7, 8, 9, 10, 11, 12, 14, 16, 18, 21, 24, 36, 48, 60, 72].map((size) => {
+    [8, 9, 10, 11, 12, 14, 16, 18, 21, 24, 36, 48, 60, 72].map((size) => {
       return {
         value: size,
         label: size.toString(),
@@ -48,6 +54,39 @@
   const lineHeight = useActiveObjectModel('lineHeight') // 行号
   const charSpacing = useActiveObjectModel('charSpacing') // 字距
   const textAlign = useActiveObjectModel('textAlign') // 字距
+
+  const textStyle = ref()
+
+  const { canvas } = useEditor()
+
+  watchEffect(() => {
+    const activeObject = toRaw(canvas.activeObject)
+    if (!isDefined(activeObject)) return
+
+    if (activeObject.value.get('fontStyle') === 'italic') {
+      textStyle.value = activeObject.value.get('fontStyle')
+    } else if (['bold', 'lighter', 'normal'].includes(activeObject.value.get('fontWeight'))) {
+      textStyle.value = activeObject.value.get('fontWeight')
+    }
+  })
+
+  const setTextStyle = (
+    value: string | number | Record<string, any> | (string | number | Record<string, any>)[],
+  ) => {
+    const activeObject = toRaw(canvas.activeObject)
+    if (!isDefined(activeObject)) return
+
+    activeObject.value.set('fontStyle', 'normal')
+    activeObject.value.set('fontWeight', 'normal')
+
+    if (['bold', 'lighter', 'normal'].includes(value.toString())) {
+      activeObject.value.set('fontWeight', value)
+    } else if (value === 'italic') {
+      activeObject.value.set('fontStyle', value)
+    }
+
+    canvas.requestRenderAll()
+  }
 </script>
 
 <template>
@@ -62,7 +101,12 @@
         />
       </a-col>
       <a-col :span="14">
-        <a-select size="small" :options="styleOptions" />
+        <a-select
+          size="small"
+          :model-value="textStyle"
+          :options="styleOptions"
+          @change="setTextStyle"
+        />
       </a-col>
       <a-col :span="10">
         <a-select

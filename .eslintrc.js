@@ -20,10 +20,10 @@ module.exports = defineConfig({
   },
   extends: [
     './.eslintrc-auto-import.json',
+    'eslint:recommended',
     'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'eslint:recommended',
   ],
   rules: {
     // 强制要求在 `<script setup>` 中声明的变量必须被使用。

@@ -21,16 +21,30 @@ Object.assign(FabricObject.ownDefaults, {
 
 const mixin = {
   getHeight() {
-    return toFixed(this.getScaledHeight())
+    let height = this.getScaledHeight()
+    if (this.group) {
+      height = NP.times(height, this.group.scaleY)
+    }
+    return toFixed(height)
   },
   getWidth() {
-    return toFixed(this.getScaledWidth())
+    let width = this.getScaledWidth()
+    if (this.group) {
+      width = NP.times(width, this.group.scaleX)
+    }
+    return toFixed(width)
   },
   setHeight(value: number) {
+    if (this.group) {
+      value = NP.divide(value, this.group.scaleY)
+    }
     this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), this.height))
     this.fire('scaling')
   },
   setWidth(value: number) {
+    if (this.group) {
+      value = NP.divide(value, this.group.scaleX)
+    }
     this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), this.width))
     this.fire('scaling')
   },
@@ -57,12 +71,10 @@ const mixin = {
     this.setRelativeXY(point)
   },
   setLeft(value: number) {
-    const point = this.getLeftTop().setX(value)
-    this.setLeftTop(point)
+    this.setLeftTop(this.getLeftTop().setX(value))
   },
   setTop(value: number) {
-    const point = this.getLeftTop().setY(value)
-    this.setLeftTop(point)
+    this.setLeftTop(this.getLeftTop().setY(value))
   },
   align(method: AlignMethod) {
     if (!(this instanceof ActiveSelection)) return

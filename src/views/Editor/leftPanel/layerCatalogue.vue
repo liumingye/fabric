@@ -4,14 +4,14 @@
   import { ActiveSelection, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
-  import { useMagicKeys, useResizeObserver, useThrottleFn, isDefined } from '@vueuse/core'
+  import { useMagicKeys, useResizeObserver, isDefined } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
   import { layerItems } from '@/utils/contextMenu'
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import Workspaces from './workspaces.vue'
 
-  type ITreeNodeData = TreeNodeData & {
+  interface ITreeNodeData extends TreeNodeData {
     isCollection: boolean
     visible: boolean
     objectRef: ObjectRef
@@ -96,8 +96,8 @@
   /**
    * 节点是否允许放置
    */
-  const allowDrop = (options: { dropNode: TreeNodeData }) => {
-    return (options.dropNode as ITreeNodeData).isCollection
+  const allowDrop = ({ dropNode }: { dropNode: TreeNodeData }) => {
+    return (dropNode as ITreeNodeData).isCollection
   }
 
   /**
@@ -295,11 +295,9 @@
     }
   })
 
-  const showContextMenu = (e: MouseEvent, _node: TreeNodeData) => {
+  const showContextMenu = (e: MouseEvent, node: TreeNodeData) => {
     e.preventDefault()
     e.stopImmediatePropagation()
-
-    const node = _node as ITreeNodeData
 
     if (!node.key) return
 

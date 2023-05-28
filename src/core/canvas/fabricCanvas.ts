@@ -1,14 +1,14 @@
-import { Canvas, Object as FabricObject, Point, TPointerEvent, util, Textbox } from '@fabric'
-import { randomText } from '@/utils/strings'
-import { createDecorator } from '@/core/instantiation/instantiation'
-import { toRefObject } from '@/core/canvas/toRefObject'
-import { clamp } from '@vueuse/core'
-import { toFixed } from '@/utils/math'
 import { createCollectionMixin } from '@/core/canvas/Collection'
-import './mixin'
-import { isObject } from 'lodash'
-import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import { toRefObject } from '@/core/canvas/toRefObject'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
+import { createDecorator } from '@/core/instantiation/instantiation'
+import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import { toFixed } from '@/utils/math'
+import { randomText } from '@/utils/strings'
+import { Canvas, Object as FabricObject, Point, TPointerEvent, Textbox, util } from '@fabric'
+import { clamp } from '@vueuse/core'
+import { isObject } from 'lodash'
+import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
