@@ -1,4 +1,13 @@
-import { Object as FabricObject, ActiveSelection, Group, util, Point } from '@fabric'
+import {
+  Object as FabricObject,
+  ActiveSelection,
+  Group,
+  util,
+  Point,
+  Textbox,
+  IText,
+  Path,
+} from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
@@ -130,6 +139,22 @@ const mixin = {
   toObject(propertiesToInclude = []) {
     propertiesToInclude.push('id', 'name')
     return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
+  },
+  isType(...types: string[]) {
+    return types.some((type) => {
+      const _type = type.toLocaleLowerCase()
+      // 修复构建后随机类名，导致isType失效
+      if (
+        (_type === 'activeselection' && this instanceof ActiveSelection) ||
+        (_type === 'textbox' && this instanceof Textbox) ||
+        (_type === 'itext' && this instanceof IText) ||
+        (_type === 'text' && this instanceof Text) ||
+        (_type === 'path' && this instanceof Path)
+      ) {
+        return true
+      }
+      return type === this.constructor.name || type === this.type
+    })
   },
 } as FabricObject
 
