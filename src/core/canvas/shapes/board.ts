@@ -115,7 +115,7 @@ export class Board extends CommonGroup {
   }
 
   override _onObjectRemoved(object: FabricObject) {
-    super._onObjectAdded(object)
+    super._onObjectRemoved(object)
     this.updateSelectable()
   }
 

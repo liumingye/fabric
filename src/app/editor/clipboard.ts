@@ -47,8 +47,8 @@ export class Clipboard extends Disposable {
     blob && this.clipboard.writeBlob(blob)
   }
 
-  private async readText() {
-    const text = await this.clipboard.readText()
+  private async readText(blob: Blob) {
+    const text = await blob.text()
     if (!text) return
 
     const center = this.canvas.getVpCenter()
@@ -83,74 +83,75 @@ export class Clipboard extends Disposable {
   }
 
   private paste() {
-    this.clipboard.readBlob().then(async (blob) => {
-      if (!blob) return
-
-      // 文本格式
-      if (blob.type === 'text/plain') {
-        this.readText()
-        return
-      }
-
-      // 图片读取json
-      const deJson = await decode(blob)
-
-      // 无json
-      if (!deJson) {
-        // 图片格式
-        if (['image/png', 'image/jpeg'].includes(blob.type)) {
-          this.readImage(blob)
+    this.clipboard.readBlob().then((blobs) => {
+      if (!blobs) return
+      blobs.forEach(async (blob) => {
+        // 文本格式
+        if (blob.type === 'text/plain') {
+          this.readText(blob)
+          return
         }
-        return
-      }
 
-      const serialized = typeof deJson === 'string' ? JSON.parse(deJson) : deJson
+        // 图片读取json
+        const deJson = await decode(blob)
 
-      // 递归设置id
-      const setId = (target: FabricObject[]) => {
-        target.forEach((obj) => {
-          obj.id = randomText()
-          if (util.isCollection(obj)) {
-            setId(obj._objects)
+        // 无json
+        if (!deJson) {
+          // 图片格式
+          if (['image/png', 'image/jpeg'].includes(blob.type)) {
+            this.readImage(blob)
           }
-        })
-      }
+          return
+        }
 
-      // 插入元素到画板或组内
-      const addObjects = (objects: FabricObject[]) => {
-        const activeObject = this.canvas.getActiveObject()
-        const addTarget =
-          util.isCollection(activeObject) && !(activeObject instanceof ActiveSelection)
-            ? activeObject
-            : this.canvas
-        addTarget.add(...objects)
-      }
+        const serialized = typeof deJson === 'string' ? JSON.parse(deJson) : deJson
 
-      util
-        .enlivenObjects([serialized], {
-          reviver: (json, object) => {
-            // 设置新的id
-            if (util.isCollection(object)) {
-              setId(object._objects)
-            }
-            setId([object])
-          },
-        })
-        .then((enlived) => {
-          const objects = enlived.flatMap((object) => {
-            // ActiveSelection的元素，退出组
-            if (object instanceof ActiveSelection) {
-              return object.removeAll().reverse() as FabricObject[]
-            } else {
-              return [object]
+        // 递归设置id
+        const setId = (target: FabricObject[]) => {
+          target.forEach((obj) => {
+            obj.id = randomText()
+            if (util.isCollection(obj)) {
+              setId(obj._objects)
             }
           })
+        }
 
-          addObjects(objects)
-          this.canvas.setActiveObjects(objects)
-          this.canvas.requestRenderAll()
-          this.undoRedo.saveState()
-        })
+        // 插入元素到画板或组内
+        const addObjects = (objects: FabricObject[]) => {
+          const activeObject = this.canvas.getActiveObject()
+          const addTarget =
+            util.isCollection(activeObject) && !(activeObject instanceof ActiveSelection)
+              ? activeObject
+              : this.canvas
+          addTarget.add(...objects)
+        }
+
+        util
+          .enlivenObjects([serialized], {
+            reviver: (json, object) => {
+              // 设置新的id
+              if (util.isCollection(object)) {
+                setId(object._objects)
+              }
+              setId([object])
+            },
+          })
+          .then((enlived) => {
+            const objects = enlived.flatMap((object) => {
+              // ActiveSelection的元素，退出组
+              if (object instanceof ActiveSelection) {
+                return object.removeAll().reverse() as FabricObject[]
+              } else {
+                return [object]
+              }
+            })
+
+            addObjects(objects)
+            this.canvas.setActiveObjects(objects)
+            this.canvas.requestRenderAll()
+            this.undoRedo.saveState()
+          })
+      })
     })
   }
 

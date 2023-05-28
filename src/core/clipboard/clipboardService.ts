@@ -6,29 +6,20 @@ export const IClipboardService = createDecorator<ClipboardService>('clipboardSer
 export class ClipboardService {
   declare readonly _serviceBrand: undefined
 
-  // constructor() {
-  //   // test code
-  //   setTimeout(() => {
-  //     this.readBlob().then((res) => {
-  //       console.log(res)
-  //     })
-  //   }, 500)
-  // }
+  private memoryBlob: Blob[] | undefined
 
-  private memoryBlob: Blob | undefined
-
-  private async readMemoryBlob(): Promise<Blob | undefined> {
+  private async readMemoryBlob(): Promise<Blob[] | undefined> {
     return this.memoryBlob
   }
 
-  private async writeMemoryBlob(blob: Blob): Promise<void> {
+  private async writeMemoryBlob(blob: Blob[]): Promise<void> {
     this.memoryBlob = blob
   }
 
   public async writeBlob(blob: Blob): Promise<void> {
     try {
       // 写入内存
-      this.writeMemoryBlob(blob)
+      this.writeMemoryBlob([blob])
       return await navigator.clipboard.write([
         new ClipboardItem({
           [blob.type]: blob,
@@ -39,15 +30,16 @@ export class ClipboardService {
     }
   }
 
-  public async readBlob(): Promise<Blob | undefined> {
+  public async readBlob(): Promise<Blob[] | undefined> {
     try {
       const clipboardItems = await navigator.clipboard.read()
+      const blobs: Blob[] = []
       for (const clipboardItem of clipboardItems) {
         for (const type of clipboardItem.types) {
-          const blob = await clipboardItem.getType(type)
-          return blob
+          blobs.push(await clipboardItem.getType(type))
         }
       }
+      return blobs
     } catch (error) {
       console.error(error)
       // 读取内存
