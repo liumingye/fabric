@@ -12,7 +12,7 @@ export default defineComponent({
 
       // Set the dimensions of the canvas based on the size of the div element
       useResizeObserver(divRef, (entries) => {
-        const entry = entries[0]
+        const [entry] = entries
         const { width, height } = entry.contentRect
         canvas.setDimensions({ width, height })
       })

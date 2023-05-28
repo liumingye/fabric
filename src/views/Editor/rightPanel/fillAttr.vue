@@ -113,7 +113,7 @@
               if (!isDefined(canvas.activeObject)) return
               if (data.type === 'color') {
                 if (data.points.length < 1) return
-                const { red, green, blue, alpha } = data.points[0]
+                const [{ red, green, blue, alpha }] = data.points
                 canvas.activeObject.value.set('fill', `rgba(${red}, ${green}, ${blue}, ${alpha})`)
               } else if (data.type === 'linear' || data.type === 'radial') {
                 const colorStops = pointsToColorStops(data.points)

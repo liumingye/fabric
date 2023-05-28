@@ -16,20 +16,29 @@ export class Group extends CommonGroup {
   // 双击后启用interactive，离开组后关闭
   public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
     if (e.subTargets && e.subTargets.length > 0) {
-      this.set('interactive', true)
+      // 启用
+      this.set({
+        interactive: true,
+        objectCaching: false,
+      })
+
       const addDeselectedEvent = (obj: FabricObject) => {
         obj.once('deselected', () => {
           const activeObject = this.canvas?.getActiveObject()
           if (!activeObject || activeObject.getParent() !== this) {
             // 关闭
-            this.set('interactive', false)
+            this.set({
+              interactive: false,
+              objectCaching: true,
+            })
           } else {
             // 事件传递
             addDeselectedEvent(activeObject)
           }
         })
       }
-      const subTargets = e.subTargets[0]
+
+      const [subTargets] = e.subTargets
       addDeselectedEvent(subTargets)
       this.canvas?.setActiveObject(subTargets)
       this.canvas?.requestRenderAll()

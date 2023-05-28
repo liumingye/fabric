@@ -27,6 +27,8 @@ export class ClipboardService {
 
   public async writeBlob(blob: Blob): Promise<void> {
     try {
+      // 写入内存
+      this.writeMemoryBlob(blob)
       return await navigator.clipboard.write([
         new ClipboardItem({
           [blob.type]: blob,
@@ -35,9 +37,6 @@ export class ClipboardService {
     } catch (error) {
       console.error(error)
     }
-
-    // 写入内存
-    await this.writeMemoryBlob(blob)
   }
 
   public async readBlob(): Promise<Blob | undefined> {
@@ -51,10 +50,9 @@ export class ClipboardService {
       }
     } catch (error) {
       console.error(error)
+      // 读取内存
+      return await this.readMemoryBlob()
     }
-
-    // 读取内存
-    return await this.readMemoryBlob()
   }
 
   async writeText(text: string): Promise<void> {

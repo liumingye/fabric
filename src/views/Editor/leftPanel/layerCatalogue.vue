@@ -277,7 +277,7 @@
 
     // 更新tree组件的高度
     useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, (entries) => {
-      const entry = entries[0]
+      const [entry] = entries
       const { height } = entry.contentRect
       secondHeight.value = height - 32
     })
