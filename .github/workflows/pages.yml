@@ -19,4 +19,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages  ##指定推送到的远程分支
-          folder: build # The folder the action should deploy.
+          folder: dist # The folder the action should deploy.
