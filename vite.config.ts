@@ -8,6 +8,7 @@ import { ArcoResolver } from 'unplugin-vue-components/resolvers'
 import { resolve } from 'path'
 import type { GetModuleInfo } from 'rollup'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import legacy from '@vitejs/plugin-legacy'
 
 const cache = new Map<string, boolean>()
 
@@ -46,6 +47,11 @@ export default defineConfig({
       symbolId: 'icon-[dir]-[name]',
     }),
     UnoCSS(),
+    legacy({
+      targets:
+        'defaults, > 1%, last 2 versions, not dead, Chrome >= 49, Firefox >= 52, Safari >= 10.1, iOS >= 12.2', // 需要兼容的目标列表
+      modernPolyfills: ['es.array.flat-map'],
+    }),
   ],
   resolve: {
     alias: {
