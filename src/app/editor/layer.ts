@@ -1,6 +1,6 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
-import { ActiveSelection, FabricObject, Group, util } from '@fabric'
+import { FabricObject, Group, util } from '@fabric'
 import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
@@ -288,18 +288,6 @@ export class Layer extends Disposable {
       'alt+s': (e) => align(e, 'verticalBottom'),
       'alt+v': (e) => align(e, 'verticalMiddle'),
     })
-  }
-
-  /**
-   * 获取激活选区或组内全部元素
-   * this.canvas.getActiveObjects 会获取 ActiveSelection 里的元素，不会获取自身
-   */
-  private getObjects(target: FabricObject) {
-    return util.isCollection(target)
-      ? target.size() === 0
-        ? [target]
-        : target.getObjects()
-      : [target]
   }
 
   private objForEach(fn: (obj: FabricObject) => void, reverse = false) {

@@ -175,6 +175,7 @@ Board.prototype._type = 'Board'
 Image.prototype._type = 'Image'
 FabricObject.prototype._type = 'Object'
 Group.prototype._type = 'Group'
+ActiveSelection.prototype._type = 'ActiveSelection'
 
 const cancelPerPixel = [Text, IText, Textbox, Group]
 cancelPerPixel.forEach((obj) => {
