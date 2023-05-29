@@ -3,9 +3,10 @@ import App from './App.vue'
 import router from '@/router'
 import pinia from '@/store'
 import { createCore } from '@/core'
-import '@/hooks/useThemes'
 import NP from 'number-precision'
+import '@/hooks/useThemes'
 
+// CSS
 import '@unocss/reset/tailwind-compat.css'
 import '@/assets/style/global.less'
 import 'virtual:uno.css'

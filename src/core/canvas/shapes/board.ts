@@ -4,7 +4,7 @@ import { PiBy180 } from '@/utils/constants'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
 export const boardDefaultValues = {
-  padding: 5,
+  padding: 4,
   selectable: false,
   layout: 'fixed',
 }

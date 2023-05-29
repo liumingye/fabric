@@ -3,7 +3,7 @@
   import Tree from '@/components/tree'
   import type { TreeNodeData } from '@/components/tree'
   import ContextMenu from '@/components/contextMenu'
-  import { iMatrix } from '@/utils/constants'
+  import { iMatrix } from '@fabric'
 
   const number = ref(0)
 

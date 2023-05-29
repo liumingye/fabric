@@ -92,19 +92,27 @@ export class Clipboard extends Disposable {
           return
         }
 
-        // 图片读取json
+        // 读取json
         const deJson = await decode(blob)
 
+        let serialized: any | undefined
+
+        if (deJson) {
+          try {
+            serialized = JSON.parse(deJson)
+          } catch (error) {
+            //
+          }
+        }
+
         // 无json
-        if (!deJson) {
+        if (!serialized) {
           // 图片格式
           if (['image/png', 'image/jpeg'].includes(blob.type)) {
             this.readImage(blob)
           }
           return
         }
-
-        const serialized = typeof deJson === 'string' ? JSON.parse(deJson) : deJson
 
         // 递归设置id
         const setId = (target: FabricObject[]) => {

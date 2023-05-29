@@ -19,7 +19,7 @@
     children?: ITreeNodeData[]
   }
 
-  const { canvas, event } = useEditor()
+  const { canvas, event, undoRedo } = useEditor()
 
   // 搜索词
   const searchKey = ref('')
@@ -341,6 +341,7 @@
     const object = canvas.findObjectById(key.toString())
     if (!object) return
     object.name = value
+    undoRedo.saveState()
   }
 </script>
 

@@ -208,10 +208,9 @@ export class FabricTool extends Disposable {
             canvas.setCursor('grabbing')
 
             // absolutePan 会执行 setCoords 导致卡顿，不使用
-            const zoom = canvas.getZoom()
             const deltaVpt: TMat2D = [...vpt]
-            deltaVpt[4] += NP.times(lengthX.value, zoom)
-            deltaVpt[5] += NP.times(lengthY.value, zoom)
+            deltaVpt[4] += lengthX.value
+            deltaVpt[5] += lengthY.value
             canvas.viewportTransform = deltaVpt
             canvas.requestRenderAll()
 

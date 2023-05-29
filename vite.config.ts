@@ -104,8 +104,9 @@ export default defineConfig({
             return 'vendor'
           }
           if (isCSSRequest(id)) {
-            return 'app'
+            return 'style'
           }
+          return 'app'
         },
       },
     },

@@ -6,7 +6,6 @@ import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
-import { noop } from '@vueuse/core'
 
 export class Layer extends Disposable {
   constructor(
@@ -34,20 +33,22 @@ export class Layer extends Disposable {
       this.objForEach((obj) => {
         const group = obj.getParent()
         group.sendObjectToBack(obj)
-        useEditor().undoRedo.saveState()
       }, true)
+      canvas.requestRenderAll()
+      useEditor().undoRedo.saveState()
     })
 
     // 移至顶层
     this.keybinding.bind(']', (e) => {
-      const activeObject = canvas.getActiveObject()
-      if (!activeObject) return
+      const activeObjects = canvas.getActiveObjects()
+      if (!activeObjects) return
       e.preventDefault?.()
       this.objForEach((obj) => {
         const group = obj.getParent()
         group.bringObjectToFront(obj)
-        useEditor().undoRedo.saveState()
       })
+      canvas.requestRenderAll()
+      useEditor().undoRedo.saveState()
     })
 
     // 向下移动一层
@@ -55,7 +56,7 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      const isActiveSelection = activeObject instanceof ActiveSelection
+      const isActiveSelection = util.isActiveSelection(activeObject)
       this.objForEach((obj) => {
         const group = obj.getParent()
         // 排除已经在最底层的元素
@@ -66,8 +67,9 @@ export class Layer extends Disposable {
           return
         }
         group.sendObjectBackwards(obj)
-        useEditor().undoRedo.saveState()
       })
+      canvas.requestRenderAll()
+      useEditor().undoRedo.saveState()
     })
 
     // 向上移动一层
@@ -75,7 +77,7 @@ export class Layer extends Disposable {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
       e.preventDefault?.()
-      const isActiveSelection = activeObject instanceof ActiveSelection
+      const isActiveSelection = util.isActiveSelection(activeObject)
       this.objForEach((obj) => {
         const group = obj.getParent()
         // 排除已经在最顶层的元素
@@ -87,8 +89,9 @@ export class Layer extends Disposable {
           return
         }
         group.bringObjectForward(obj)
-        useEditor().undoRedo.saveState()
       }, true)
+      canvas.requestRenderAll()
+      useEditor().undoRedo.saveState()
     })
 
     // 创建分组
@@ -151,6 +154,7 @@ export class Layer extends Disposable {
         obj.getParent(true)?.setDirty()
       })
       canvas.requestRenderAll()
+      this.undoRedo.saveState()
     })
 
     // 锁定/解锁
@@ -162,6 +166,7 @@ export class Layer extends Disposable {
         obj.selectable = obj.evented
       })
       canvas.requestRenderAll()
+      this.undoRedo.saveState()
     })
 
     // 重命名
@@ -183,6 +188,7 @@ export class Layer extends Disposable {
         obj.flipX = !obj.flipX
       })
       canvas.requestRenderAll()
+      this.undoRedo.saveState()
     })
 
     // 垂直翻转
@@ -194,6 +200,7 @@ export class Layer extends Disposable {
         obj.flipY = !obj.flipY
       })
       canvas.requestRenderAll()
+      this.undoRedo.saveState()
     })
 
     this.bindAlign()

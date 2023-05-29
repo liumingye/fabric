@@ -1,7 +1,7 @@
 <template>
   <div class="hue">
     <div ref="hueRef" class="hue-area">
-      <div class="spectrum-cursor" :style="pointerStyle"></div>
+      <div class="picker-cursor" :style="pointerStyle"></div>
     </div>
   </div>
 </template>

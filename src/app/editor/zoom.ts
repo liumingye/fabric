@@ -2,7 +2,7 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { useAppStore } from '@/store'
 import { Disposable } from '@/utils/lifecycle'
-import { Group, Point } from '@fabric'
+import { Group, Point, iMatrix } from '@fabric'
 
 export class Zoom extends Disposable {
   private scalePadding = 0.9
@@ -56,6 +56,10 @@ export class Zoom extends Disposable {
    */
   public showAllContent() {
     const objects = this.canvas.getObjects()
+    if (objects.length === 0) {
+      this.canvas.setViewportTransform(iMatrix)
+      return
+    }
     const boundingBox = Group.prototype.getObjectsBoundingBox(objects)
     if (!boundingBox) return
     const zoom =

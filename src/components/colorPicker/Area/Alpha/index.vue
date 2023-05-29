@@ -3,7 +3,7 @@
     <div class="gradient" :style="style"></div>
     <div class="alpha-area">
       <div ref="alphaMaskRef" class="alpha-mask">
-        <div class="spectrum-cursor" :style="pointerStyle"></div>
+        <div class="picker-cursor" :style="pointerStyle"></div>
       </div>
     </div>
   </div>

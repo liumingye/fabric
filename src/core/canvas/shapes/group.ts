@@ -3,6 +3,10 @@ import type { GroupProps } from 'fabric/src/shapes/Group'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
 export class Group extends CommonGroup {
+  public subTargetCheck = true
+
+  public interactive = false
+
   constructor(
     objects?: FabricObject[],
     options?: Partial<GroupProps>,
@@ -60,6 +64,14 @@ export class Group extends CommonGroup {
     if (this.size() === 0) {
       const parent = this.getParent()
       parent && parent.remove(this)
+    }
+  }
+
+  override setCoords() {
+    if (this.isMoving) {
+      FabricObject.prototype.setCoords.call(this)
+    } else {
+      super.setCoords()
     }
   }
 }

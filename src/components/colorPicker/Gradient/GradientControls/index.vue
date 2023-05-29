@@ -1,6 +1,7 @@
 <template>
   <div class="gradient-controls">
     <a-radio-group
+      size="small"
       :model-value="type"
       type="button"
       @change="(type) => changeGradientControl(type as ColorType)"
@@ -22,12 +23,16 @@
 </script>
 
 <style lang="less" scoped>
-  .arco-radio-group-button {
+  :deep(.arco-radio-group-button) {
     width: 100%;
 
     .arco-radio-button {
       flex: 1;
       text-align: center;
+
+      .arco-radio-button-content {
+        font-size: 12px;
+      }
     }
   }
 </style>

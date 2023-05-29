@@ -1,5 +1,6 @@
 import { randomText } from '@/utils/strings'
 import { Notification, Modal, Message } from '@arco-design/web-vue'
+import Dialog from '@/components/dialog'
 import type { App } from 'vue'
 
 /**
@@ -32,4 +33,5 @@ export const arcoPatch = (app: App) => {
   Notification._context = app._context
   Modal._context = app._context
   Message._context = app._context
+  Dialog._context = app._context
 }

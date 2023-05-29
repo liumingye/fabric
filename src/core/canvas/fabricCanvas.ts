@@ -5,7 +5,17 @@ import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
 import { randomText } from '@/utils/strings'
-import { Canvas, Object as FabricObject, Point, TPointerEvent, Textbox, util } from '@fabric'
+import {
+  Board,
+  Canvas,
+  Object as FabricObject,
+  ModifierKey,
+  Point,
+  TMat2D,
+  TPointerEvent,
+  Textbox,
+  util,
+} from '@fabric'
 import { clamp } from '@vueuse/core'
 import { isObject } from 'lodash'
 import './mixin'
@@ -122,9 +132,13 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.activeObject.value = value
   }
 
-  public zoomToPoint(point: Point, value: number) {
+  override zoomToPoint(point: Point, value: number) {
     value = clamp(value, 0.02, 256)
     super.zoomToPoint(point, value)
+  }
+
+  override setViewportTransform(vpt: TMat2D) {
+    super.setViewportTransform(vpt)
     this.ref.zoom.value = toFixed(this.getZoom(), 2)
   }
 
@@ -179,7 +193,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     return result
   }
 
-  // 重写 取消 preserveObjectStacking 逻辑
+  // 重写 findTarget
   override findTarget(e: TPointerEvent): FabricObject | undefined {
     if (this.skipTargetFind) {
       return undefined
@@ -195,20 +209,49 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       if (activeObject._findTargetCorner(pointer, util.isTouchEvent(e))) {
         // if we hit the corner of the active object, let's return that.
         return activeObject
-      } else if (
+      }
+
+      const possibleTarget = this.searchPossibleTargets([activeObject], pointer)
+
+      if (
         aObjects.length > 1 &&
         // check pointer is over active selection and possibly perform `subTargetCheck`
-        this.searchPossibleTargets([activeObject], pointer)
+        possibleTarget
       ) {
         // active selection does not select sub targets like normal groups
         return activeObject
-      } else if (activeObject === this.searchPossibleTargets([activeObject], pointer)) {
-        // 取消 preserveObjectStacking 逻辑
-        return activeObject
+      } else if (activeObject === possibleTarget) {
+        if (!this.preserveObjectStacking) {
+          return activeObject
+        } else {
+          const subTargets = this.targets
+          this.targets = []
+          const target = this.searchPossibleTargets(this._objects, pointer)
+          if (e[this.altSelectionKey as ModifierKey] && target && target !== activeObject) {
+            // alt selection: select active object even though it is not the top most target
+            // restore targets
+            this.targets = subTargets
+            return activeObject
+          }
+          return target || activeObject
+        }
       }
     }
 
     return this.searchPossibleTargets(this._objects, pointer)
+  }
+
+  override searchPossibleTargets(
+    objects: FabricObject[],
+    pointer: Point,
+  ): FabricObject | undefined {
+    const target = this._searchPossibleTargets(objects, pointer)
+    // if we found something in this.targets, and the group is interactive, return that subTarget
+    // TODO: reverify why interactive. the target should be returned always, but selected only
+    // if interactive.
+    return target && util.isCollection(target) && target.interactive && this.targets.length > 0
+      ? this.targets[this.targets.length - 1]
+      : target
   }
 
   // 工作区 | 页面管理
@@ -251,9 +294,4 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     }
     return this.pages.get(id) || '{}'
   }
-
-  // override renderCanvas(ctx: CanvasRenderingContext2D, objects: FabricObject[]): void {
-  //   super.renderCanvas(ctx, objects)
-  //   console.log('render')
-  // }
 }

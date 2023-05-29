@@ -4,10 +4,6 @@ import { toRefObject } from '@/core/canvas/toRefObject'
 import { FabricObject } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 
-Object.assign(GroupOrigin.ownDefaults, {
-  subTargetCheck: true,
-})
-
 export class CommonGroup extends createCollectionMixin(GroupOrigin) {
   constructor(
     objects?: FabricObject[],

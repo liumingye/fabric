@@ -1,7 +1,7 @@
 <template>
   <div ref="pickerAreaRef" class="spectrum-map" :style="pickerStyle">
     <div class="spectrum"></div>
-    <div class="spectrum-cursor" :style="pointerStyle"></div>
+    <div class="picker-cursor" :style="pointerStyle"></div>
   </div>
 </template>
 

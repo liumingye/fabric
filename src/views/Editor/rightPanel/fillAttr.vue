@@ -4,7 +4,8 @@
   import { isString } from 'lodash'
   import { util, Color as FabricColor, Gradient, Pattern, Color } from '@fabric'
   import type { GradientCoords } from 'fabric/src/gradient/typedefs'
-  import Modal from '@/components/modal'
+  import Dialog from '@/components/dialog'
+  import { DialogReturn } from '@/components/dialog/interface'
   import ColorPicker from '@/components/colorPicker/index.vue'
   import { useEditor } from '@/app'
   import { isDefined } from '@vueuse/core'
@@ -16,8 +17,24 @@
     padHexColor,
   } from '@/utils/fill'
 
+  const { canvas } = useEditor()
+
+  let dialog: DialogReturn | undefined
+
+  /**
+   * 关闭dialog
+   */
+  const dialogClose = () => {
+    dialog && dialog.close()
+    dialog = undefined
+  }
+
   const fill = useActiveObjectModel('fill')
 
+  /**
+   * convertCoordsToDeg
+   * @param coords
+   */
   const convertCoordsToDeg = (coords: GradientCoords<'linear'>) =>
     (Math.atan2(coords.y2 - coords.y1, coords.x2 - coords.x1) * 180) / Math.PI + 90
 
@@ -62,6 +79,8 @@
     fillValue.value = ''
   })
 
+  watch(canvas.activeObject, () => dialogClose())
+
   const readonly = computed(() => !isString(fill.value.modelValue))
 
   const openColorPicker = () => {
@@ -96,68 +115,67 @@
       ]
     }
 
-    Modal.open({
+    dialogClose()
+
+    dialog = Dialog.open({
       title: '颜色',
-      content: () =>
-        h(
-          'div',
-          {
-            class: '-mx-20px -my-24px',
+      body: () =>
+        h(ColorPicker, {
+          gradient: {
+            type,
+            points,
           },
-          h(ColorPicker, {
-            gradient: {
-              type,
-              points,
-            },
-            onChange(data) {
-              if (!isDefined(canvas.activeObject)) return
-              if (data.type === 'color') {
-                if (data.points.length < 1) return
-                const [{ red, green, blue, alpha }] = data.points
-                canvas.activeObject.value.set('fill', `rgba(${red}, ${green}, ${blue}, ${alpha})`)
-              } else if (data.type === 'linear' || data.type === 'radial') {
-                const colorStops = pointsToColorStops(data.points)
-                let angle = 180
+          onChange(data) {
+            if (!isDefined(canvas.activeObject)) return
+            if (data.type === 'color') {
+              if (data.points.length < 1) return
+              const [{ red, green, blue, alpha }] = data.points
+              canvas.activeObject.value.set('fill', `rgba(${red}, ${green}, ${blue}, ${alpha})`)
+            } else if (data.type === 'linear' || data.type === 'radial') {
+              const colorStops = pointsToColorStops(data.points)
+              let angle = 180
 
-                let coords: GradientCoords<'linear' | 'radial'> | undefined = undefined
+              let coords: GradientCoords<'linear' | 'radial'> | undefined = undefined
 
-                if (canvas.activeObject.value.fill instanceof Gradient<'linear'>) {
-                  coords = canvas.activeObject.value.fill.coords
-                  // angle = getAngle(coords)
-                }
-
-                if (!coords) {
-                  const angleCoords = gradAngleToCoords(angle)
-                  coords = {
-                    x1: angleCoords.x1 * canvas.activeObject.value.width,
-                    y1: angleCoords.y1 * canvas.activeObject.value.height,
-                    x2: angleCoords.x2 * canvas.activeObject.value.width,
-                    y2: angleCoords.y2 * canvas.activeObject.value.height,
-                  }
-                }
-
-                canvas.activeObject.value.set(
-                  'fill',
-                  new Gradient({
-                    type: 'linear',
-                    coords,
-                    colorStops,
-                  }),
-                )
+              if (canvas.activeObject.value.fill instanceof Gradient<'linear'>) {
+                coords = canvas.activeObject.value.fill.coords
+                // angle = getAngle(coords)
               }
-              canvas.requestRenderAll()
-            },
-            onEndChange() {
-              undoRedo.saveState()
-            },
-          }),
-        ),
-      footer: false,
-      draggable: true,
-      mask: false,
+
+              if (!coords) {
+                const angleCoords = gradAngleToCoords(angle)
+                coords = {
+                  x1: angleCoords.x1 * canvas.activeObject.value.width,
+                  y1: angleCoords.y1 * canvas.activeObject.value.height,
+                  x2: angleCoords.x2 * canvas.activeObject.value.width,
+                  y2: angleCoords.y2 * canvas.activeObject.value.height,
+                }
+              }
+
+              canvas.activeObject.value.set(
+                'fill',
+                new Gradient({
+                  type: 'linear',
+                  coords,
+                  colorStops,
+                }),
+              )
+            }
+            canvas.requestRenderAll()
+          },
+          onEndChange() {
+            undoRedo.saveState()
+          },
+        }),
       width: 240,
+      top: window.innerHeight / 2 - 202,
+      left: window.innerWidth - 240 - 240,
     })
   }
+
+  onUnmounted(() => {
+    dialogClose()
+  })
 </script>
 
 <template>

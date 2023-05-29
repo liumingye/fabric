@@ -1,6 +1,6 @@
 <template>
   <div
-    class="spectrum-cursor"
+    class="picker-cursor"
     :class="{
       active,
     }"
