@@ -248,10 +248,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // if we found something in this.targets, and the group is interactive, return that subTarget
     // TODO: reverify why interactive. the target should be returned always, but selected only
     // if interactive.
-    // todo 修复画板内的组
-    return target && util.isCollection(target) && target.interactive && this.targets.length > 0
-      ? this.targets[0]
-      : target
+    if (target && util.isCollection(target) && target.interactive && this.targets.length > 0) {
+      return this.targets[0].group?.interactive
+        ? this.targets[0]
+        : this.targets[this.targets.length - 1]
+    }
+    return target
   }
 
   // 工作区 | 页面管理
