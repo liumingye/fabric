@@ -145,6 +145,8 @@ export declare module 'fabric' {
     setLeft(left: number): void
     setTop(top: number): void
     toObject(propertiesToInclude?: any[]): any
+    _type: string
+    type: string
   }
 
   export declare class Group {

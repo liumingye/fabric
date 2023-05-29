@@ -6,7 +6,6 @@ import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspa
 import { toFixed } from '@/utils/math'
 import { randomText } from '@/utils/strings'
 import {
-  Board,
   Canvas,
   Object as FabricObject,
   ModifierKey,
@@ -66,7 +65,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       // 添加名称
       // todo 临时方法 findFirstMissingPositive
       if (!target.name) {
-        const className = target.constructor.name
+        const className = target.type
         const id = this.uniqueIds.get(className) || 1
         target.set({
           name: `${className} ${id}`,
@@ -249,8 +248,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // if we found something in this.targets, and the group is interactive, return that subTarget
     // TODO: reverify why interactive. the target should be returned always, but selected only
     // if interactive.
+    // todo 修复画板内的组
     return target && util.isCollection(target) && target.interactive && this.targets.length > 0
-      ? this.targets[this.targets.length - 1]
+      ? this.targets[0]
       : target
   }
 

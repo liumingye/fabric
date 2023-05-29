@@ -15,8 +15,7 @@ const isCollection = (fabricObject?: FabricObject): fabricObject is Group | Acti
 }
 
 // 类型工具
-const isGradient = (obj: unknown): obj is Gradient<'linear'> | Gradient<'radial'> =>
-  obj instanceof Gradient
+const isGradient = (obj: unknown): obj is Gradient<'linear' | 'radial'> => obj instanceof Gradient
 
 const isPattern = (obj: unknown): obj is Pattern => obj instanceof Pattern
 

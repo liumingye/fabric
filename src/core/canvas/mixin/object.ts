@@ -5,8 +5,13 @@ import {
   util,
   Point,
   Textbox,
+  Text,
   IText,
   Path,
+  Ellipse,
+  Board,
+  Rect,
+  Image,
 } from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
@@ -26,6 +31,7 @@ Object.assign(FabricObject.ownDefaults, {
   controls: createObjectDefaultControls(),
   includeDefaultValues: false,
   snapAngle: 1,
+  perPixelTargetFind: true,
 } as FabricObject)
 
 const mixin = {
@@ -141,21 +147,36 @@ const mixin = {
     return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
   },
   isType(...types: string[]) {
-    return types.some((type) => {
-      const _type = type.toLocaleLowerCase()
-      // 修复构建后随机类名，导致isType失效
-      if (
-        (_type === 'activeselection' && this instanceof ActiveSelection) ||
-        (_type === 'textbox' && this instanceof Textbox) ||
-        (_type === 'itext' && this instanceof IText) ||
-        (_type === 'text' && this instanceof Text) ||
-        (_type === 'path' && this instanceof Path)
-      ) {
-        return true
-      }
-      return type === this.constructor.name || type === this.type
-    })
+    return types.includes(this._type) || types.includes(this.constructor.name)
   },
 } as FabricObject
 
 Object.assign(FabricObject.prototype, mixin)
+
+Object.defineProperty(FabricObject.prototype, 'type', {
+  get() {
+    const name = this._type || this.constructor.name
+    if (name === 'FabricObject') {
+      return 'object'
+    }
+    return name.toLowerCase()
+  },
+
+  set(_value) {},
+})
+
+Rect.prototype._type = 'Rect'
+Ellipse.prototype._type = 'Ellipse'
+Textbox.prototype._type = 'Textbox'
+Text.prototype._type = 'Text'
+IText.prototype._type = 'IText'
+Path.prototype._type = 'Path'
+Board.prototype._type = 'Board'
+Image.prototype._type = 'Image'
+FabricObject.prototype._type = 'Object'
+Group.prototype._type = 'Group'
+
+const cancelPerPixel = [Text, IText, Textbox, Group]
+cancelPerPixel.forEach((obj) => {
+  obj.ownDefaults.perPixelTargetFind = false
+})
