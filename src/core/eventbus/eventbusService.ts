@@ -2,17 +2,24 @@ import { createDecorator } from '@/core/instantiation/instantiation'
 import { registerSingleton } from '@/core/instantiation/extensions'
 import { Mitt } from '@/core/eventbus/mitt'
 
+type WworkspaceParam = {
+  oldId: string | undefined
+  newId: string
+}
+
 export type Events = {
   undoRedoStackChange: undefined
   layerRename: { id: string }
   setEdgeMoveStatus: boolean
-  workspaceChangeBefore: string
-  workspaceChangeAfter: string
-  workspaceAdd: string
-  workspaceRemove: string
+  workspaceChangeBefore: WworkspaceParam
+  workspaceChangeAfter: WworkspaceParam
+  workspaceAddBefore: WworkspaceParam
+  workspaceAddAfter: WworkspaceParam
+  workspaceRemoveBefore: string
+  workspaceRemoveAfter: string
 }
 
-export type EventbusService = Mitt<Events>
+export class EventbusService extends Mitt<Events> {}
 
 export const IEventbusService = createDecorator<EventbusService>('eventbusService')
 

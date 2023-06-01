@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
-  import type { TreeNodeData, DropPosition, TreeNodeKey } from '@/components/tree'
-  import { ActiveSelection, ObjectRef, util } from '@fabric'
+  import type { TreeNodeData, DropPosition, TreeNodeKey, TreeInstance } from '@/components/tree'
+  import { ActiveSelection, Board, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, isDefined } from '@vueuse/core'
@@ -27,6 +27,8 @@
   const renameNodeKey = ref<string | number | undefined>(undefined)
   // 展开的节点
   const expandedKeys = ref<TreeNodeKey[]>([])
+
+  const treeRef = ref<TreeInstance>()
 
   /**
    * 获得树节点数据
@@ -149,6 +151,11 @@
       }
     }
 
+    // 画板不能进组
+    if ((dragGroup !== dropGroup || dropPosition === 0) && dragObject instanceof Board) {
+      return false
+    }
+
     // 进入组，dropObject是组
     if (util.isCollection(dropObject) && dropPosition === 0) {
       dropGroup = dropObject
@@ -243,19 +250,53 @@
   }
 
   // 更新tree选中节点
-  const updateSelectedkeys = () => {
-    if (!canvas.activeObject.value) {
+  const updateSelectedkeys = async () => {
+    const activeObject = canvas.activeObject.value
+
+    if (!activeObject) {
       selectedkeys.value = []
       return
     }
-    if (canvas.activeObject.value instanceof ActiveSelection) {
+
+    let needExpandedKeys: Set<string> = new Set()
+
+    if (util.isActiveSelection(activeObject)) {
       const tempKeys: string[] = []
-      canvas.activeObject.value.forEachObject((obj) => {
+      activeObject.forEachObject((obj) => {
+        if (obj.group) {
+          needExpandedKeys.add(obj.group.id)
+        }
         tempKeys.push(obj.id)
       })
       selectedkeys.value = tempKeys
     } else {
-      selectedkeys.value = [canvas.activeObject.value.id]
+      if (activeObject.group) {
+        needExpandedKeys.add(activeObject.group.id)
+      }
+      selectedkeys.value = [activeObject.id]
+    }
+
+    if (needExpandedKeys) {
+      expandedKeys.value.push(...needExpandedKeys)
+      // 等待展开
+      await nextTick()
+    }
+
+    const containerRect = treeRef.value?.virtualListRef.containerRef.getBoundingClientRect()
+    const nodeRect = document
+      .querySelector(`.arco-tree-node[data-key='${selectedkeys.value[0]}']`)
+      ?.getBoundingClientRect()
+
+    // 判断是否在可视区域外
+    if (
+      !nodeRect ||
+      containerRect.top - nodeRect.top > nodeRect.height ||
+      nodeRect.top - containerRect.top > treeHeight.value
+    ) {
+      treeRef.value?.scrollIntoView({
+        key: selectedkeys.value[0],
+        align: 'auto',
+      })
     }
   }
 
@@ -266,7 +307,8 @@
   })
 
   const splitRef = ref<SplitInstance>()
-  const secondHeight = ref(0)
+  const treeHeight = ref(0)
+
   onMounted(() => {
     // 默认展开第一层节点
     treeData.value.forEach((data) => {
@@ -279,7 +321,7 @@
     useResizeObserver(splitRef.value?.wrapperRef?.childNodes?.[2] as HTMLDivElement, (entries) => {
       const [entry] = entries
       const { height } = entry.contentRect
-      secondHeight.value = height - 32
+      treeHeight.value = height - 32
     })
   })
 
@@ -363,6 +405,7 @@
         </template>
       </a-input>
       <Tree
+        ref="treeRef"
         size="small"
         blockNode
         draggable
@@ -373,7 +416,7 @@
         :data="treeData"
         :allowDrop="allowDrop"
         :virtualListProps="{
-          height: secondHeight,
+          height: treeHeight,
           fixedSize: true,
         }"
         @drop="onDrop"

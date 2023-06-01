@@ -1,6 +1,6 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
-import { FabricObject, Group, util } from '@fabric'
+import { Board, FabricObject, Group, util } from '@fabric'
 import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
@@ -109,8 +109,12 @@ export class Layer extends Disposable {
         this.deleteLayer(
           objects
             .filter((obj, index, array) => {
-              const parent = obj.getParent(true)
+              // 画板不能进组
+              if (obj instanceof Board) {
+                return false
+              }
               // 如果元素的组也在objects里，则排除该元素
+              const parent = obj.getParent(true)
               return !parent || !array.includes(parent)
             })
             .reverse(),

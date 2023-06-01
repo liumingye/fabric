@@ -13,7 +13,7 @@
 
   const { app } = getActiveCore()
 
-  onMounted(() => {
+  onBeforeMount(() => {
     app.editor.startup()
   })
 

@@ -153,23 +153,26 @@ const mixin = {
 
 Object.assign(FabricObject.prototype, mixin)
 
-Object.defineProperty(FabricObject.prototype, 'type', {
-  get() {
-    const name = this._type || this.constructor.name
-    if (name === 'FabricObject') {
-      return 'object'
-    }
-    return name.toLowerCase()
+// @ts-ignore
+delete IText.prototype.type
+Object.defineProperties(FabricObject.prototype, {
+  type: {
+    get() {
+      const name = this._type || this.constructor.name
+      if (name === 'FabricObject') {
+        return 'object'
+      }
+      return name.toLowerCase()
+    },
+    set(_value) {},
   },
-
-  set(_value) {},
 })
 
 Rect.prototype._type = 'Rect'
 Ellipse.prototype._type = 'Ellipse'
-Textbox.prototype._type = 'Textbox'
 Text.prototype._type = 'Text'
 IText.prototype._type = 'IText'
+Textbox.prototype._type = 'Textbox'
 Path.prototype._type = 'Path'
 Board.prototype._type = 'Board'
 Image.prototype._type = 'Image'

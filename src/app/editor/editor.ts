@@ -24,11 +24,18 @@ export class EditorMain extends Disposable {
 
   constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
     super()
-    this.service = this.initServices()
+    this.service = instantiationService
   }
 
   public startup() {
     this.scope.run(() => {
+      this.service = this.initServices()
+      this.service.invokeFunction((accessor) => {
+        const workspacesService = accessor.get(IWorkspacesService)
+        if (workspacesService.all().length === 0) {
+          workspacesService.setCurrentId(workspacesService.add('页面 1'))
+        }
+      })
       const instances = [
         this.service.createInstance(Ruler),
         this.service.createInstance(Layer),

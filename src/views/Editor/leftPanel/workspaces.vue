@@ -26,13 +26,13 @@
   updateWorkspaces()
 
   event.on('workspaceChangeAfter', updateWorkspaces)
-  event.on('workspaceAdd', updateWorkspaces)
-  event.on('workspaceRemove', updateWorkspaces)
+  event.on('workspaceAddAfter', updateWorkspaces)
+  event.on('workspaceRemoveAfter', updateWorkspaces)
 
   onUnmounted(() => {
     event.off('workspaceChangeAfter', updateWorkspaces)
-    event.off('workspaceAdd', updateWorkspaces)
-    event.off('workspaceRemove', updateWorkspaces)
+    event.off('workspaceAddAfter', updateWorkspaces)
+    event.off('workspaceRemoveAfter', updateWorkspaces)
   })
 
   const onSelect = (_selectedkeys: (string | number)[]) => {

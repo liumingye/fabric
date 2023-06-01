@@ -28,9 +28,8 @@ export class HoverObjectBorder extends Disposable {
 
   private clearContextTop(target: FabricObject, restoreManually = false) {
     const ctx = this.canvas.contextTop
-    const vpt = this.canvas.viewportTransform
     ctx.save()
-    ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5])
+    ctx.transform(...this.canvas.viewportTransform)
     target.transform(ctx)
     const { strokeWidth, scaleX, scaleY, strokeUniform } = target
     // we add 4 pixel, to be sure to do not leave any pixel out

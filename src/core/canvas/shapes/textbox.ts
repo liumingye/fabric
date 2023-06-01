@@ -16,10 +16,10 @@ export class Textbox extends TextboxOrigin {
     super(text, options)
 
     this.on('scaling', () => {
-      const { y: height, x: width } = this._getTransformedDimensions()
+      const { x, y } = this._getTransformedDimensions()
       this.set({
-        width,
-        height: Math.max(height, 1),
+        width: x,
+        height: Math.max(y, 1),
         scaleX: 1,
         scaleY: 1,
       })
@@ -67,6 +67,13 @@ export class Textbox extends TextboxOrigin {
     // 移除clipPath
     delete res.clipPath
     return res
+  }
+
+  override _set(key: string, value: any) {
+    if (key === 'group' && !value) {
+      this.fire('scaling')
+    }
+    return super._set(key, value)
   }
 }
 

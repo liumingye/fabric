@@ -144,7 +144,7 @@ export class FabricTool extends Disposable {
                 canvas._onObjectAdded(tempObject)
               }
               // canvas.requestRenderAll()
-              this.undoRedo.saveState()
+              // this.undoRedo.saveState()
               tempObject = undefined
             }
             activeTool.value = 'move'

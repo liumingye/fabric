@@ -114,25 +114,24 @@ export class UndoRedoService {
 
   // 工作区 | 页面管理
   private initWorkspace() {
+    const currentId = this.workspacesService.getCurrentId()
     this.workspacesService.all().forEach((workspace) => {
       this.undoRedos.set(workspace.id, {
         instantiation: new UndoRedo(),
-        lastState:
-          this.pageId === this.workspacesService.getCurrentId() ? this.getJson() : undefined,
+        lastState: this.pageId === currentId ? this.getJson() : undefined,
       })
     })
-    this.eventbus.on('workspaceAdd', (id) => {
-      this.undoRedos.set(id, {
+    this.eventbus.on('workspaceAddAfter', ({ newId }) => {
+      this.undoRedos.set(newId, {
         instantiation: new UndoRedo(),
-        lastState:
-          this.pageId === this.workspacesService.getCurrentId() ? this.getJson() : undefined,
+        lastState: this.pageId === newId ? this.getJson() : {},
       })
     })
-    this.eventbus.on('workspaceRemove', (id) => {
+    this.eventbus.on('workspaceRemoveAfter', (id) => {
       this.undoRedos.delete(id)
     })
-    this.eventbus.on('workspaceChangeAfter', (id) => {
-      this.pageId = id
+    this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
+      this.pageId = newId
     })
   }
 }

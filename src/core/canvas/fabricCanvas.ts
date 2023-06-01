@@ -4,7 +4,6 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
-import { randomText } from '@/utils/strings'
 import {
   Canvas,
   Object as FabricObject,
@@ -35,8 +34,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     objects: computed(() => this._objects),
   }
 
-  private uniqueIds = new Map<string, number>()
-
   constructor(
     @IWorkspacesService private readonly workspacesService: WorkspacesService,
     @IEventbusService private readonly eventbus: EventbusService,
@@ -61,41 +58,16 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       ),
     )
 
-    const setDefaultAttr = (target: FabricObject) => {
-      // 添加名称
-      // todo 临时方法 findFirstMissingPositive
-      if (!target.name) {
-        const className = target.type
-        const id = this.uniqueIds.get(className) || 1
-        target.set({
-          name: `${className} ${id}`,
-        })
-        this.uniqueIds.set(className, id + 1)
-      }
-      // 添加id
-      if (!target.id) {
-        target.set({
-          id: randomText(),
-        })
-      }
-    }
-
-    const objectAdded = ({ target }: { target: FabricObject }) => {
-      setDefaultAttr(target)
-      if (util.isCollection(target)) {
-        target.forEachObject((obj) => {
-          setDefaultAttr(obj)
-        })
-        target.on('object:added', objectAdded)
-      }
-    }
-
-    this.on({
-      'object:added': objectAdded,
-    })
-
     // @ts-ignore
     this._activeSelection = toRefObject(this._activeSelection)
+    this._activeSelection.subTargetCheck = true
+    this._activeSelection.on('mousedblclick', (e) => {
+      if (e.subTargets && e.subTargets.length > 0) {
+        this.discardActiveObject()
+        this.setActiveObject(e.subTargets[0])
+        this.requestRenderAll()
+      }
+    })
 
     // 响应式
     const objectsProxy = <K extends keyof FabricCanvas['ref']>(targetKey: any, refKey: K) => {
@@ -261,27 +233,27 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.workspacesService.all().forEach((workspace) => {
       this.setPageJSON(workspace.id, undefined)
     })
-    this.eventbus.on('workspaceAdd', (id) => {
-      this.setPageJSON(id, undefined)
+    this.eventbus.on('workspaceAddAfter', ({ newId }) => {
+      this.setPageJSON(newId, undefined)
     })
-    this.eventbus.on('workspaceRemove', (id) => {
+    this.eventbus.on('workspaceRemoveAfter', (id) => {
       this.pages.delete(id)
     })
-    this.eventbus.on('workspaceChangeBefore', (id) => {
+    this.eventbus.on('workspaceChangeBefore', ({ oldId }) => {
       // 切换前保存当前工作区
-      if (this.pageId === id) {
-        this.setPageJSON(id, this.toObject(['viewportTransform']))
+      if (this.pageId === oldId) {
+        this.setPageJSON(oldId, this.toObject(['viewportTransform']))
       }
     })
-    this.eventbus.on('workspaceChangeAfter', (id) => {
+    this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
       // 切换后恢复当前工作区
-      if (this.pageId !== id) {
-        const json = this.pages.get(id)
+      if (this.pageId !== newId) {
+        const json = this.pages.get(newId)
         this.loadFromJSON(json || {}).then(() => {
           this.requestRenderAll()
           this.ref.zoom.value = toFixed(this.getZoom())
         })
-        this.pageId = id
+        this.pageId = newId
       }
     })
   }

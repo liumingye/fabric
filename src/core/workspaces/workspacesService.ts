@@ -16,7 +16,6 @@ export class WorkspacesService extends Disposable {
 
   constructor(@IEventbusService private readonly eventbus: EventbusService) {
     super()
-    this.setCurrentId(this.add('页面 1'))
   }
 
   public getCurrentId(): string {
@@ -24,11 +23,14 @@ export class WorkspacesService extends Disposable {
   }
 
   public setCurrentId(workspaceId: string): void {
-    if (!this.get(workspaceId)) return
-    if (this.currentId === workspaceId) return
-    this.eventbus.emit('workspaceChangeBefore', this.currentId)
+    if (!this.get(workspaceId) || this.currentId === workspaceId) return
+    const param = {
+      oldId: this.currentId,
+      newId: workspaceId,
+    }
+    this.eventbus.emit('workspaceChangeBefore', param)
     this.currentId = workspaceId
-    this.eventbus.emit('workspaceChangeAfter', this.currentId)
+    this.eventbus.emit('workspaceChangeAfter', param)
   }
 
   public all(): IWorkspace[] {
@@ -47,16 +49,22 @@ export class WorkspacesService extends Disposable {
 
   public add(name: string): string {
     const id = randomText()
+    const param = {
+      oldId: this.currentId,
+      newId: id,
+    }
+    this.eventbus.emit('workspaceAddBefore', param)
     this.workspaces.push({ id, name })
-    this.eventbus.emit('workspaceAdd', id)
+    this.eventbus.emit('workspaceAddAfter', param)
     return id
   }
 
   public remove(workspaceId: string) {
     if (!this.get(workspaceId)) return
+    this.eventbus.emit('workspaceRemoveBefore', workspaceId)
     const index = this.workspaces.findIndex((workspace) => workspace.id === workspaceId)
     this.workspaces.splice(index, 1)
-    this.eventbus.emit('workspaceRemove', workspaceId)
+    this.eventbus.emit('workspaceRemoveAfter', workspaceId)
     if (workspaceId === this.currentId) {
       if (this.workspaces[index]) {
         this.setCurrentId(this.workspaces[index].id)
