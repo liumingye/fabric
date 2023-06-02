@@ -171,7 +171,11 @@
     dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
 
     // 回到激活选区
-    canvas.getActiveSelection().multiSelectAdd(_dragObject)
+    if (canvas.getActiveObject() === canvas.getActiveSelection()) {
+      canvas.getActiveSelection().multiSelectAdd(_dragObject)
+    } else {
+      canvas.setActiveObject(_dragObject)
+    }
   }
 
   /**
