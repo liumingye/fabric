@@ -47,6 +47,10 @@ export class Textbox extends TextboxOrigin {
       return
     }
     this.isEditing && this.initDelayedCursor()
+    // forceClearCache
+    if (this._forceClearCache) {
+      this.dirty = true
+    }
     this._clearCache()
     // clear dynamicMinWidth as it will be different after we re-wrap line
     this.dynamicMinWidth = 0
@@ -74,6 +78,13 @@ export class Textbox extends TextboxOrigin {
       this.fire('scaling')
     }
     return super._set(key, value)
+  }
+
+  override exitEditing() {
+    if (this.selectionEnd - this.selectionStart > 0) {
+      this.clearContextTop()
+    }
+    return super.exitEditing()
   }
 }
 

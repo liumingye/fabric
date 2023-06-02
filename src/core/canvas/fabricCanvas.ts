@@ -138,7 +138,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
    */
   public findObjectById(id: string): FabricObject | undefined {
     const object = this.findObjectsByIds([id])
-    return object.length ? object[0] : undefined
+    return object[0]
   }
 
   /**
@@ -249,10 +249,14 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       // 切换后恢复当前工作区
       if (this.pageId !== newId) {
         const json = this.pages.get(newId)
-        this.loadFromJSON(json || {}).then(() => {
-          this.requestRenderAll()
-          this.ref.zoom.value = toFixed(this.getZoom())
-        })
+        if (json) {
+          this.loadFromJSON(json).then(() => {
+            this.requestRenderAll()
+            this.ref.zoom.value = toFixed(this.getZoom())
+          })
+        } else {
+          this.clear()
+        }
         this.pageId = newId
       }
     })

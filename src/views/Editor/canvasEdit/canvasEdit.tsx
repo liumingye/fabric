@@ -7,6 +7,7 @@ export default defineComponent({
     const { canvas } = useEditor()
 
     const divRef = ref<HTMLDivElement>()
+
     onMounted(() => {
       divRef.value?.append(canvas.lowerCanvasEl, canvas.upperCanvasEl)
 
@@ -14,7 +15,9 @@ export default defineComponent({
       useResizeObserver(divRef, (entries) => {
         const [entry] = entries
         const { width, height } = entry.contentRect
-        canvas.setDimensions({ width, height })
+        if (canvas.lowerCanvasEl) {
+          canvas.setDimensions({ width, height })
+        }
       })
     })
 

@@ -436,7 +436,7 @@
         <template #title="nodeData">
           <a-input
             v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
-            class="bg-transparent! border-none px0"
+            class="bg-transparent! border-none! px0!"
             size="mini"
             :default-value="nodeData.title"
             @blur="renameNodeKey = undefined"

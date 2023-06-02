@@ -20,7 +20,7 @@ export class Group extends CommonGroup {
 
   // 双击后启用interactive，离开组后关闭
   public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
-    if (e.subTargets && e.subTargets.length > 0) {
+    if (e.subTargets && e.subTargets.length > 0 && this.canvas) {
       // 启用
       this.set({
         interactive: true,
@@ -45,8 +45,8 @@ export class Group extends CommonGroup {
 
       const [subTargets] = e.subTargets
       addDeselectedEvent(subTargets)
-      this.canvas?.setActiveObject(subTargets)
-      this.canvas?.requestRenderAll()
+      this.canvas.setActiveObject(subTargets)
+      this.canvas.requestRenderAll()
     }
   }
 

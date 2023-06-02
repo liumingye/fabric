@@ -41,22 +41,23 @@ export class HoverObjectBorder extends Disposable {
   }
 
   private clearBorder(e: CanvasEvents['mouse:over']) {
+    const target = e.target
+
     this.hoveredTarget = undefined
 
-    if (!e.target) return
+    if (!target || target === this.canvas._activeObject) return
 
     if (this.canvas.contextTopDirty) {
-      this.clearContextTop(e.target)
+      this.clearContextTop(target)
     }
   }
 
   private drawBorder(e: CanvasEvents['mouse:out']) {
-    if (!e.target) return
     const target = e.target
 
-    this.hoveredTarget = target
+    if (!target || util.isBoard(target) || target === this.canvas._activeObject) return
 
-    if (util.isBoard(target) || target === this.canvas._activeObject) return
+    this.hoveredTarget = target
 
     const ctx = this.clearContextTop(target, true)
     if (!ctx) return

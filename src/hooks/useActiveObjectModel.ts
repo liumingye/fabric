@@ -1,9 +1,9 @@
 import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
 import { ObjectRef, Textbox } from '@fabric'
-import type { WritableComputedRef } from 'vue'
+import { WritableComputedRef } from 'vue'
 import { clampAngle, toFixed } from '@/utils/math'
-import { isNumber } from 'lodash'
+import { isEqual, isNumber } from 'lodash'
 import { FabricObject, util } from '@fabric'
 import NP from 'number-precision'
 
@@ -14,7 +14,6 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   onChange: (value: T) => void
 }> => {
   const { canvas } = useEditor()
-  const { activeObject } = canvas
 
   const modelValue = ref()
 
@@ -22,24 +21,49 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   let lockChange = false
 
   watchEffect(() => {
-    if (!isDefined(activeObject)) {
+    if (!isDefined(canvas.activeObject)) {
       modelValue.value = undefined
       return
     }
+
+    const activeObject = canvas.activeObject.value as FabricObject & Textbox
+
     // 锁定修改
     lockChange = true
-    //
+
     let value
     if (['width', 'height'].includes(key)) {
-      value = activeObject.value[key === 'width' ? 'getWidth' : 'getHeight']()
-    } else if (['left', 'top'].includes(key) && activeObject.value.getParent(true)) {
-      value = activeObject.value.getLeftTop()[key === 'left' ? 'x' : 'y']
+      // 宽高
+      value = activeObject[key === 'width' ? 'getWidth' : 'getHeight']()
+    } else if (['left', 'top'].includes(key) && activeObject.getParent(true)) {
+      // 左上
+      value = activeObject.getLeftTop()[key === 'left' ? 'x' : 'y']
     } else if (key === 'opacity') {
-      value = NP.times(activeObject.value.opacity, 100)
+      // 透明度
+      value = NP.times(activeObject.opacity, 100)
     } else if (key === 'angle') {
-      value = clampAngle(activeObject.value.angle)
+      // 旋转
+      value = clampAngle(activeObject.angle)
+    } else if (key === 'fontSize') {
+      // 字体大小
+      let lastStyle = activeObject.getStyleAtPosition(0)[key]
+      let allSameStyle = true
+      for (let i = 1; i < activeObject.text.length; i++) {
+        const thisStyle = activeObject.getStyleAtPosition(i)[key]
+        if (!isEqual(thisStyle, lastStyle)) {
+          allSameStyle = false
+          break
+        }
+        lastStyle = thisStyle
+      }
+      if (!allSameStyle) {
+        value = '多个值'
+      } else {
+        value = activeObject[key]
+      }
     } else {
-      value = (activeObject.value as FabricObject & Textbox)[key]
+      // 其它
+      value = activeObject[key]
     }
     modelValue.value = isNumber(value) ? toFixed(value) : value
     requestAnimationFrame(() => (lockChange = false))
@@ -54,17 +78,17 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     }
   }
 
-  const saveState = () => {
-    if (!isDefined(activeObject)) return
-    useEditor().undoRedo.saveState()
-  }
-
+  /**
+   * 更改值
+   */
   const changeValue = (newValue: T, type: 'swipe' | 'change') => {
+    const activeObject = canvas.activeObject.value as FabricObject & Textbox
+
     if (lockChange || !isDefined(activeObject)) return
 
+    // 左上宽高旋转
     if (['width', 'height', 'left', 'top', 'angle'].includes(key)) {
-      // 左上宽高旋转
-      activeObject.value[
+      activeObject[
         key === 'width'
           ? 'setWidth'
           : key === 'height'
@@ -77,26 +101,38 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       ](Number(newValue))
       // 更改值后，更新组的布局
       if (type === 'change') {
-        activeObject.value.group?.updateLayout()
+        activeObject.group?.updateLayout()
       }
-    } else if (
-      !['left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
-      util.isCollection(activeObject.value)
+    }
+    // 文字
+    else if (
+      activeObject.isType<Textbox | Text>('Text', 'Textbox') &&
+      ['fontSize'].includes(key) &&
+      activeObject.selectionEnd - activeObject.selectionStart > 0
     ) {
-      // 在收集器内
-      activeObject.value.forEachObject((obj) => {
+      activeObject.setSelectionStyles({
+        fontSize: newValue,
+      })
+    }
+    // 组
+    else if (
+      !['left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
+      util.isCollection(activeObject)
+    ) {
+      activeObject.forEachObject((obj) => {
         setObjectValue(obj, newValue)
       })
-    } else {
-      // 在收集器外
-      setObjectValue(activeObject.value, newValue)
+    }
+    // 其它
+    else {
+      setObjectValue(activeObject, newValue)
     }
 
     canvas.requestRenderAll()
   }
 
   return computed(() => ({
-    disabled: !isDefined(activeObject),
+    disabled: !isDefined(canvas.activeObject.value),
     modelValue: modelValue.value as T,
     onSwipe: (value: T) => {
       changeValue(value, 'swipe')
@@ -104,7 +140,8 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     onChange: (value: T) => {
       changeValue(value, 'change')
       // 保存历史
-      saveState()
+      if (!isDefined(canvas.activeObject)) return
+      useEditor().undoRedo.saveState()
     },
   }))
 }

@@ -9,7 +9,7 @@ import { appInstance } from '@/app'
 const createServices = (): IInstantiationService => {
   const services = new ServiceCollection()
 
-  // 获取单例服务
+  // 获取全局单例服务
   for (const [id, descriptor] of getSingletonServiceDescriptors()) {
     services.set(id, descriptor)
   }

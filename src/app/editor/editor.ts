@@ -16,6 +16,7 @@ import { EditorPlugin, IEditorPluginContext, getActiveCore } from '@/core'
 import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import { IEventbusService, EventbusService } from '@/core/eventbus/eventbusService'
 import type { EffectScope } from 'vue'
 
 export class EditorMain extends Disposable {
@@ -34,7 +35,7 @@ export class EditorMain extends Disposable {
       this.service = this.initServices()
       this.service.invokeFunction((accessor) => {
         const workspacesService = accessor.get(IWorkspacesService)
-        if (workspacesService.all().length === 0) {
+        if (workspacesService.size() === 0) {
           workspacesService.setCurrentId(workspacesService.add('页面 1'))
         }
       })
@@ -78,6 +79,7 @@ export class EditorMain extends Disposable {
         services.set(id, new SyncDescriptor(ctor))
       }
     }
+    define(IEventbusService, EventbusService)
     define(IWorkspacesService, WorkspacesService)
     define(IFabricCanvas, FabricCanvas)
     define(IUndoRedoService, UndoRedoService)
@@ -88,15 +90,10 @@ export class EditorMain extends Disposable {
 
   public dispose() {
     try {
-      super.dispose()
       this.pluginInstance.forEach((p) => {
         p.dispose?.()
       })
-      this.service.invokeFunction((accessor) => {
-        accessor.get(IKeybindingService).reset()
-        accessor.get(IUndoRedoService).reset()
-        accessor.get(IFabricCanvas).dispose()
-      })
+      super.dispose()
       this.scope?.stop()
     } catch (_e) {
       console.error(_e)

@@ -147,6 +147,7 @@ export declare module 'fabric' {
     toObject(propertiesToInclude?: any[]): any
     _type: string
     type: string
+    isType<T = boolean>(...types: string[]): this is T
   }
 
   export declare class Group {

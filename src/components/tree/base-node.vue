@@ -28,7 +28,7 @@
           `${prefixCls}-switcher`,
           {
             [`${prefixCls}-switcher-expanded`]: expanded,
-            'pl1.5 pr4.5 mr-0': blockNode,
+            'pl1.5 pr4.5 mr-0!': blockNode,
           },
         ]"
         @click="onSwitcherClick"
