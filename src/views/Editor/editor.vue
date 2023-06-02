@@ -10,7 +10,7 @@
   const onContextmenu = (e: MouseEvent) => {
     const target = (e.target || e.srcElement) as HTMLElement | undefined
 
-    const isInputOrTextArea = target && ['INPUT', 'TEXTAREA'].includes(target.tagName)
+    const isInputOrTextArea = target && ['INPUT', 'TEXTAREA', 'TEXT'].includes(target.tagName)
     const isDisabledInput = isInputOrTextArea && (target as HTMLInputElement).disabled
 
     if (!target || !isInputOrTextArea || isDisabledInput) {
@@ -32,17 +32,17 @@
 <template>
   <div @contextmenu="onContextmenu">
     <a-layout class="h-screen">
-      <a-layout-header class="bg-$color-bg-4 b-solid b-b b-$color-neutral-3">
+      <a-layout-header class="bg-$color-bg-4! b-solid b-b b-$color-neutral-3">
         <HeaderBar />
       </a-layout-header>
       <a-layout>
-        <a-layout-sider class="bg-$color-bg-4 z1" :width="240">
+        <a-layout-sider class="bg-$color-bg-4! z1" :width="240">
           <LeftPanel />
         </a-layout-sider>
         <a-layout-content>
           <CanvasEdit />
         </a-layout-content>
-        <a-layout-sider class="bg-$color-bg-4" :width="240">
+        <a-layout-sider class="bg-$color-bg-4!" :width="240">
           <RightPanel />
         </a-layout-sider>
       </a-layout>

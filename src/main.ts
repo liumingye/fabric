@@ -5,14 +5,13 @@ import pinia from '@/store'
 import { createCore } from '@/core'
 import NP from 'number-precision'
 import '@/hooks/useThemes'
+import { arcoPatch } from '@/utils/arco'
 
 // CSS
 import '@unocss/reset/tailwind-compat.css'
-import '@/assets/style/global.less'
 import 'virtual:uno.css'
 import 'virtual:svg-icons-register'
-
-import { arcoPatch } from '@/utils/arco'
+import '@/assets/style/global.less'
 
 const core = createCore()
 // debug code

@@ -137,6 +137,7 @@
       }
     }
 
+    // 退出激活选区
     if (util.isActiveSelection(dragObject.group)) {
       dragObject.group.remove(dragObject)
     }
@@ -167,10 +168,10 @@
     }
 
     const [_dragObject] = dragGroup.remove(dragObject) as FabricObject[]
-
-    console.log(dragGroup, _dragObject)
-
     dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
+
+    // 回到激活选区
+    canvas.getActiveSelection().multiSelectAdd(_dragObject)
   }
 
   /**
