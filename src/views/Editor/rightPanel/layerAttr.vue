@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
-  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import { popupMaxHeight } from '@/utils/arco'
 
   const opacity = useActiveObjectModel('opacity')

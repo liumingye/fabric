@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
-  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import type { SelectProps } from '@arco-design/web-vue/es/select'
   import { popupMaxHeight } from '@/utils/arco'
   import { useEditor } from '@/app'

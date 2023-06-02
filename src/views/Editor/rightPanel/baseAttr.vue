@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import SwipeNumber from '@/components/swipeNumber'
   import SvgIcon from '@/components/svgIcon'
-  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import TipContentKey from '@/components/tooltip/tipContentKey.vue'
   import { useEditor } from '@/app'
   import { isDefined } from '@vueuse/core'

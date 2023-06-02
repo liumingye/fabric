@@ -13,15 +13,10 @@ export interface EditorPluginContext {
 
 export type EditorPlugin = (editor: Pick<EditorMain, 'service' | 'use'>) => EditorPluginContext
 
-export interface ICoreApp {
-  editor: EditorMain
-}
-
 export interface ICore {
   install: (app: App) => void
   service: IInstantiationService
   use: (plugin: EditorPlugin) => ICore
-  app: ICoreApp
   _p: EditorPlugin[]
   _a: App
 }

@@ -1,6 +1,7 @@
-import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, Board } from '@fabric'
+import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, Board, Rect } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
+import { clone } from 'lodash'
 
 export class Group extends CommonGroup {
   public subTargetCheck = true
@@ -73,6 +74,22 @@ export class Group extends CommonGroup {
     } else {
       super.setCoords()
     }
+  }
+
+  override render(ctx: CanvasRenderingContext2D) {
+    this._transformDone = true
+    super.render(ctx)
+
+    if (this.stroke && this.strokeWidth !== 0) {
+      ctx.save()
+      this.transform(ctx)
+      const obj = clone(this)
+      obj.fill = ''
+      Rect.prototype._render.call(obj, ctx)
+      ctx.restore()
+    }
+
+    this._transformDone = false
   }
 }
 

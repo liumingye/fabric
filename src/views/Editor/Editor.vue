@@ -4,21 +4,28 @@
   import LeftPanel from '@/views/Editor/leftPanel'
   import RightPanel from '@/views/Editor/rightPanel'
   import { getActiveCore } from '@/core'
+  import { appInstance } from '@/app'
+  import { EditorMain } from '@/app/editor'
 
   const onContextmenu = (e: MouseEvent) => {
-    if (!e.target || !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+    const target = (e.target || e.srcElement) as HTMLElement | undefined
+
+    const isInputOrTextArea = target && ['INPUT', 'TEXTAREA'].includes(target.tagName)
+    const isDisabledInput = isInputOrTextArea && (target as HTMLInputElement).disabled
+
+    if (!target || !isInputOrTextArea || isDisabledInput) {
       e.preventDefault()
     }
   }
 
-  const { app } = getActiveCore()
-
   onBeforeMount(() => {
-    app.editor.startup()
+    const { service } = getActiveCore()
+    appInstance.editor = service.createInstance(EditorMain)
+    appInstance.editor.startup()
   })
 
   onUnmounted(() => {
-    app.editor.dispose()
+    appInstance.editor.dispose()
   })
 </script>
 
@@ -44,14 +51,6 @@
 </template>
 
 <style scoped lang="less">
-  // :global(#app) {
-  //   position: absolute;
-  //   left: 0;
-  //   right: 0;
-  //   top: 0;
-  //   bottom: 0;
-  // }
-
   :global(body) {
     overflow: hidden;
   }

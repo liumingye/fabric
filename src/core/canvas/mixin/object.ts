@@ -7,6 +7,7 @@ import {
   Textbox,
   Text,
   IText,
+  Triangle,
   Path,
   Ellipse,
   Board,
@@ -176,6 +177,7 @@ Textbox.prototype._type = 'Textbox'
 Path.prototype._type = 'Path'
 Board.prototype._type = 'Board'
 Image.prototype._type = 'Image'
+Triangle.prototype._type = 'Triangle'
 FabricObject.prototype._type = 'Object'
 Group.prototype._type = 'Group'
 ActiveSelection.prototype._type = 'ActiveSelection'

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Panel from './panel.vue'
-  import { useActiveObjectModel } from './hooks/useActiveObjectModel'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import { isString } from 'lodash'
   import { util, Color as FabricColor, Gradient, Pattern, Color } from '@fabric'
   import type { GradientCoords } from 'fabric/src/gradient/typedefs'

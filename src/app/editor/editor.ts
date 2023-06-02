@@ -14,20 +14,22 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
 import { EditorPlugin, IEditorPluginContext, getActiveCore } from '@/core'
 import { Disposable } from '@/utils/lifecycle'
-import { IKeybindingService } from '@/core/keybinding/keybindingService'
+import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import type { EffectScope } from 'vue'
 
 export class EditorMain extends Disposable {
   public service: IInstantiationService
-  private scope = effectScope()
+  private scope: EffectScope | undefined
   private pluginInstance = new Map<Symbol, IEditorPluginContext>()
 
   constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
     super()
-    this.service = instantiationService
+    this.service = this.instantiationService
   }
 
   public startup() {
+    this.scope = effectScope()
     this.scope.run(() => {
       this.service = this.initServices()
       this.service.invokeFunction((accessor) => {
@@ -79,21 +81,23 @@ export class EditorMain extends Disposable {
     define(IWorkspacesService, WorkspacesService)
     define(IFabricCanvas, FabricCanvas)
     define(IUndoRedoService, UndoRedoService)
+    define(IKeybindingService, KeybindingService)
 
     return this.instantiationService.createChild(services)
   }
 
   public dispose() {
     try {
-      this.scope.stop()
+      super.dispose()
       this.pluginInstance.forEach((p) => {
         p.dispose?.()
       })
       this.service.invokeFunction((accessor) => {
         accessor.get(IKeybindingService).reset()
-        accessor.get(IFabricCanvas).destroy()
         accessor.get(IUndoRedoService).reset()
+        accessor.get(IFabricCanvas).dispose()
       })
+      this.scope?.stop()
     } catch (_e) {
       console.error(_e)
     }

@@ -7,7 +7,6 @@ import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
-import NP from 'number-precision'
 
 export class FabricTool extends Disposable {
   constructor(
@@ -143,7 +142,7 @@ export class FabricTool extends Disposable {
               } else {
                 canvas._onObjectAdded(tempObject)
               }
-              // canvas.requestRenderAll()
+              canvas.requestRenderAll()
               // this.undoRedo.saveState()
               tempObject = undefined
             }

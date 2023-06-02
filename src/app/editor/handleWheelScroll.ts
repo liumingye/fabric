@@ -84,7 +84,7 @@ export class HandleWheelScroll extends Disposable {
         this.canvas._onMouseMove(event.e)
         needSetCoords = true
       },
-      16,
+      16, // 1000 / 60
       {
         immediate: false,
       },

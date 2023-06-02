@@ -137,6 +137,10 @@
       }
     }
 
+    if (util.isActiveSelection(dragObject.group)) {
+      dragObject.group.remove(dragObject)
+    }
+
     // 获取对象的组
     const dragGroup = dragObject.getParent()
     let dropGroup = dropObject.getParent()
@@ -161,7 +165,11 @@
       dropGroup = dropObject
       dropIndex = dragGroup._objects.length
     }
+
     const [_dragObject] = dragGroup.remove(dragObject) as FabricObject[]
+
+    console.log(dragGroup, _dragObject)
+
     dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
   }
 
