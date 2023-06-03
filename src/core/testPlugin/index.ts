@@ -1,6 +1,6 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IUndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { Board, Gradient, Group, Rect } from '@fabric'
 import { random } from 'lodash'
 
@@ -66,8 +66,8 @@ const myPlugin = createEditorPlugin((editor) => {
       for (let index = 0; index < 50; index++) {
         rects.push(
           new Rect({
-            top: random(200, 300),
-            left: random(400, 600),
+            top: random(100, 500),
+            left: random(400, 800),
             width: random(50, 100),
             height: random(50, 100),
             fill: getRandomColor(),

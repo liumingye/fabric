@@ -24,8 +24,9 @@
     appInstance.editor.startup()
   })
 
-  onUnmounted(() => {
+  onBeforeUnmount(() => {
     appInstance.editor.dispose()
+    appInstance.editor = null!
   })
 </script>
 

@@ -1,137 +1,84 @@
-import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { UndoRedo } from '@/core/undoRedo/undoRedo'
-import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
-import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { createDecorator } from '@/core/instantiation/instantiation'
-import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoService')
+
+class UndoQueue {
+  private inner_: any[] = []
+  private size_ = 50
+
+  pop() {
+    return this.inner_.pop()
+  }
+
+  push(e: any) {
+    this.inner_.push(e)
+    while (this.length > this.size_) {
+      this.inner_.splice(0, 1)
+    }
+  }
+
+  get length(): number {
+    return this.inner_.length
+  }
+}
 
 export class UndoRedoService {
   declare readonly _serviceBrand: undefined
 
-  private pageId: string
+  private undoStates: UndoQueue = new UndoQueue()
+  private redoStates: UndoQueue = new UndoQueue()
+  private isUndoing = false
+  public isTracking = true
 
-  private undoRedos: Map<
-    string,
-    {
-      instantiation: UndoRedo
-      lastState: string | undefined
-    }
-  > = new Map()
-
-  constructor(
-    @IFabricCanvas private readonly canvas: FabricCanvas,
-    @IKeybindingService readonly keybinding: KeybindingService,
-    @IEventbusService private readonly eventbus: EventbusService,
-    @IWorkspacesService private readonly workspacesService: WorkspacesService,
-  ) {
-    keybinding.bind('mod+z', this.undo.bind(this))
-    keybinding.bind(['mod+y', 'mod+shift+z'], this.redo.bind(this))
-
-    canvas.on('object:modified', this.saveState.bind(this))
-
-    this.pageId = this.workspacesService.getCurrentId()
-
-    this.initWorkspace()
+  constructor() {
+    this.push = this.push.bind(this)
   }
 
-  private getUndoRedo() {
-    return this.undoRedos.get(this.pageId)
+  pause() {
+    this.isTracking = false
   }
 
-  public push(state: any) {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    undoRedo.instantiation.push(state)
-    this.eventbus.emit('undoRedoStackChange')
+  resume() {
+    this.isTracking = true
   }
 
-  public redo() {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    if (!undoRedo.instantiation.canRedo) return
-
-    undoRedo.lastState = undoRedo.instantiation.redo(undoRedo.lastState)
-    if (undoRedo.lastState) {
-      this.loadJson(undoRedo.lastState)
-      this.eventbus.emit('undoRedoStackChange')
-    }
-    return undoRedo.lastState
+  push(state: any) {
+    if (!this.isTracking) return
+    this.undoStates.push(state)
+    this.redoStates = new UndoQueue()
   }
 
-  public undo() {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    if (!undoRedo.instantiation.canUndo) return
-
-    undoRedo.lastState = undoRedo.instantiation.undo(undoRedo.lastState)
-    if (undoRedo.lastState) {
-      this.loadJson(undoRedo.lastState)
-      this.eventbus.emit('undoRedoStackChange')
-    }
-    return undoRedo.lastState
+  undo(redoState: any) {
+    if (this.isUndoing) return
+    if (!this.canUndo) throw new Error('Nothing to undo')
+    this.isUndoing = true
+    const state = this.undoStates.pop()
+    this.redoStates.push(redoState)
+    this.isUndoing = false
+    return state
   }
 
-  public reset() {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    undoRedo.instantiation.reset()
-    this.eventbus.emit('undoRedoStackChange')
+  redo(undoState: any) {
+    if (this.isUndoing) return
+    if (!this.canRedo) throw new Error('Nothing to redo')
+    this.isUndoing = true
+    const state = this.redoStates.pop()
+    this.undoStates.push(undoState)
+    this.isUndoing = false
+    return state
   }
 
-  private async loadJson(json: string) {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-    const { instantiation } = undoRedo
-
-    try {
-      instantiation.pause()
-      await this.canvas.loadFromJSON(json)
-    } finally {
-      this.canvas.renderAll()
-      instantiation.resume()
-    }
+  reset() {
+    this.undoStates = new UndoQueue()
+    this.redoStates = new UndoQueue()
+    this.isUndoing = false
   }
 
-  private getJson() {
-    return this.canvas.toObject()
+  get canUndo(): boolean {
+    return !!this.undoStates.length
   }
 
-  // todo jsondiffpatch https://github.com/benjamine/jsondiffpatch
-  public saveState() {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    if (!undoRedo.instantiation.isTracking) return
-    this.push(undoRedo.lastState)
-    undoRedo.lastState = this.getJson()
-  }
-
-  // 工作区 | 页面管理
-  private initWorkspace() {
-    const currentId = this.workspacesService.getCurrentId()
-    this.workspacesService.all().forEach((workspace) => {
-      this.undoRedos.set(workspace.id, {
-        instantiation: new UndoRedo(),
-        lastState: this.pageId === currentId ? this.getJson() : undefined,
-      })
-    })
-    this.eventbus.on('workspaceAddAfter', ({ newId }) => {
-      this.undoRedos.set(newId, {
-        instantiation: new UndoRedo(),
-        lastState: this.pageId === newId ? this.getJson() : {},
-      })
-    })
-    this.eventbus.on('workspaceRemoveAfter', (id) => {
-      this.undoRedos.delete(id)
-    })
-    this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
-      this.pageId = newId
-    })
+  get canRedo(): boolean {
+    return !!this.redoStates.length
   }
 }

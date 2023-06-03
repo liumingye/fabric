@@ -221,9 +221,13 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // TODO: reverify why interactive. the target should be returned always, but selected only
     // if interactive.
     if (target && util.isCollection(target) && target.interactive && this.targets.length > 0) {
-      return this.targets[0].group?.interactive
-        ? this.targets[0]
-        : this.targets[this.targets.length - 1]
+      let obj
+      for (let index = this.targets.length - 1; index >= 0; index--) {
+        if (this.targets[index].group?.interactive) {
+          obj = this.targets[index]
+        }
+      }
+      return obj || this.targets[0]
     }
     return target
   }
@@ -252,7 +256,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         if (json) {
           this.loadFromJSON(json).then(() => {
             this.requestRenderAll()
-            this.ref.zoom.value = toFixed(this.getZoom())
+            this.setViewportTransform(this.viewportTransform)
           })
         } else {
           this.clear()

@@ -5,7 +5,7 @@ import { ClipboardService, IClipboardService } from '@/core/clipboard/clipboardS
 import { encode, decode } from '@/utils/steganography'
 import { ActiveSelection, FabricObject, Group, Image, Textbox, util } from '@fabric'
 import { randomText } from '@/utils/strings'
-import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { IUndoRedoService, UndoRedo } from '@/app/editor/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
 
 export class Clipboard extends Disposable {
@@ -13,7 +13,7 @@ export class Clipboard extends Disposable {
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService readonly keybinding: KeybindingService,
     @IClipboardService private readonly clipboard: ClipboardService,
-    @IUndoRedoService private readonly undoRedo: UndoRedoService,
+    @IUndoRedoService private readonly undoRedo: UndoRedo,
   ) {
     super()
     keybinding.bind({

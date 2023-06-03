@@ -5,14 +5,14 @@ import { AlignMethod } from 'app'
 import { useEditor } from '@/app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
-import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { IUndoRedoService, UndoRedo } from '@/app/editor/undoRedo/undoRedoService'
 
 export class Layer extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService readonly eventbus: EventbusService,
-    @IUndoRedoService private readonly undoRedo: UndoRedoService,
+    @IUndoRedoService private readonly undoRedo: UndoRedo,
   ) {
     super()
     this.keybinding.bind(['del', 'backspace'], (e) => {

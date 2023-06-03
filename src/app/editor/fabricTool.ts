@@ -6,14 +6,14 @@ import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
-import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { IUndoRedoService, UndoRedo } from '@/app/editor/undoRedo/undoRedoService'
 
 export class FabricTool extends Disposable {
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService private readonly eventbus: EventbusService,
-    @IUndoRedoService private readonly undoRedo: UndoRedoService,
+    @IUndoRedoService private readonly undoRedo: UndoRedo,
   ) {
     super()
     this.initWatch()

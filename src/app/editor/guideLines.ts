@@ -70,6 +70,7 @@ export class GuideLines extends Disposable {
 
     const activeObject = e.target
     this.activeObj = activeObject
+
     const canvasObjects: FabricObject[] = []
     const add = (group: Group | Canvas | Board) => {
       const objects = group.getObjects().filter((obj) => {
@@ -92,7 +93,7 @@ export class GuideLines extends Disposable {
           add(obj)
           return true
         }
-        // 元素为激活元素的组，把组内元素加入，同时排除组本身
+        // 元素为组，把组内元素加入，同时排除组本身
         if (obj instanceof Group && activeObject.group && obj === activeObject.group) {
           add(obj)
           return false
@@ -306,7 +307,7 @@ export class GuideLines extends Disposable {
   }
 
   private drawSign(x: number, y: number) {
-    const ctx = this.canvas.getSelectionContext()
+    const ctx = this.canvas.getTopContext()
 
     ctx.strokeStyle = this.aligningLineColor
     ctx.beginPath()
@@ -320,7 +321,7 @@ export class GuideLines extends Disposable {
   }
 
   private drawLine(x1: number, y1: number, x2: number, y2: number) {
-    const ctx = this.canvas.getSelectionContext()
+    const ctx = this.canvas.getTopContext()
     const point1 = util.transformPoint(new Point(x1, y1), this.canvas.viewportTransform)
     const point2 = util.transformPoint(new Point(x2, y2), this.canvas.viewportTransform)
 
@@ -382,6 +383,6 @@ export class GuideLines extends Disposable {
   clearGuideline() {
     if (!this.dirty) return
     this.dirty = false
-    this.canvas.clearContext(this.canvas.getSelectionContext())
+    this.canvas.clearContext(this.canvas.getTopContext())
   }
 }

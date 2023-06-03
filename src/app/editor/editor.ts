@@ -11,27 +11,23 @@ import { SyncDescriptor } from '@/core/instantiation/descriptors'
 import { IInstantiationService, ServiceIdentifier } from '@/core/instantiation/instantiation'
 import { ServiceCollection } from '@/core/instantiation/serviceCollection'
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IUndoRedoService, UndoRedoService } from '@/core/undoRedo/undoRedoService'
+import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { EditorPlugin, IEditorPluginContext, getActiveCore } from '@/core'
-import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { IEventbusService, EventbusService } from '@/core/eventbus/eventbusService'
-import type { EffectScope } from 'vue'
+import { BaseApp } from '@/app/baseApp'
 
-export class EditorMain extends Disposable {
-  public service: IInstantiationService
-  private scope: EffectScope | undefined
+export class EditorMain extends BaseApp {
+  public service!: IInstantiationService
   private pluginInstance = new Map<Symbol, IEditorPluginContext>()
 
   constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
     super()
-    this.service = this.instantiationService
   }
 
   public startup() {
-    this.scope = effectScope()
-    this.scope.run(() => {
+    super.scopeRun(() => {
       this.service = this.initServices()
       this.service.invokeFunction((accessor) => {
         const workspacesService = accessor.get(IWorkspacesService)
@@ -93,8 +89,9 @@ export class EditorMain extends Disposable {
       this.pluginInstance.forEach((p) => {
         p.dispose?.()
       })
+      this.pluginInstance.clear()
       super.dispose()
-      this.scope?.stop()
+      this.service = undefined!
     } catch (_e) {
       console.error(_e)
     }

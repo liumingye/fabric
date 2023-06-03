@@ -1,4 +1,4 @@
-import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, Board, Rect } from '@fabric'
+import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, Rect } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 import { clone } from 'lodash'
@@ -20,34 +20,44 @@ export class Group extends CommonGroup {
 
   // 双击后启用interactive，离开组后关闭
   public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
-    if (e.subTargets && e.subTargets.length > 0 && this.canvas) {
-      // 启用
-      this.set({
-        interactive: true,
-        objectCaching: false,
-      })
-
-      const addDeselectedEvent = (obj: FabricObject) => {
-        obj.once('deselected', () => {
-          const activeObject = this.canvas?.getActiveObject()
-          if (!activeObject || activeObject.getParent() !== this) {
-            // 关闭
-            this.set({
-              interactive: false,
-              objectCaching: true,
-            })
-          } else {
-            // 事件传递
-            addDeselectedEvent(activeObject)
-          }
-        })
-      }
-
-      const [subTargets] = e.subTargets
-      addDeselectedEvent(subTargets)
-      this.canvas.setActiveObject(subTargets)
-      this.canvas.requestRenderAll()
+    if (!this.canvas || !e.target || e.target !== this || !e.subTargets || this.interactive) {
+      return
     }
+
+    const addDeselectedEvent = (target: FabricObject) => {
+      target.once('deselected', () => {
+        const activeObject = this.canvas?.getActiveObject()
+        if (!activeObject || !activeObject.getAncestors(true).includes(this)) {
+          // 关闭
+          this.set({
+            interactive: false,
+            objectCaching: true,
+          })
+        } else {
+          // 事件传递
+          addDeselectedEvent(activeObject)
+        }
+      })
+    }
+
+    // 启用
+    this.set({
+      interactive: true,
+      objectCaching: false,
+    })
+
+    addDeselectedEvent(e.target)
+
+    for (let index = e.subTargets.length - 1; index >= 0; index--) {
+      if (e.subTargets[index] === e.target) {
+        e.subTargets[index - 1] && this.canvas.setActiveObject(e.subTargets[index - 1])
+        break
+      } else if (index === 0) {
+        this.canvas.setActiveObject(e.subTargets[e.subTargets?.length - 1])
+      }
+    }
+
+    this.canvas.requestRenderAll()
   }
 
   public setDirty() {
