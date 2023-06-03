@@ -104,13 +104,13 @@
     onChange()
   }
 
-  const keyUpHandler = (event) => {
+  const keyUpHandler = (event: KeyboardEvent) => {
     if (event.keyCode === 46 || event.keyCode === 8) {
       removePoint(state.activePointIndex)
     }
   }
 
-  const changeActivePointIndex = (index) => {
+  const changeActivePointIndex = (index: number) => {
     state.activePointIndex = index
     state.activePoint = state.gradientPoints[index]
     const { red, green, blue, alpha } = state.activePoint
@@ -153,7 +153,7 @@
       saturation?: number
       value?: number
     },
-    actionName = 'onChange',
+    actionName: 'onStartChange' | 'onChange' | 'onEndChange' = 'onChange',
   ) => {
     r = r ?? state.colorRed
     g = g ?? state.colorGreen
@@ -187,7 +187,11 @@
     action && action(getChangeData())
   }
 
-  const updateGradientLeft = (left, index, actionName = 'onChange') => {
+  const updateGradientLeft = (
+    left: number,
+    index: number,
+    actionName: 'onStartChange' | 'onChange' | 'onEndChange' = 'onChange',
+  ) => {
     state.gradientPoints[index].left = clamp(left, 0, 100)
 
     const action = state.actions[actionName]
@@ -195,7 +199,7 @@
     action && action(getChangeData())
   }
 
-  const addPoint = (left) => {
+  const addPoint = (left: number) => {
     left = clamp(left, 0, 100)
     state.gradientPoints.push({
       ...state.gradientPoints[state.activePointIndex],

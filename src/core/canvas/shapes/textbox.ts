@@ -16,7 +16,9 @@ export class Textbox extends TextboxOrigin {
     super(text, options)
 
     this.on('scaling', () => {
-      const { x, y } = this._getTransformedDimensions()
+      const { x, y } = this._getTransformedDimensions({
+        strokeWidth: 0,
+      })
       this.set({
         width: x,
         height: Math.max(y, 1),

@@ -6,55 +6,75 @@
   import FillAttr from './fillAttr.vue'
   import StrokeAttr from './strokeAttr.vue'
   import { isDefined } from '@vueuse/core'
-  import { useEditor } from '@/app'
+  import { useEditor, appInstance } from '@/app'
   import { util } from '@fabric'
 
   const { canvas } = useEditor()
 
-  const componentList = computed(() => [
-    {
-      name: 'LayoutAlign',
-      component: LayoutAlign,
-      visual: true,
-    },
-    {
-      name: 'BaseAttr',
-      component: BaseAttr,
-      visual: true,
-    },
-    {
-      name: 'LayerAttr',
-      component: LayerAttr,
-      visual: isDefined(canvas.activeObject) && !util.isActiveSelection(canvas.activeObject.value),
-    },
-    {
-      name: 'TextAttr',
-      component: TextAttr,
-      visual:
-        isDefined(canvas.activeObject) && canvas.activeObject.value.isType('IText', 'Textbox'),
-    },
-    {
-      name: 'FillAttr',
-      component: FillAttr,
-      visual: isDefined(canvas.activeObject) && !util.isCollection(canvas.activeObject.value),
-    },
-    {
-      name: 'StrokeAttr',
-      component: StrokeAttr,
-      visual: isDefined(canvas.activeObject) && !util.isCollection(canvas.activeObject.value),
-    },
-  ])
+  const componentList = computed(() => {
+    const activeObject = canvas.activeObject.value
+    return [
+      {
+        name: 'LayoutAlign',
+        component: LayoutAlign,
+        visual: true,
+      },
+      {
+        name: 'BaseAttr',
+        component: BaseAttr,
+        visual: true,
+      },
+      {
+        name: 'LayerAttr',
+        component: LayerAttr,
+        visual: isDefined(activeObject) && !util.isActiveSelection(activeObject),
+      },
+      {
+        name: 'TextAttr',
+        component: TextAttr,
+        visual: isDefined(activeObject) && activeObject.isType('IText', 'Textbox'),
+      },
+      {
+        name: 'FillAttr',
+        component: FillAttr,
+        visual:
+          isDefined(activeObject) &&
+          (util.isBoard(activeObject) || !util.isCollection(activeObject)),
+      },
+      {
+        name: 'StrokeAttr',
+        component: StrokeAttr,
+        visual: isDefined(activeObject) && !util.isCollection(activeObject),
+      },
+    ]
+  })
+
+  const pluginSolts = appInstance.editor.getPluginSlots('rightPanel')
 </script>
 
 <template>
-  <div class="pb18">
-    <template v-for="(com, index) in componentList" :key="com.name">
-      <template v-if="com.visual">
-        <component :is="com.component" />
-        <a-divider v-if="index !== componentList.length - 1" :margin="0" />
+  <a-scrollbar
+    :style="{
+      height: '100%',
+      overflow: 'auto',
+    }"
+    :outer-style="{
+      height: '100%',
+    }"
+  >
+    <div class="pb2">
+      <template v-for="(com, index) in componentList" :key="com.name">
+        <template v-if="com.visual">
+          <a-divider v-if="index !== 0" :margin="0" />
+          <component :is="com.component" />
+        </template>
       </template>
-    </template>
-  </div>
+      <template v-for="(com, index) in pluginSolts" :key="index">
+        <a-divider v-if="index !== com.length - 1" :margin="0" />
+        <component :is="com" />
+      </template>
+    </div>
+  </a-scrollbar>
 </template>
 
 <style scoped lang="less">

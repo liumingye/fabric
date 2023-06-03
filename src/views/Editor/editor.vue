@@ -36,7 +36,7 @@
       <a-layout-header class="bg-$color-bg-4! b-solid b-b b-$color-neutral-3">
         <HeaderBar />
       </a-layout-header>
-      <a-layout>
+      <a-layout class="flex-1 min-h-0">
         <a-layout-sider class="bg-$color-bg-4! z1" :width="240">
           <LeftPanel />
         </a-layout-sider>

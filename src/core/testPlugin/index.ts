@@ -3,6 +3,7 @@ import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { Board, Gradient, Group, Rect } from '@fabric'
 import { random } from 'lodash'
+import TestSlot from './testSlot.vue'
 
 const myPlugin = createEditorPlugin((editor) => {
   const [canvas, undoRedo] = editor.service.invokeFunction((accessor) => {
@@ -126,6 +127,9 @@ const myPlugin = createEditorPlugin((editor) => {
     },
     dispose() {
       console.log('myPlugin dispose')
+    },
+    slots: {
+      rightPanel: [TestSlot],
     },
   }
 })

@@ -46,3 +46,27 @@ body[arco-theme='dark'] {
     }
   }
 }
+
+.arco-scrollbar {
+  &.arco-scrollbar-type-embed {
+    &:hover {
+      .arco-scrollbar-thumb {
+        opacity: 0.6;
+      }
+    }
+
+    .arco-scrollbar-thumb-dragging {
+      opacity: 0.6;
+    }
+  }
+
+  .arco-scrollbar-track-direction-vertical {
+    width: 6px;
+
+    .arco-scrollbar-thumb-bar {
+      width: 6px;
+      margin: 0;
+      border-radius: 0;
+    }
+  }
+}

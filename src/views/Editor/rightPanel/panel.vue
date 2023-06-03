@@ -24,10 +24,8 @@
 <template>
   <div class="p2">
     <div
-      class="h28px mb1 font-bold text-xs flex justify-between items-center"
-      :class="{
-        gray: !disableAdd && !hiddenAdd,
-      }"
+      class="h28px font-bold text-xs flex justify-between items-center"
+      :class="[!disableAdd && !hiddenAdd ? 'gray' : 'mb2px']"
       @click.self="clickAdd"
     >
       <span>{{ title }}</span>

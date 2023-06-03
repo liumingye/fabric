@@ -206,7 +206,7 @@
     // 单个拖拽
     else {
       // 通过key查找对象
-      const [dragObject] = canvas.findObjectsByIds([dragNode.toString()])
+      const [dragObject] = canvas.findObjectsByIds([dragNode.key.toString()])
       // 没找到则退出
       if (!isDefined(dragObject)) return
       moveNode({

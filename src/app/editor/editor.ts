@@ -17,9 +17,13 @@ import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybind
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { IEventbusService, EventbusService } from '@/core/eventbus/eventbusService'
 import { BaseApp } from '@/app/baseApp'
+import { UsableSolts } from '@/core/types'
+import type { DefineComponent } from 'vue'
+import { useEditor } from '@/app'
 
 export class EditorMain extends BaseApp {
   public service!: IInstantiationService
+
   private pluginInstance = new Map<Symbol, IEditorPluginContext>()
 
   constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
@@ -49,6 +53,8 @@ export class EditorMain extends BaseApp {
       instances.forEach((instance) => {
         this._register(instance)
       })
+
+      provide('useEditor', useEditor)
       const core = getActiveCore()
       core._p.forEach((plugin) => {
         this.use(plugin)
@@ -86,14 +92,23 @@ export class EditorMain extends BaseApp {
 
   public dispose() {
     try {
-      this.pluginInstance.forEach((p) => {
-        p.dispose?.()
-      })
+      this.pluginInstance.forEach((p) => p.dispose?.())
       this.pluginInstance.clear()
+      provide('useEditor', undefined)
       super.dispose()
       this.service = undefined!
     } catch (_e) {
       console.error(_e)
     }
+  }
+
+  public getPluginSlots(name: UsableSolts) {
+    const pluginSlots: DefineComponent<{}, {}, any>[] = []
+    this.pluginInstance.forEach((plugin) => {
+      if (!plugin.slots) return
+      const slots = plugin.slots[name]
+      slots && pluginSlots.push(...slots)
+    })
+    return pluginSlots
   }
 }
