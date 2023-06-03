@@ -48,14 +48,9 @@ export class Group extends CommonGroup {
 
     addDeselectedEvent(e.target)
 
-    for (let index = e.subTargets.length - 1; index >= 0; index--) {
-      if (e.subTargets[index] === e.target) {
-        e.subTargets[index - 1] && this.canvas.setActiveObject(e.subTargets[index - 1])
-        break
-      } else if (index === 0) {
-        this.canvas.setActiveObject(e.subTargets[e.subTargets?.length - 1])
-      }
-    }
+    const index = e.subTargets.indexOf(e.target)
+    const prevTarget = e.subTargets[index - 1] ?? e.subTargets[e.subTargets.length - 1]
+    this.canvas.setActiveObject(prevTarget)
 
     this.canvas.requestRenderAll()
   }

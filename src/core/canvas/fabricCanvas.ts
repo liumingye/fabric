@@ -221,13 +221,8 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // TODO: reverify why interactive. the target should be returned always, but selected only
     // if interactive.
     if (target && util.isCollection(target) && target.interactive && this.targets.length > 0) {
-      let obj
-      for (let index = this.targets.length - 1; index >= 0; index--) {
-        if (this.targets[index].group?.interactive) {
-          obj = this.targets[index]
-        }
-      }
-      return obj || this.targets[0]
+      const targetIndex = this.targets.findIndex((t) => t.group?.interactive)
+      return targetIndex >= 0 ? this.targets[targetIndex] : this.targets[0]
     }
     return target
   }

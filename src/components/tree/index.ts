@@ -4,7 +4,13 @@ import { getComponentPrefix, setGlobalConfig } from '@arco-design/web-vue/es/_ut
 import _Tree from './tree.vue'
 import '@arco-design/web-vue/es/tree/style'
 
-export type { TreeNodeData, TreeFieldNames, DropPosition, TreeNodeKey } from './interface'
+export type {
+  TreeNodeData,
+  TreeFieldNames,
+  DropPosition,
+  TreeNodeKey,
+  DropEvent,
+} from './interface'
 
 const Tree = Object.assign(_Tree, {
   install: (app: App, options?: ArcoOptions) => {

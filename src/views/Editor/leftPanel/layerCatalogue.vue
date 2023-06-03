@@ -1,7 +1,13 @@
 <script setup lang="ts">
   import Tree from '@/components/tree'
-  import type { TreeNodeData, DropPosition, TreeNodeKey, TreeInstance } from '@/components/tree'
-  import { ActiveSelection, Board, ObjectRef, util } from '@fabric'
+  import type {
+    TreeNodeData,
+    DropPosition,
+    TreeNodeKey,
+    TreeInstance,
+    DropEvent,
+  } from '@/components/tree'
+  import { Board, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, isDefined } from '@vueuse/core'
@@ -107,20 +113,12 @@
    */
   const moveNode = (data: {
     e: DragEvent
-    dragNodeKey: string | number
-    dropNodeKey: string | number
+    dragObject: FabricObject
+    dropObject: FabricObject
     dropPosition: DropPosition
     excludeGroupObject: boolean
   }) => {
-    const { dragNodeKey, dropNodeKey, dropPosition, excludeGroupObject } = data
-
-    // 通过key查找对象
-    const objects = canvas.findObjectsByIds([dragNodeKey.toString(), dropNodeKey.toString()])
-
-    // 没找到则退出
-    if (objects.includes(undefined)) return
-
-    const [dragObject, dropObject] = objects as FabricObject[]
+    const { dragObject, dropObject, dropPosition, excludeGroupObject } = data
 
     // 如果该对象属于的分组也在拖拽列表，则中止操作。
     if (excludeGroupObject) {
@@ -181,36 +179,40 @@
   /**
    * tree节点放置事件
    */
-  const onDrop = (data: {
-    e: DragEvent
-    dragNode: TreeNodeData
-    dropNode: TreeNodeData
-    dropPosition: DropPosition
-  }) => {
-    const { e, dragNode, dropNode, dropPosition } = data as {
-      e: DragEvent
-      dragNode: ITreeNodeData
-      dropNode: ITreeNodeData
-      dropPosition: DropPosition
-    }
+  const onDrop = (data: DropEvent) => {
+    const { e, dragNode, dropNode, dropPosition } = data as DropEvent<ITreeNodeData>
+
     if (!dragNode.key || !dropNode.key) return
+
+    const [dropObject] = canvas.findObjectsByIds([dropNode.key.toString()])
+    if (!isDefined(dropObject)) return
+
+    // 多个拖拽
     if (selectedkeys.value.includes(dragNode.key.toString())) {
-      // 多个拖拽
       for (let i = selectedkeys.value.length - 1; i >= 0; i--) {
+        // 通过key查找对象
+        const [dragObject] = canvas.findObjectsByIds([selectedkeys.value[i].toString()])
+        // 没找到则退出
+        if (!isDefined(dragObject)) return
         moveNode({
           e,
-          dragNodeKey: selectedkeys.value[i],
-          dropNodeKey: dropNode.key,
+          dragObject,
+          dropObject,
           dropPosition,
           excludeGroupObject: true,
         })
       }
-    } else {
-      // 单个拖拽
+    }
+    // 单个拖拽
+    else {
+      // 通过key查找对象
+      const [dragObject] = canvas.findObjectsByIds([dragNode.toString()])
+      // 没找到则退出
+      if (!isDefined(dragObject)) return
       moveNode({
         e,
-        dragNodeKey: dragNode.key,
-        dropNodeKey: dropNode.key,
+        dragObject,
+        dropObject,
         dropPosition,
         excludeGroupObject: false,
       })

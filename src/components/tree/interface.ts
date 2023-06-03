@@ -163,6 +163,13 @@ export type CheckableType =
     ) => boolean)
 export type SelectableType = CheckableType
 
+export type DropEvent<T = TreeNodeData> = {
+  e: DragEvent
+  dragNode: T
+  dropNode: T
+  dropPosition: DropPosition
+}
+
 export interface TreeProps {
   size: Size
   blockNode: boolean
@@ -231,12 +238,7 @@ export interface TreeProps {
   onDragEnd?: (e: DragEvent, node: TreeNodeData) => void
   onDragOver?: (e: DragEvent, node: TreeNodeData) => void
   onDragLeave?: (e: DragEvent, node: TreeNodeData) => void
-  onDrop?: (event: {
-    e: DragEvent
-    dragNode: TreeNodeData
-    dropNode: TreeNodeData
-    dropPosition: DropPosition
-  }) => void
+  onDrop?: (event: DropEvent) => void
   onNodeContextmenu?: (e: MouseEvent, node: TreeNodeData) => void
   onNodeDbclick?: (e: MouseEvent, node: TreeNodeData) => void
   filterTreeNode?: (node: TreeNodeData) => boolean
