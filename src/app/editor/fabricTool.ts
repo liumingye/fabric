@@ -6,14 +6,40 @@ import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
-import { IUndoRedoService, UndoRedo } from '@/app/editor/undoRedo/undoRedoService'
+
+type ToolOption = {
+  defaultCursor: string
+  skipTargetFind: boolean
+  selection: boolean
+}
+
+type ToolType = 'move' | 'handMove' | 'shape'
 
 export class FabricTool extends Disposable {
+  private space = useMagicKeys().space
+
+  private options: Record<ToolType, ToolOption> = {
+    move: {
+      defaultCursor: 'default',
+      skipTargetFind: false,
+      selection: true,
+    },
+    handMove: {
+      defaultCursor: 'grab',
+      skipTargetFind: true,
+      selection: false,
+    },
+    shape: {
+      defaultCursor: 'crosshair',
+      skipTargetFind: true,
+      selection: false,
+    },
+  }
+
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService private readonly eventbus: EventbusService,
-    @IUndoRedoService private readonly undoRedo: UndoRedo,
   ) {
     super()
     this.initWatch()
@@ -21,13 +47,25 @@ export class FabricTool extends Disposable {
     this.initKeybinding()
   }
 
+  private applyOption(tool?: ToolType) {
+    tool = tool ?? (storeToRefs(useAppStore()).activeTool.value as ToolType)
+    const { defaultCursor, skipTargetFind, selection } = this.options[tool] ?? this.options.shape
+
+    this.canvas.defaultCursor = defaultCursor
+    this.canvas.setCursor(defaultCursor)
+    this.canvas.skipTargetFind = skipTargetFind
+    this.canvas.selection = selection
+  }
+
   private initWatch() {
     const canvas = this.canvas
     const { activeTool } = storeToRefs(useAppStore())
-    // 监听activeTool
+
     let swipeStop: (() => void) | undefined
     let tempObject: FabricObject | undefined
-    watch(activeTool, (tool, oldTool) => {
+
+    // 监听activeTool
+    watch(activeTool, (newTool, oldTool) => {
       if (swipeStop) {
         swipeStop()
         swipeStop = undefined
@@ -38,27 +76,19 @@ export class FabricTool extends Disposable {
         this.handMoveActivate = false
       }
 
-      // 选择工具
-      if (tool === 'move') {
-        canvas.defaultCursor = 'default'
-        canvas.setCursor('default')
-        canvas.skipTargetFind = false
-        canvas.selection = true
-      }
+      this.applyOption()
+
       // 移动工具
-      else if (tool === 'handMove') {
+      if (newTool === 'handMove') {
         this.handMoveActivate = true
       }
+
       // 图形工具
-      else if (['rect', 'ellipse', 'triangle', 'text'].includes(tool)) {
-        canvas.defaultCursor = 'crosshair'
-        canvas.setCursor('crosshair')
-        canvas.skipTargetFind = true
-        canvas.selection = false
+      else if (['rect', 'ellipse', 'triangle', 'text'].includes(newTool)) {
         let coordsStart: Point | undefined
         const { stop, isSwiping } = useFabricSwipe({
           onSwipeStart: (e) => {
-            if (e.button !== 1) return
+            if (e.button !== 1 || this.space.value) return
             /*
              * 只有mouseMove的时候isSwiping才会为true
              * mouseUp会判断isSwiping的值来决定是否执行onSwipeEnd
@@ -68,7 +98,7 @@ export class FabricTool extends Disposable {
             // 获得坐标
             coordsStart = canvas.getPointer(e.e)
             // 创建形状
-            switch (tool as 'rect' | 'ellipse' | 'triangle' | 'text') {
+            switch (newTool as 'rect' | 'ellipse' | 'triangle' | 'text') {
               case 'rect':
                 tempObject = new Rect({})
                 break
@@ -105,47 +135,45 @@ export class FabricTool extends Disposable {
             canvas._setupCurrentTransform(e.e, tempObject, true)
           },
           onSwipeEnd: (e) => {
-            if (tempObject) {
-              // 如果点击画板，没有移动，设置默认宽高
-              if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
-                tempObject.set({
-                  left: tempObject.left - 50,
-                  top: tempObject.top - 50,
-                  scaleX: 1,
-                  scaleY: 1,
-                })
-              }
-              // 设置宽高缩放
+            if (!tempObject) return
+            // 如果点击画板，没有移动，设置默认宽高
+            if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
               tempObject.set({
-                width: tempObject.getScaledWidth(),
-                height: tempObject.getScaledHeight(),
+                left: tempObject.left - 50,
+                top: tempObject.top - 50,
                 scaleX: 1,
                 scaleY: 1,
               })
-              // 特殊形状处理
-              if (tempObject instanceof Ellipse) {
-                tempObject.set({
-                  rx: tempObject.width / 2,
-                  ry: tempObject.height / 2,
-                })
-              } else if (tempObject instanceof Textbox) {
-                tempObject.set({
-                  text: '输入文本',
-                })
-                this.canvas.defaultCursor = 'default'
-                tempObject.enterEditing(e.e)
-                tempObject.selectAll()
-              }
-              // 通知事件
-              if (tempObject.group) {
-                tempObject.group._onObjectAdded(tempObject)
-              } else {
-                canvas._onObjectAdded(tempObject)
-              }
-              canvas.requestRenderAll()
-              // this.undoRedo.saveState()
-              tempObject = undefined
             }
+            // 设置宽高缩放
+            tempObject.set({
+              width: tempObject.getScaledWidth(),
+              height: tempObject.getScaledHeight(),
+              scaleX: 1,
+              scaleY: 1,
+            })
+            // 特殊形状处理
+            if (tempObject instanceof Ellipse) {
+              tempObject.set({
+                rx: tempObject.width / 2,
+                ry: tempObject.height / 2,
+              })
+            } else if (tempObject instanceof Textbox) {
+              tempObject.set({
+                text: '输入文本',
+              })
+              this.canvas.defaultCursor = 'default'
+              tempObject.enterEditing(e.e)
+              tempObject.selectAll()
+            }
+            // 通知事件
+            if (tempObject.group) {
+              tempObject.group._onObjectAdded(tempObject)
+            } else {
+              canvas._onObjectAdded(tempObject)
+            }
+            canvas.requestRenderAll()
+            tempObject = undefined
             activeTool.value = 'move'
           },
         })
@@ -162,19 +190,7 @@ export class FabricTool extends Disposable {
 
   private set handMoveActivate(value) {
     this._handMoveActivate = value
-    if (value) {
-      this.canvas.defaultCursor = 'grab'
-      this.canvas.setCursor('grab')
-      this.canvas.skipTargetFind = true
-      this.canvas.selection = false
-      this.eventbus.emit('setEdgeMoveStatus', false)
-    } else {
-      this.canvas.defaultCursor = 'default'
-      this.canvas.setCursor('default')
-      this.canvas.skipTargetFind = false
-      this.canvas.selection = true
-      this.eventbus.emit('setEdgeMoveStatus', true)
-    }
+    this.eventbus.emit('setEdgeMoveStatus', !value)
   }
 
   /**
@@ -182,7 +198,6 @@ export class FabricTool extends Disposable {
    */
   private initHandMove() {
     const canvas = this.canvas
-    const { space } = useMagicKeys()
     const { activeTool } = storeToRefs(useAppStore())
 
     /** 是否需要执行setCoords */
@@ -193,8 +208,11 @@ export class FabricTool extends Disposable {
 
     const { lengthX, lengthY, isSwiping } = useFabricSwipe({
       onSwipeStart: (e) => {
-        // 鼠标中键 | 空格键+鼠标左键 | 移动工具
-        if (e.button === 2 || (space.value && e.button === 1) || activeTool.value === 'handMove') {
+        if (
+          e.button === 2 || // 鼠标中键
+          (this.space.value && e.button === 1) || // 空格键+鼠标左键
+          activeTool.value === 'handMove' // 移动工具
+        ) {
           isSwiping.value = true
           vpt = canvas.viewportTransform
           this.handMoveActivate = true
@@ -202,30 +220,37 @@ export class FabricTool extends Disposable {
         }
       },
       onSwipe: () => {
-        if (this.handMoveActivate) {
-          requestAnimationFrame(() => {
-            canvas.setCursor('grabbing')
+        if (!this.handMoveActivate) return
 
-            // absolutePan 会执行 setCoords 导致卡顿，不使用
-            const deltaVpt: TMat2D = [...vpt]
-            deltaVpt[4] += lengthX.value
-            deltaVpt[5] += lengthY.value
-            canvas.viewportTransform = deltaVpt
-            canvas.requestRenderAll()
+        canvas.setCursor('grabbing')
 
-            needSetCoords = true
-          })
-        }
+        requestAnimationFrame(() => {
+          // absolutePan 会执行 setCoords 导致卡顿，不使用
+          const deltaVpt: TMat2D = [...vpt]
+          deltaVpt[4] += lengthX.value
+          deltaVpt[5] += lengthY.value
+          canvas.viewportTransform = deltaVpt
+          canvas.requestRenderAll()
+
+          needSetCoords = true
+        })
       },
       onSwipeEnd: () => {
-        if (this.handMoveActivate) {
-          canvas.setCursor(canvas.defaultCursor)
+        if (!this.handMoveActivate) return
 
-          if (activeTool.value !== 'handMove' && !space.value) {
-            this.handMoveActivate = false
-          }
+        // 恢复鼠标指针
+        if (this.space.value) {
+          this.applyOption('handMove')
+        } else {
+          this.applyOption()
         }
 
+        // 关闭 handMove
+        if (activeTool.value !== 'handMove' && !this.space.value) {
+          this.handMoveActivate = false
+        }
+
+        // 更新所有元素坐标
         if (needSetCoords) {
           canvas.setViewportTransform(canvas.viewportTransform)
           needSetCoords = false
@@ -239,9 +264,18 @@ export class FabricTool extends Disposable {
       () => activeElement.value?.tagName !== 'INPUT' && activeElement.value?.tagName !== 'TEXTAREA',
     )
     watch(
-      computed(() => [space.value, notUsingInput.value].every((i) => toValue(i))),
-      (value) => {
-        this.handMoveActivate = value
+      computed(() => [this.space.value, notUsingInput.value].every((i) => toValue(i))),
+      (space) => {
+        if (isSwiping.value) return
+
+        this.handMoveActivate = space
+
+        // 恢复鼠标指针
+        if (space) {
+          this.applyOption('handMove')
+        } else {
+          this.applyOption()
+        }
       },
     )
   }
@@ -249,9 +283,12 @@ export class FabricTool extends Disposable {
   private initKeybinding() {
     // 快捷键
     const { activeTool } = storeToRefs(useAppStore())
-    this.keybinding.bind('v', () => (activeTool.value = 'move'))
-    this.keybinding.bind('h', () => (activeTool.value = 'handMove'))
-    this.keybinding.bind('r', () => (activeTool.value = 'rect'))
-    this.keybinding.bind('o', () => (activeTool.value = 'ellipse'))
+    this.keybinding.bind({
+      v: () => (activeTool.value = 'move'),
+      h: () => (activeTool.value = 'handMove'),
+      r: () => (activeTool.value = 'rect'),
+      o: () => (activeTool.value = 'ellipse'),
+      t: () => (activeTool.value = 'text'),
+    })
   }
 }

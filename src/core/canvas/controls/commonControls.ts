@@ -100,7 +100,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
     x: 0,
     y: 0.5,
     cursorStyleHandler: () => '',
-    offsetY: 20,
+    offsetY: 14,
     sizeX: 0,
     sizeY: 0,
     touchSizeX: 0,
@@ -156,14 +156,14 @@ export const createObjectDefaultControls = (): TControlSet => ({
         const sign = Math.sign(x)
         currentControl.x = sign / 2
         currentControl.y = 0
-        currentControl.offsetX = sign * 20
+        currentControl.offsetX = sign * 14
         currentControl.offsetY = 0
       } else {
         const sign = Math.sign(y)
         currentControl.x = 0
         currentControl.y = sign / 2
         currentControl.offsetX = 0
-        currentControl.offsetY = sign * 20
+        currentControl.offsetY = sign * 14
       }
 
       return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)

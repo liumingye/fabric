@@ -11,7 +11,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   key: K,
 ): WritableComputedRef<{
   modelValue: T
-  onChange: (value: T) => void
+  set: (value: T) => void
 }> => {
   const { canvas } = useEditor()
 
@@ -116,8 +116,9 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     }
     // 组
     else if (
-      !['left', 'top', 'visible', 'globalCompositeOperation'].includes(key) &&
-      util.isCollection(activeObject)
+      util.isCollection(activeObject) &&
+      // 排除要给组设置的属性
+      !['left', 'top', 'visible', 'globalCompositeOperation', 'opacity'].includes(key)
     ) {
       activeObject.forEachObject((obj) => {
         setObjectValue(obj, newValue)
@@ -131,17 +132,20 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     canvas.requestRenderAll()
   }
 
-  return computed(() => ({
+  const proxy = computed(() => ({
     disabled: !isDefined(canvas.activeObject.value),
     modelValue: modelValue.value as T,
     onSwipe: (value: T) => {
       changeValue(value, 'swipe')
     },
-    onChange: (value: T) => {
+    set: (value: T) => {
       changeValue(value, 'change')
       // 保存历史
       if (!isDefined(canvas.activeObject)) return
       useEditor().undoRedo.saveState()
     },
+    onChange: (value: T) => proxy.value.set(value),
   }))
+
+  return proxy
 }

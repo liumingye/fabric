@@ -46,7 +46,7 @@
         </a-button>
       </div>
     </div>
-    <slot></slot>
+    <slot v-if="disableAdd || hiddenAdd"></slot>
   </div>
 </template>
 

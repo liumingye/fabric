@@ -8,6 +8,7 @@
   import { useEditor } from '@/app'
   import { Fn, isDefined } from '@vueuse/core'
   import { padHexColor } from '@/utils/fill'
+  import SwipeNumber from '@/components/swipeNumber'
 
   const { canvas } = useEditor()
 
@@ -21,7 +22,8 @@
     closeFn = undefined
   }
 
-  const fill = useActiveObjectModel('fill')
+  const stroke = useActiveObjectModel('stroke')
+  const strokeWidth = useActiveObjectModel('strokeWidth')
 
   /**
    * convertCoordsToDeg
@@ -31,7 +33,7 @@
     (Math.atan2(coords.y2 - coords.y1, coords.x2 - coords.x1) * 180) / Math.PI + 90
 
   const background = computed(() => {
-    const value = fill.value.modelValue
+    const value = stroke.value.modelValue
     let css = ''
     if (isString(value)) {
       css += value
@@ -52,12 +54,12 @@
       value = padHexColor(value)
     }
     const color = new Color(value)
-    fill.value.set(`#${color.toHex()}`)
+    stroke.value.set(`#${color.toHex()}`)
   }
 
   const fillValue = ref('')
   watchEffect(() => {
-    let value = fill.value.modelValue
+    let value = stroke.value.modelValue
     if (isString(value)) {
       fillValue.value = new FabricColor(value).toHex().toUpperCase()
       return
@@ -73,12 +75,12 @@
 
   watch(canvas.activeObject, () => closeColorPicker())
 
-  const readonly = computed(() => !isString(fill.value.modelValue))
+  const readonly = computed(() => !isString(stroke.value.modelValue))
 
   const openColorPicker = () => {
     const { canvas } = useEditor()
     if (!isDefined(canvas.activeObject) || closeFn) return
-    closeFn = ColorPicker.open(canvas.activeObject.value, 'fill')
+    closeFn = ColorPicker.open(canvas.activeObject.value, 'stroke')
   }
 
   onUnmounted(() => {
@@ -87,8 +89,18 @@
 </script>
 
 <template>
-  <Panel title="填充" :disable-add="!!fill.modelValue" @click-add="fill.set('#cccccc')">
-    <!-- <div>点击 + 重置并修改多个内容</div> -->
+  <Panel
+    title="边框"
+    :disable-add="!!strokeWidth.modelValue"
+    @click-add="
+      () => {
+        if (stroke.modelValue === null) {
+          stroke.set('#979797')
+        }
+        strokeWidth.set(1)
+      }
+    "
+  >
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
         <a-input size="mini" v-model="fillValue" :readonly="readonly" @change="fillChange">
@@ -106,8 +118,11 @@
           </template>
         </a-input>
       </a-col>
+      <a-col :span="10">
+        <SwipeNumber size="small" :min="1" label="W" v-bind="strokeWidth" :hide-button="false" />
+      </a-col>
       <a-col :span="3.5" class="mlauto">
-        <a-button size="small" class="icon-btn" @click="fill.set(null)">
+        <a-button size="small" class="icon-btn" @click="strokeWidth.set(0)">
           <template #icon>
             <icon-minus />
           </template>

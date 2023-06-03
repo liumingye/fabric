@@ -8,7 +8,7 @@ import { addDisposableListener } from '@/utils/dom'
  * 对象获得焦点后在外围显示一个边框
  */
 export class HoverObjectBorder extends Disposable {
-  private lineWidth = 3
+  private lineWidth = 2
   private hoveredTarget: FabricObject | undefined
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
@@ -32,9 +32,10 @@ export class HoverObjectBorder extends Disposable {
     ctx.transform(...this.canvas.viewportTransform)
     target.transform(ctx)
     const { strokeWidth, scaleX, scaleY, strokeUniform } = target
+    const zoom = this.canvas.getZoom()
     // we add 4 pixel, to be sure to do not leave any pixel out
-    const width = target.width + 4 + (strokeUniform ? strokeWidth / scaleX : strokeWidth)
-    const height = target.height + 4 + (strokeUniform ? strokeWidth / scaleY : strokeWidth)
+    const width = target.width + 4 / zoom + (strokeUniform ? strokeWidth / scaleX : strokeWidth)
+    const height = target.height + 4 / zoom + (strokeUniform ? strokeWidth / scaleY : strokeWidth)
     ctx.clearRect(-width / 2, -height / 2, width, height)
     restoreManually || ctx.restore()
     return ctx

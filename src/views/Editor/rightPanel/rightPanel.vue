@@ -4,8 +4,10 @@
   import LayerAttr from './layerAttr.vue'
   import TextAttr from './textAttr.vue'
   import FillAttr from './fillAttr.vue'
+  import StrokeAttr from './strokeAttr.vue'
   import { isDefined } from '@vueuse/core'
   import { useEditor } from '@/app'
+  import { util } from '@fabric'
 
   const { canvas } = useEditor()
 
@@ -23,7 +25,7 @@
     {
       name: 'LayerAttr',
       component: LayerAttr,
-      visual: isDefined(canvas.activeObject),
+      visual: isDefined(canvas.activeObject) && !util.isActiveSelection(canvas.activeObject.value),
     },
     {
       name: 'TextAttr',
@@ -34,7 +36,12 @@
     {
       name: 'FillAttr',
       component: FillAttr,
-      visual: isDefined(canvas.activeObject),
+      visual: isDefined(canvas.activeObject) && !util.isCollection(canvas.activeObject.value),
+    },
+    {
+      name: 'StrokeAttr',
+      component: StrokeAttr,
+      visual: isDefined(canvas.activeObject) && !util.isCollection(canvas.activeObject.value),
     },
   ])
 </script>

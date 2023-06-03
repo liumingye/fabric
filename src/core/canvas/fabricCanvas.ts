@@ -64,7 +64,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this._activeSelection.on('mousedblclick', (e) => {
       if (e.subTargets && e.subTargets.length > 0) {
         this.discardActiveObject()
-        this.setActiveObject(e.subTargets[0])
+        this.setActiveObject(e.subTargets[e.subTargets.length - 1])
         this.requestRenderAll()
       }
     })
