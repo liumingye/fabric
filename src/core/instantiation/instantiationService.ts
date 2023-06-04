@@ -1,11 +1,28 @@
-import { SyncDescriptor } from './descriptors'
+import { SyncDescriptor, SyncDescriptor0 } from './descriptors'
 import { Graph } from './graph'
-import { IInstantiationService, ServiceIdentifier, ServicesAccessor, _util } from './instantiation'
+import {
+  GetLeadingNonServiceArgs,
+  IInstantiationService,
+  ServiceIdentifier,
+  ServicesAccessor,
+  _util,
+} from './instantiation'
 import { ServiceCollection } from './serviceCollection'
 import { IdleValue } from '@/utils/async'
+import { LinkedList } from '@/utils/linkedList'
+import { toDisposable, IDisposable, DisposableStore } from '@/utils/lifecycle'
+
+interface Event<T> {
+  (
+    listener: (e: T) => any,
+    thisArgs?: any,
+    disposables?: IDisposable[] | DisposableStore,
+  ): IDisposable
+}
 
 // TRACING
-const _enableTracing = false
+const _enableAllTracing = false
+// || "TRUE" // DO NOT CHECK IN!
 
 class CyclicDependencyError extends Error {
   constructor(graph: Graph<any>) {
@@ -18,31 +35,28 @@ class CyclicDependencyError extends Error {
 export class InstantiationService implements IInstantiationService {
   declare readonly _serviceBrand: undefined
 
-  private readonly _services: ServiceCollection
-  private readonly _strict: boolean
-  private readonly _parent?: InstantiationService
+  readonly _globalGraph?: Graph<string>
+  private _globalGraphImplicitDependency?: string
 
   constructor(
-    services: ServiceCollection = new ServiceCollection(),
-    strict = false,
-    parent?: InstantiationService,
+    private readonly _services: ServiceCollection = new ServiceCollection(),
+    private readonly _strict: boolean = false,
+    private readonly _parent?: InstantiationService,
+    private readonly _enableTracing: boolean = _enableAllTracing,
   ) {
-    this._services = services
-    this._strict = strict
-    this._parent = parent
-
     this._services.set(IInstantiationService, this)
+    this._globalGraph = _enableTracing ? _parent?._globalGraph ?? new Graph((e) => e) : undefined
   }
 
   createChild(services: ServiceCollection): IInstantiationService {
-    return new InstantiationService(services, this._strict, this)
+    return new InstantiationService(services, this._strict, this, this._enableTracing)
   }
 
   invokeFunction<R, TS extends any[] = []>(
     fn: (accessor: ServicesAccessor, ...args: TS) => R,
     ...args: TS
   ): R {
-    const _trace = Trace.traceInvocation(fn)
+    const _trace = Trace.traceInvocation(this._enableTracing, fn)
     let _done = false
     try {
       const accessor: ServicesAccessor = {
@@ -67,18 +81,23 @@ export class InstantiationService implements IInstantiationService {
     }
   }
 
+  createInstance<T>(descriptor: SyncDescriptor0<T>): T
+  createInstance<Ctor extends new (...args: any[]) => any, R extends InstanceType<Ctor>>(
+    ctor: Ctor,
+    ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>
+  ): R
   createInstance(ctorOrDescriptor: any | SyncDescriptor<any>, ...rest: any[]): any {
     let _trace: Trace
     let result: any
     if (ctorOrDescriptor instanceof SyncDescriptor) {
-      _trace = Trace.traceCreation(ctorOrDescriptor.ctor)
+      _trace = Trace.traceCreation(this._enableTracing, ctorOrDescriptor.ctor)
       result = this._createInstance(
         ctorOrDescriptor.ctor,
         ctorOrDescriptor.staticArguments.concat(rest),
         _trace,
       )
     } else {
-      _trace = Trace.traceCreation(ctorOrDescriptor)
+      _trace = Trace.traceCreation(this._enableTracing, ctorOrDescriptor)
       result = this._createInstance(ctorOrDescriptor, rest, _trace)
     }
     _trace.stop()
@@ -105,7 +124,7 @@ export class InstantiationService implements IInstantiationService {
 
     // check for argument mismatches, adjust static args if needed
     if (args.length !== firstServiceArgPos) {
-      console.warn(
+      console.trace(
         `[createInstance] First service dependency of ${ctor.name} at position ${
           firstServiceArgPos + 1
         } conflicts with ${args.length} static arguments`,
@@ -120,7 +139,7 @@ export class InstantiationService implements IInstantiationService {
     }
 
     // now create the instance
-    return <T>new ctor(...[...args, ...serviceArgs])
+    return Reflect.construct<any, T>(ctor, args.concat(serviceArgs))
   }
 
   private _setServiceInstance<T>(id: ServiceIdentifier<T>, instance: T): void {
@@ -143,6 +162,9 @@ export class InstantiationService implements IInstantiationService {
   }
 
   protected _getOrCreateServiceInstance<T>(id: ServiceIdentifier<T>, _trace: Trace): T {
+    if (this._globalGraph && this._globalGraphImplicitDependency) {
+      this._globalGraph.insertEdge(this._globalGraphImplicitDependency, String(id))
+    }
     const thing = this._getServiceInstanceOrDescriptor(id)
     if (thing instanceof SyncDescriptor) {
       return this._safeCreateAndCacheServiceInstance(id, thing, _trace.branch(id, true))
@@ -199,6 +221,9 @@ export class InstantiationService implements IInstantiationService {
           )
         }
 
+        // take note of all service dependencies
+        this._globalGraph?.insertEdge(String(item.id), String(dependency.id))
+
         if (instanceOrDesc instanceof SyncDescriptor) {
           const d = {
             id: dependency.id,
@@ -254,7 +279,7 @@ export class InstantiationService implements IInstantiationService {
     _trace: Trace,
   ): T {
     if (this._services.get(id) instanceof SyncDescriptor) {
-      return this._createServiceInstance(ctor, args, supportsDelayedInstantiation, _trace)
+      return this._createServiceInstance(id, ctor, args, supportsDelayedInstantiation, _trace)
     } else if (this._parent) {
       return this._parent._createServiceInstanceWithOwner(
         id,
@@ -269,24 +294,67 @@ export class InstantiationService implements IInstantiationService {
   }
 
   private _createServiceInstance<T>(
+    id: ServiceIdentifier<T>,
     ctor: any,
     args: any[] = [],
-    _supportsDelayedInstantiation: boolean,
+    supportsDelayedInstantiation: boolean,
     _trace: Trace,
   ): T {
-    if (!_supportsDelayedInstantiation) {
+    if (!supportsDelayedInstantiation) {
       // eager instantiation
       return this._createInstance(ctor, args, _trace)
     } else {
+      const child = new InstantiationService(undefined, this._strict, this, this._enableTracing)
+      child._globalGraphImplicitDependency = String(id)
+
       // Return a proxy object that's backed by an idle value. That
       // strategy is to instantiate services in our idle time or when actually
       // needed but not when injected into a consumer
-      const idle = new IdleValue<any>(() => this._createInstance<T>(ctor, args, _trace))
+
+      // return "empty events" when the service isn't instantiated yet
+      const earlyListeners = new Map<string, LinkedList<Parameters<Event<any>>>>()
+
+      const idle = new IdleValue<any>(() => {
+        const result = child._createInstance<T>(ctor, args, _trace)
+
+        // early listeners that we kept are now being subscribed to
+        // the real service
+        for (const [key, values] of earlyListeners) {
+          const candidate = <Event<any>>(<any>result)[key]
+          if (typeof candidate === 'function') {
+            for (const listener of values) {
+              candidate.apply(result, listener)
+            }
+          }
+        }
+        earlyListeners.clear()
+
+        return result
+      })
       return <T>new Proxy(Object.create(null), {
         get(target: any, key: PropertyKey): any {
+          if (!idle.isInitialized) {
+            // looks like an event
+            if (typeof key === 'string' && (key.startsWith('onDid') || key.startsWith('onWill'))) {
+              let list = earlyListeners.get(key)
+              if (!list) {
+                list = new LinkedList()
+                earlyListeners.set(key, list)
+              }
+              const event: Event<any> = (callback, thisArg, disposables) => {
+                const rm = list!.push([callback, thisArg, disposables])
+                return toDisposable(rm)
+              }
+              return event
+            }
+          }
+
+          // value already exists
           if (key in target) {
             return target[key]
           }
+
+          // create value
           const obj = idle.value
           let prop = obj[key]
           if (typeof prop !== 'function') {
@@ -300,13 +368,16 @@ export class InstantiationService implements IInstantiationService {
           idle.value[p] = value
           return true
         },
+        getPrototypeOf(_target: T) {
+          return ctor.prototype
+        },
       })
     }
   }
 
   private _throwIfStrict(msg: string, printWarning: boolean): void {
     if (printWarning) {
-      console.warn(printWarning)
+      console.warn(msg)
     }
     if (this._strict) {
       throw new Error(msg)
@@ -317,16 +388,18 @@ export class InstantiationService implements IInstantiationService {
 //#region -- tracing ---
 
 const enum TraceType {
-  Creation,
-  Invocation,
-  Branch,
+  None = 0,
+  Creation = 1,
+  Invocation = 2,
+  Branch = 3,
 }
 
 export class Trace {
+  static all = new Set<string>()
+
   private static readonly _None = new (class extends Trace {
     constructor() {
-      // @ts-ignore
-      super(-1, null)
+      super(TraceType.None, null)
     }
     override stop() {}
     override branch() {
@@ -334,16 +407,16 @@ export class Trace {
     }
   })()
 
-  static traceInvocation(ctor: any): Trace {
+  static traceInvocation(_enableTracing: boolean, ctor: any): Trace {
     return !_enableTracing
       ? Trace._None
       : new Trace(
           TraceType.Invocation,
-          ctor.name || (ctor.toString() as string).substring(0, 42).replace(/\n/g, ''),
+          ctor.name || new Error().stack!.split('\n').slice(3, 4).join('\n'),
         )
   }
 
-  static traceCreation(ctor: any): Trace {
+  static traceCreation(_enableTracing: boolean, ctor: any): Trace {
     return !_enableTracing ? Trace._None : new Trace(TraceType.Creation, ctor.name)
   }
 
@@ -390,7 +463,7 @@ export class Trace {
     ]
 
     if (dur > 2 || causedCreation) {
-      console.log(lines.join('\n'))
+      Trace.all.add(lines.join('\n'))
     }
   }
 }

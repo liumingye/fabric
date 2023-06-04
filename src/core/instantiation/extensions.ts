@@ -8,12 +8,25 @@ import { BrandedService, ServiceIdentifier } from './instantiation'
 
 const _registry: [ServiceIdentifier<any>, SyncDescriptor<any>][] = []
 
+export const enum InstantiationType {
+  /**
+   * Instantiate this service as soon as a consumer depends on it. _Note_ that this
+   * is more costly as some upfront work is done that is likely not needed
+   */
+  Eager = 0,
+
+  /**
+   * Instantiate this service as soon as a consumer uses it. This is the _better_
+   * way of registering a service.
+   */
+  Delayed = 1,
+}
+
 export function registerSingleton<T, Services extends BrandedService[]>(
   id: ServiceIdentifier<T>,
   ctor: new (...services: Services) => T,
-  supportsDelayedInstantiation?: boolean,
+  supportsDelayedInstantiation: InstantiationType,
 ): void
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 export function registerSingleton<T, Services extends BrandedService[]>(
   id: ServiceIdentifier<T>,
   descriptor: SyncDescriptor<any>,
@@ -21,13 +34,13 @@ export function registerSingleton<T, Services extends BrandedService[]>(
 export function registerSingleton<T, Services extends BrandedService[]>(
   id: ServiceIdentifier<T>,
   ctorOrDescriptor: { new (...services: Services): T } | SyncDescriptor<any>,
-  supportsDelayedInstantiation?: boolean,
+  supportsDelayedInstantiation?: boolean | InstantiationType,
 ): void {
   if (!(ctorOrDescriptor instanceof SyncDescriptor)) {
     ctorOrDescriptor = new SyncDescriptor<T>(
       ctorOrDescriptor as new (...args: any[]) => T,
       [],
-      supportsDelayedInstantiation,
+      Boolean(supportsDelayedInstantiation),
     )
   }
 

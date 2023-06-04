@@ -1,9 +1,10 @@
 import { createDecorator } from '@/core/instantiation/instantiation'
+import { LinkedList } from '@/utils/linkedList'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoService')
 
 class UndoQueue {
-  private inner_: any[] = []
+  private inner_ = new LinkedList<any>()
   private size_ = 50
 
   pop() {
@@ -13,12 +14,12 @@ class UndoQueue {
   push(e: any) {
     this.inner_.push(e)
     while (this.length > this.size_) {
-      this.inner_.splice(0, 1)
+      this.inner_.shift()
     }
   }
 
   get length(): number {
-    return this.inner_.length
+    return this.inner_.size
   }
 }
 

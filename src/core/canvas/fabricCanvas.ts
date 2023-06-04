@@ -4,6 +4,7 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
+import { LinkedList } from '@/utils/linkedList'
 import {
   Canvas,
   Object as FabricObject,
@@ -148,8 +149,16 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
    */
   public findObjectsByIds(ids: string[]): (FabricObject | undefined)[] {
     const result = Array(ids.length).fill(undefined)
-    const stack = [...this._objects]
-    while (stack.length) {
+    const stack = new LinkedList<FabricObject>()
+    const push = (objects: FabricObject[]) => {
+      for (const object of objects) {
+        stack.push(object)
+      }
+    }
+    // 压入全部元素
+    push(this._objects)
+    while (!stack.isEmpty()) {
+      // 出栈
       const node = stack.pop()
       if (node) {
         const index = ids.indexOf(node.id)
@@ -157,8 +166,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
           result[index] = node
         }
       }
+      // 压入组内元素
       if (util.isCollection(node)) {
-        stack.push(...node._objects)
+        push(node._objects)
       }
     }
     return result

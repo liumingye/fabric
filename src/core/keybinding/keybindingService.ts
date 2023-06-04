@@ -1,7 +1,7 @@
 import mousetrap, { ExtendedKeyboardEvent } from 'mousetrap'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { isArray, isFunction, isObject, isString } from 'lodash'
-import { registerSingleton } from '@/core/instantiation/extensions'
+import { registerSingleton, InstantiationType } from '@/core/instantiation/extensions'
 
 export const IKeybindingService = createDecorator<KeybindingService>('keybindingServices')
 
@@ -52,4 +52,4 @@ export class KeybindingService extends mousetrap {
   }
 }
 
-registerSingleton(IKeybindingService, KeybindingService)
+registerSingleton(IKeybindingService, KeybindingService, InstantiationType.Eager)

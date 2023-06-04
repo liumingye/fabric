@@ -1,5 +1,5 @@
 import { createDecorator } from '@/core/instantiation/instantiation'
-import { registerSingleton } from '@/core/instantiation/extensions'
+import { registerSingleton, InstantiationType } from '@/core/instantiation/extensions'
 import { Mitt } from '@/core/eventbus/mitt'
 
 type WworkspaceParam = {
@@ -23,4 +23,4 @@ export class EventbusService extends Mitt<Events> {}
 
 export const IEventbusService = createDecorator<EventbusService>('eventbusService')
 
-registerSingleton(IEventbusService, Mitt)
+registerSingleton(IEventbusService, Mitt, InstantiationType.Eager)

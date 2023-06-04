@@ -16,6 +16,7 @@
   import { layerItems } from '@/utils/contextMenu'
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import Workspaces from './workspaces.vue'
+  import { LinkedList } from '@/utils/linkedList'
 
   interface ITreeNodeData extends TreeNodeData {
     isCollection: boolean
@@ -78,17 +79,19 @@
   /**
    * 节点搜索
    */
-  const canAddToResult = (object: ITreeNodeData, searchKey: string): boolean => {
+  const canAddToResult = (nodeData: ITreeNodeData, searchKey: string): boolean => {
     // 广度优先搜索
     const lowerSearchKey = searchKey.toLowerCase()
-    const queue = [object]
+    const queue = new LinkedList<ITreeNodeData>()
+    queue.push(nodeData)
     let isMatched = false
-    while (queue.length > 0) {
+    while (!queue.isEmpty()) {
       const currentNode = queue.shift()!
       const currentTitle = currentNode.title?.toLowerCase()
       if (currentTitle?.includes(lowerSearchKey)) {
         isMatched = true
       }
+      // 压入子元素
       if (currentNode.children) {
         for (const child of currentNode.children) {
           queue.push(child)

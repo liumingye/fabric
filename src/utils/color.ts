@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from '@/utils/charCode'
+import NP from 'number-precision'
 
 function roundFloat(number: number, decimalPoints: number): number {
-  const decimal = Math.pow(10, decimalPoints)
-  return Math.round(number * decimal) / decimal
+  return NP.round(number, decimalPoints)
 }
 
 export class RGBA {
@@ -35,7 +33,7 @@ export class RGBA {
    */
   readonly a: number
 
-  constructor(r: number, g: number, b: number, a = 1) {
+  constructor(r: number, g: number, b: number, a: number = 1) {
     this.r = Math.min(255, Math.max(0, r)) | 0
     this.g = Math.min(255, Math.max(0, g)) | 0
     this.b = Math.min(255, Math.max(0, b)) | 0
@@ -262,6 +260,16 @@ export class HSVA {
 export class Color {
   static fromHex(hex: string): Color {
     return Color.Format.CSS.parseHex(hex) || Color.red
+  }
+
+  static equals(a: Color | null, b: Color | null): boolean {
+    if (!a && !b) {
+      return true
+    }
+    if (!a || !b) {
+      return false
+    }
+    return a.equals(b)
   }
 
   readonly rgba: RGBA
@@ -523,7 +531,7 @@ export namespace Color {
         ).toFixed(2)}%, ${color.hsla.a.toFixed(2)})`
       }
 
-      export function _toTwoDigitHex(n: number): string {
+      function _toTwoDigitHex(n: number): string {
         const r = n.toString(16)
         return r.length !== 2 ? '0' + r : r
       }
@@ -618,7 +626,7 @@ export namespace Color {
         return null
       }
 
-      export function _parseHexDigit(charCode: CharCode): number {
+      function _parseHexDigit(charCode: CharCode): number {
         switch (charCode) {
           case CharCode.Digit0:
             return 0

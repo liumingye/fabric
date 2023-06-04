@@ -3,7 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-function isIterableIterator<T = any>(thing: any): thing is IterableIterator<T> {
+import { once } from '@/utils/functional'
+
+function isIterable<T = any>(thing: any): thing is Iterable<T> {
   return thing && typeof thing === 'object' && typeof thing[Symbol.iterator] === 'function'
 }
 
@@ -23,15 +25,18 @@ export function isDisposable<E extends object>(thing: E): thing is E & IDisposab
   )
 }
 
+/**
+ * Disposes of the value(s) passed in.
+ */
 export function dispose<T extends IDisposable>(disposable: T): T
 export function dispose<T extends IDisposable>(disposable: T | undefined): T | undefined
-export function dispose<T extends IDisposable, A extends IterableIterator<T> = IterableIterator<T>>(
-  disposables: IterableIterator<T>,
+export function dispose<T extends IDisposable, A extends Iterable<T> = Iterable<T>>(
+  disposables: A,
 ): A
 export function dispose<T extends IDisposable>(disposables: Array<T>): Array<T>
 export function dispose<T extends IDisposable>(disposables: ReadonlyArray<T>): ReadonlyArray<T>
-export function dispose<T extends IDisposable>(arg: T | IterableIterator<T> | undefined): any {
-  if (isIterableIterator(arg)) {
+export function dispose<T extends IDisposable>(arg: T | Iterable<T> | undefined): any {
+  if (isIterable(arg)) {
     const errors: any[] = []
 
     for (const d of arg) {
@@ -60,7 +65,7 @@ export function dispose<T extends IDisposable>(arg: T | IterableIterator<T> | un
 export class DisposableStore implements IDisposable {
   static DISABLE_DISPOSED_WARNING = false
 
-  private _toDispose = new Set<IDisposable>()
+  private readonly _toDispose = new Set<IDisposable>()
   private _isDisposed = false
 
   /**
@@ -88,8 +93,12 @@ export class DisposableStore implements IDisposable {
    * Dispose of all registered disposables but do not mark this object as disposed.
    */
   public clear(): void {
+    if (this._toDispose.size === 0) {
+      return
+    }
+
     try {
-      dispose(this._toDispose.values())
+      dispose(this._toDispose)
     } finally {
       this._toDispose.clear()
     }
@@ -132,4 +141,16 @@ export abstract class Disposable implements IDisposable {
     }
     return this._store.add(o)
   }
+}
+
+/**
+ * Turn a function that implements dispose into an {@link IDisposable}.
+ */
+export function toDisposable(fn: () => void): IDisposable {
+  const self = {
+    dispose: once(() => {
+      fn()
+    }),
+  }
+  return self
 }
