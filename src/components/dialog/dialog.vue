@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { useMounted, useDraggable } from '@vueuse/core'
+  import { useMounted, useDraggable, clamp, useWindowSize } from '@vueuse/core'
 
   const props = defineProps<{
     hideClose?: boolean
@@ -19,9 +19,29 @@
   const el = ref<HTMLDivElement>()
   const handle = ref<HTMLDivElement>()
 
-  const { style } = useDraggable(el, {
+  const windowSize = useWindowSize()
+
+  const clampXY = ({ x, y }: { x: number; y: number }) => {
+    return {
+      x: clamp(x, 0, windowSize.width.value - (el.value?.clientWidth ?? 0)),
+      y: clamp(y, 0, windowSize.height.value - (el.value?.clientHeight ?? 0)),
+    }
+  }
+
+  const { style, x, y, position } = useDraggable(el, {
     initialValue: { x: props.left ?? 0, y: props.top ?? 0 },
     handle,
+    onMove(position) {
+      const { x, y } = clampXY(position)
+      position.x = x
+      position.y = y
+    },
+  })
+
+  watch([windowSize.height, windowSize.width], () => {
+    const { x, y } = clampXY(position.value)
+    position.value.x = x
+    position.value.y = y
   })
 
   const handleClose = () => {
