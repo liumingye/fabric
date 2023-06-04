@@ -25,7 +25,7 @@ export default defineConfig({
           // importStyle: 'less',
         }),
       ],
-      imports: ['vue', 'vue-router', 'pinia'],
+      imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
       eslintrc: {
         enabled: true,
       },

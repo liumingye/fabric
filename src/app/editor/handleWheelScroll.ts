@@ -70,15 +70,19 @@ export class HandleWheelScroll extends Disposable {
         const [pos, distance] = this.judgePosition(event.absolutePointer, A, B)
         if (pos === 0) return
 
-        const deltaPoint = new Point()
+        let deltaPoint = new Point()
         const amount = Math.min(distance, 20)
         if (pos & 1) deltaPoint.x = amount
         if (pos & 2) deltaPoint.x = -amount
         if (pos & 4) deltaPoint.y = amount
         if (pos & 8) deltaPoint.y = -amount
 
-        // relativePan 会执行 setCoords 导致卡顿，不使用
+        // 移动到四个角落，减速
+        if (deltaPoint.x !== 0 && deltaPoint.y !== 0) {
+          deltaPoint = deltaPoint.scalarDivide(1.5)
+        }
 
+        // relativePan 会执行 setCoords 导致卡顿，不使用
         const vpt: TMat2D = [...this.canvas.viewportTransform]
         vpt[4] += deltaPoint.x
         vpt[5] += deltaPoint.y

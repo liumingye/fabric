@@ -81,5 +81,6 @@ export class WorkspacesService extends Disposable {
   public dispose() {
     super.dispose()
     this.workspaces = []
+    this.currentId = ''
   }
 }

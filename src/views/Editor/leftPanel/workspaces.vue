@@ -83,8 +83,8 @@
 </script>
 
 <template>
-  <div>
-    <div class="sticky top-0 bg-$color-bg-4 z1 h28px px0.5 flex justify-between items-center">
+  <div class="h-full flex flex-col overflow-hidden">
+    <div class="bg-$color-bg-4 h28px px0.5 flex justify-between items-center">
       <span class="pl3 color-$color-text-2">页面 ({{ number }})</span>
       <div>
         <a-button class="icon-btn" size="mini" @click="addOnClick">
@@ -94,14 +94,17 @@
         </a-button>
       </div>
     </div>
-    <Tree
-      blockNode
-      :selected-keys="selectedkeys"
-      @select="onSelect"
-      :data="workspacesData"
-      size="small"
-      @node-contextmenu="openContextMenu"
-    />
+    <a-scrollbar class="overflow-y-auto h-full" outer-class="flex-1 min-h-0">
+      <Tree
+        class=""
+        blockNode
+        :selected-keys="selectedkeys"
+        @select="onSelect"
+        :data="workspacesData"
+        size="small"
+        @node-contextmenu="openContextMenu"
+      />
+    </a-scrollbar>
   </div>
 </template>
 
