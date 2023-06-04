@@ -3,6 +3,7 @@ import { Disposable } from '@/utils/lifecycle'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 import { useThemes } from '@/hooks/useThemes'
 import { PiBy180 } from '@/utils/constants'
+import { util } from '@fabric'
 
 type Rect = { left: number; top: number; width: number; height: number }
 
@@ -216,9 +217,19 @@ export class Ruler extends Disposable {
           return
         }
 
-        const [left, top, width, height] = isHorizontal
-          ? [rect.left, 0, rect.width, ruleSize]
-          : [0, rect.top, ruleSize, rect.height]
+        const { left, top, width, height } = isHorizontal
+          ? {
+              left: (rect.left - startCalibration) * zoom,
+              top: 0,
+              width: rect.width * zoom,
+              height: ruleSize,
+            }
+          : {
+              left: 0,
+              top: (rect.top - startCalibration) * zoom,
+              width: ruleSize,
+              height: rect.height * zoom,
+            }
 
         // 高亮遮罩
         ctx.save()
@@ -370,7 +381,7 @@ export class Ruler extends Disposable {
       return
     }
     const allRect = activeObjects.reduce((rects, obj) => {
-      const rect: HighlightRect = obj.getBoundingRect(false, true)
+      const rect: HighlightRect = obj.getBoundingRect(true)
       // if (obj instanceof fabric.GuideLine) {
       //   rect.skip = obj.isHorizontal() ? 'x' : 'y'
       // }

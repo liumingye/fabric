@@ -1,6 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import {
   ActiveSelection,
+  StaticCanvas,
   Board,
   Canvas,
   CanvasEvents,
@@ -72,7 +73,7 @@ export class GuideLines extends Disposable {
     this.activeObj = activeObject
 
     const canvasObjects: FabricObject[] = []
-    const add = (group: Group | Canvas | Board) => {
+    const add = (group: Group | Canvas | Board | StaticCanvas) => {
       const objects = group.getObjects().filter((obj) => {
         if (this.ignoreObjTypes.length) {
           return !this.ignoreObjTypes.some((item) => obj.get(item.key) === item.value)
@@ -88,13 +89,8 @@ export class GuideLines extends Disposable {
         ) {
           return false
         }
-        // 元素为画板，把画板内元素加入
-        if (obj instanceof Board) {
-          add(obj)
-          return true
-        }
         // 元素为组，把组内元素加入，同时排除组本身
-        if (obj instanceof Group && activeObject.group && obj === activeObject.group) {
+        if (util.isCollection(obj) && activeObject.group && obj === activeObject.group) {
           add(obj)
           return false
         }
@@ -102,7 +98,11 @@ export class GuideLines extends Disposable {
       })
       canvasObjects.push(...objects)
     }
-    add(this.canvas)
+    const parent = activeObject.getParent()
+    if (util.isBoard(parent)) {
+      canvasObjects.push(parent)
+    }
+    add(parent)
     this.traversAllObjects(activeObject, canvasObjects)
   }
 

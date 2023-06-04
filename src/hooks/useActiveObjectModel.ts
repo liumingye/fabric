@@ -105,8 +105,8 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
           : 'setAngle'
       ](Number(newValue))
       // 更改值后，更新组的布局
-      if (type === 'change') {
-        activeObject.group?.updateLayout()
+      if (type === 'change' && activeObject.group?.updateLayout) {
+        activeObject.group.updateLayout()
       }
     }
     // 文字

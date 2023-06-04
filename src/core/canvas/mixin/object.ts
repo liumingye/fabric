@@ -13,6 +13,7 @@ import {
   Board,
   Rect,
   Image,
+  TMat2D,
 } from '@fabric'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
@@ -70,10 +71,15 @@ const mixin = {
   },
   getLeftTop() {
     const relativePosition = this.getRelativeXY()
-    if (this.group) {
-      return relativePosition.transform(this.group.calcTransformMatrix())
+    if (!this.group) {
+      return relativePosition
     }
-    return relativePosition
+    const transformMatrix = this.group.calcTransformMatrix()
+    const point = relativePosition.transform(transformMatrix)
+    // if (this.group instanceof Board) {
+    //   return point.subtract(this.group.getRelativeXY())
+    // }
+    return point
   },
   getLeft() {
     return this.getLeftTop().x
@@ -84,6 +90,10 @@ const mixin = {
   setLeftTop(point: Point) {
     if (this.group) {
       point = point.transform(util.invertTransform(this.group.calcTransformMatrix()))
+
+      // if (this.group instanceof Board) {
+      //   point = point.add(this.group.getRelativeXY())
+      // }
     }
     this.setRelativeXY(point)
   },
