@@ -168,7 +168,10 @@ const mixin = {
     childrenOverride?: ControlRenderingStyleOverride,
   ) {
     // 移动时关闭控制渲染
-    if (this.isMoving) return
+    if (this.isMoving) {
+      this.setCoords()
+      return
+    }
     Object.getPrototypeOf(FabricObject.prototype)._renderControls.call(
       this,
       ctx,

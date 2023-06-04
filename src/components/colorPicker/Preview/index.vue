@@ -19,7 +19,7 @@
       />
 
       <a-dropdown :popup-max-height="false">
-        <a-button class="px1 icon-btn" size="small"><icon-down /></a-button>
+        <a-button class="px1! icon-btn" size="small"><icon-down /></a-button>
         <template #content>
           <a-doption>HEX</a-doption>
           <a-doption disabled>RGB</a-doption>
