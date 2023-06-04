@@ -55,29 +55,12 @@ export class Group extends CommonGroup {
     this.canvas.requestRenderAll()
   }
 
-  public setDirty() {
-    this._set('dirty', true)
-  }
-
-  public updateLayout() {
-    this._applyLayoutStrategy({ type: 'object_modified' })
-    this.setDirty()
-  }
-
   // 空子元素，自动移除组本身
   override _onObjectRemoved(object: FabricObject, removeParentTransform?: boolean): void {
     super._onObjectRemoved(object, removeParentTransform)
     if (this.size() === 0) {
       const parent = this.getParent()
       parent && parent.remove(this)
-    }
-  }
-
-  override setCoords() {
-    if (this.isMoving) {
-      FabricObject.prototype.setCoords.call(this)
-    } else {
-      super.setCoords()
     }
   }
 

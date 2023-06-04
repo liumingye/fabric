@@ -81,7 +81,10 @@
   const openColorPicker = () => {
     const { canvas } = useEditor()
     if (!isDefined(canvas.activeObject) || closeFn) return
-    closeFn = ColorPicker.open(canvas.activeObject.value, 'stroke')
+    closeFn = ColorPicker.open({
+      object: canvas.activeObject.value,
+      attr: 'stroke',
+    })
   }
 
   const options = reactive([

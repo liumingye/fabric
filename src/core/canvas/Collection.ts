@@ -60,5 +60,5 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
       }
     }
   }
-  return Collection as TBase
+  return Collection as typeof Collection & TBase
 }

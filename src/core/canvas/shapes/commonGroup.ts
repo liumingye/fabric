@@ -24,4 +24,13 @@ export class CommonGroup extends createCollectionMixin(GroupOrigin) {
     }
     return super._shouldSetNestedCoords()
   }
+
+  public setDirty() {
+    this._set('dirty', true)
+  }
+
+  public updateLayout() {
+    this._applyLayoutStrategy({ type: 'object_modified' })
+    this.setDirty()
+  }
 }

@@ -78,7 +78,10 @@
   const openColorPicker = () => {
     const { canvas } = useEditor()
     if (!isDefined(canvas.activeObject)) return
-    closeFn = ColorPicker.open(canvas.activeObject.value, 'fill')
+    closeFn = ColorPicker.open({
+      object: canvas.activeObject.value,
+      attr: 'fill',
+    })
   }
 
   onUnmounted(() => {

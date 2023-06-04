@@ -7,7 +7,8 @@ import { toFixed } from '@/utils/math'
 import { LinkedList } from '@/utils/linkedList'
 import {
   Canvas,
-  Object as FabricObject,
+  FabricObject,
+  Group,
   ModifierKey,
   Point,
   TMat2D,
@@ -28,9 +29,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public pageId: string
 
-  private pages: Map<string, string | undefined> = new Map()
+  private readonly pages: Map<string, string | undefined> = new Map()
 
-  public ref = {
+  public readonly ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),
     objects: computed(() => this._objects),
   }
@@ -59,16 +60,8 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       ),
     )
 
-    // @ts-ignore
-    this._activeSelection = toRefObject(this._activeSelection)
-    this._activeSelection.subTargetCheck = true
-    this._activeSelection.on('mousedblclick', (e) => {
-      if (e.subTargets && e.subTargets.length > 0) {
-        this.discardActiveObject()
-        this.setActiveObject(e.subTargets[e.subTargets.length - 1])
-        this.requestRenderAll()
-      }
-    })
+    // 初始化激活选区
+    this.initActiveSelection()
 
     // 响应式
     const objectsProxy = <K extends keyof FabricCanvas['ref']>(targetKey: any, refKey: K) => {
@@ -280,5 +273,43 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       return this.toObject(['viewportTransform'])
     }
     return this.pages.get(id) || '{}'
+  }
+
+  /**
+   * 初始化激活选区
+   */
+  private initActiveSelection() {
+    // @ts-ignore
+    this._activeSelection = toRefObject(this._activeSelection)
+    this._activeSelection.subTargetCheck = true
+    // 双击选中当前元素
+    this._activeSelection.on('mousedblclick', (e) => {
+      if (e.subTargets && e.subTargets.length > 0) {
+        this.discardActiveObject()
+        this.setActiveObject(e.subTargets[e.subTargets.length - 1])
+        this.requestRenderAll()
+      }
+    })
+    // 更新激活选区元素内的组
+    const updateGroup = () => {
+      const needUpdateGroup = new Set<Group>()
+      // 收集需要更新的组
+      this._activeSelection.forEachObject((obj) => {
+        const group = obj.getParent(true)
+        group && needUpdateGroup.add(group)
+      })
+      // 开始更新组
+      needUpdateGroup.forEach((group) => {
+        group.setDirty()
+      })
+    }
+    this._activeSelection.on({
+      modified: updateGroup,
+      moving: updateGroup,
+      scaling: updateGroup,
+      skewing: updateGroup,
+      // @ts-ignore
+      changed: updateGroup,
+    })
   }
 }

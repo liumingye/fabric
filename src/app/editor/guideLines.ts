@@ -63,14 +63,15 @@ export class GuideLines extends Disposable {
     })
   }
 
-  private objectMoving(e: CanvasEvents['object:moving']) {
+  private objectMoving({ target }: CanvasEvents['object:moving']) {
     this.clearLinesMeta()
 
     const transform = this.canvas._currentTransform
     if (!transform) return
 
-    const activeObject = e.target
-    this.activeObj = activeObject
+    this.activeObj = target
+
+    const activeObjects = this.canvas.getActiveObjects()
 
     const canvasObjects: FabricObject[] = []
     const add = (group: Group | Canvas | Board | StaticCanvas) => {
@@ -82,15 +83,13 @@ export class GuideLines extends Disposable {
           return this.pickObjTypes.some((item) => obj.get(item.key) === item.value)
         }
         if (
-          // 排除自己
-          obj === activeObject ||
-          // 排除激活选区内的元素
-          (activeObject instanceof ActiveSelection && activeObject._objects.includes(obj))
+          // 排除 自己 和 激活选区内的元素
+          activeObjects.includes(obj)
         ) {
           return false
         }
         // 元素为组，把组内元素加入，同时排除组本身
-        if (util.isCollection(obj) && activeObject.group && obj === activeObject.group) {
+        if (util.isCollection(obj) && target.group && obj === target.group) {
           add(obj)
           return false
         }
@@ -98,12 +97,28 @@ export class GuideLines extends Disposable {
       })
       canvasObjects.push(...objects)
     }
-    const parent = activeObject.getParent()
-    if (util.isBoard(parent)) {
-      canvasObjects.push(parent)
+
+    if (util.isActiveSelection(target)) {
+      const needAddGroup = new Set<Canvas | Group | Board | StaticCanvas>()
+      target.forEachObject((obj) => {
+        const parent = obj.getParent()
+        needAddGroup.add(parent)
+        if (util.isBoard(parent)) {
+          needAddGroup.add(parent)
+        }
+      })
+      needAddGroup.forEach((group) => {
+        add(group)
+      })
+    } else {
+      const parent = target.getParent()
+      if (util.isBoard(parent)) {
+        canvasObjects.push(parent)
+      }
+      add(parent)
     }
-    add(parent)
-    this.traversAllObjects(activeObject, canvasObjects)
+
+    this.traversAllObjects(target, canvasObjects)
   }
 
   private clearLinesMeta() {

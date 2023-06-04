@@ -1,8 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { Board, FabricObject, Group, util } from '@fabric'
-import { AlignMethod } from 'app'
-import { useEditor } from '@/app'
+import type { AlignMethod } from 'app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
@@ -35,7 +34,7 @@ export class Layer extends Disposable {
         group.sendObjectToBack(obj)
       }, true)
       canvas.requestRenderAll()
-      useEditor().undoRedo.saveState()
+      this.undoRedo.saveState()
     })
 
     // 移至顶层
@@ -48,7 +47,7 @@ export class Layer extends Disposable {
         group.bringObjectToFront(obj)
       })
       canvas.requestRenderAll()
-      useEditor().undoRedo.saveState()
+      this.undoRedo.saveState()
     })
 
     // 向下移动一层
@@ -69,7 +68,7 @@ export class Layer extends Disposable {
         group.sendObjectBackwards(obj)
       })
       canvas.requestRenderAll()
-      useEditor().undoRedo.saveState()
+      this.undoRedo.saveState()
     })
 
     // 向上移动一层
@@ -91,7 +90,7 @@ export class Layer extends Disposable {
         group.bringObjectForward(obj)
       }, true)
       canvas.requestRenderAll()
-      useEditor().undoRedo.saveState()
+      this.undoRedo.saveState()
     })
 
     // 创建分组
@@ -282,7 +281,7 @@ export class Layer extends Disposable {
       if (!activeObject) return
       e.preventDefault?.()
       activeObject[method]()
-      useEditor().undoRedo.saveState()
+      this.undoRedo.saveState()
     }
     this.keybinding.bind({
       'alt+a': (e) => align(e, 'alignLeft'),

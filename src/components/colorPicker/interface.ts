@@ -1,3 +1,6 @@
+import type { FabricObject } from '@fabric'
+import type { DialogConfig } from '@/components/dialog/interface'
+
 export interface ColorPoint {
   left: number
   red: number
@@ -24,3 +27,9 @@ export type UpdateColor = (
   },
   actionName?: ActionName,
 ) => void
+
+export interface ColorPickerOption {
+  object: FabricObject
+  attr: 'fill' | 'stroke'
+  dialogOption?: Partial<DialogConfig>
+}
