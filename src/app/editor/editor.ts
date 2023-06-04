@@ -96,6 +96,13 @@ export class EditorMain extends BaseApp {
       this.pluginInstance.clear()
       provide('useEditor', undefined)
       super.dispose()
+      this.service.invokeFunction((accessor) => {
+        accessor.get(IKeybindingService).reset()
+        accessor.get(IUndoRedoService).reset()
+        accessor.get(IFabricCanvas).dispose()
+        accessor.get(IWorkspacesService).dispose()
+        accessor.get(IEventbusService).all.clear()
+      })
       this.service = undefined!
     } catch (_e) {
       console.error(_e)

@@ -127,7 +127,7 @@
           <template #suffix>%</template>
         </a-inputNumber>
       </a-col>
-      <a-col :span="7" class="text-end">
+      <a-col :span="3.5" class="mlauto">
         <a-button size="small" class="icon-btn" @click="visible.set(!visible.modelValue)">
           <template #icon>
             <icon-eye v-if="visible.modelValue === true" />

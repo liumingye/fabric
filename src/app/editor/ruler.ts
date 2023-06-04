@@ -3,7 +3,7 @@ import { Disposable } from '@/utils/lifecycle'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 import { useThemes } from '@/hooks/useThemes'
 import { PiBy180 } from '@/utils/constants'
-import { util } from '@fabric'
+import type { TAxis } from '@fabric'
 
 type Rect = { left: number; top: number; width: number; height: number }
 
@@ -51,7 +51,7 @@ export interface RulerOptions {
 }
 
 export type HighlightRect = {
-  skip?: 'x' | 'y'
+  skip?: TAxis
 } & Rect
 
 export class Ruler extends Disposable {
@@ -217,19 +217,9 @@ export class Ruler extends Disposable {
           return
         }
 
-        const { left, top, width, height } = isHorizontal
-          ? {
-              left: (rect.left - startCalibration) * zoom,
-              top: 0,
-              width: rect.width * zoom,
-              height: ruleSize,
-            }
-          : {
-              left: 0,
-              top: (rect.top - startCalibration) * zoom,
-              width: ruleSize,
-              height: rect.height * zoom,
-            }
+        const [left, top, width, height] = isHorizontal
+          ? [(rect.left - startCalibration) * zoom, 0, rect.width * zoom, ruleSize]
+          : [0, (rect.top - startCalibration) * zoom, ruleSize, rect.height * zoom]
 
         // 高亮遮罩
         ctx.save()

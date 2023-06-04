@@ -13,8 +13,8 @@ import {
   Board,
   Rect,
   Image,
-  TMat2D,
 } from '@fabric'
+import type { ControlRenderingStyleOverride } from 'fabric/src/controls/controlRendering'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
@@ -29,10 +29,11 @@ Object.assign(FabricObject.ownDefaults, {
   cornerColor: '#FFF',
   borderColor: '#2A82E4',
   cornerStrokeColor: '#2A82E4',
-  borderOpacityWhenMoving: 0,
+  // borderOpacityWhenMoving: 0,
   controls: createObjectDefaultControls(),
   includeDefaultValues: false,
   snapAngle: 1,
+  paintFirst: 'stroke',
   // 等待bug修复后开启
   // perPixelTargetFind: true,
 } as FabricObject)
@@ -160,6 +161,20 @@ const mixin = {
   },
   isType(...types: string[]) {
     return types.includes(this._type) || types.includes(this.constructor.name)
+  },
+  _renderControls(
+    ctx: CanvasRenderingContext2D,
+    styleOverride?: ControlRenderingStyleOverride,
+    childrenOverride?: ControlRenderingStyleOverride,
+  ) {
+    // 移动时关闭控制渲染
+    if (this.isMoving) return
+    Object.getPrototypeOf(FabricObject.prototype)._renderControls.call(
+      this,
+      ctx,
+      styleOverride,
+      childrenOverride,
+    )
   },
 } as FabricObject
 

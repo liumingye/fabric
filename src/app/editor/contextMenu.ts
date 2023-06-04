@@ -29,6 +29,14 @@ export class ContextMenu extends Disposable {
           },
           shortcut: `${mod} A`,
         },
+        {
+          label: '粘贴到当前位置',
+          onClick: () => {
+            this.keybindingService.trigger('mod+shift+v')
+          },
+          shortcut: `${mod} ⇧ V`,
+          hidden: true,
+        },
         ...zoomItems(),
       ],
     })

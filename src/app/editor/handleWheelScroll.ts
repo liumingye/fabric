@@ -33,7 +33,11 @@ export class HandleWheelScroll extends Disposable {
       // 缩放视窗
       if (ctrl.value || cmd.value) {
         const zoomFactor = Math.abs(deltaY) < 10 ? deltaY * 2 : deltaY / 3
-        const newZoom = this.canvas.getZoom() * (1 - zoomFactor / 200)
+        const currentZoom = this.canvas.getZoom()
+        let newZoom = currentZoom * (1 - zoomFactor / 200)
+        if (newZoom > 0.97 && newZoom < 1.03) {
+          newZoom = 1
+        }
         this.canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom)
         return
       }

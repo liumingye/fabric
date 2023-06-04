@@ -9,7 +9,7 @@ export default defineComponent({
     const divRef = ref<HTMLDivElement>()
 
     onMounted(() => {
-      divRef.value?.append(canvas.lowerCanvasEl, canvas.upperCanvasEl)
+      divRef.value?.append(canvas.wrapperEl)
 
       // Set the dimensions of the canvas based on the size of the div element
       useResizeObserver(divRef, (entries) => {

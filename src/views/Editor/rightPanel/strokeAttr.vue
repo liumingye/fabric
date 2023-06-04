@@ -24,6 +24,7 @@
 
   const stroke = useActiveObjectModel('stroke')
   const strokeWidth = useActiveObjectModel('strokeWidth')
+  const paintFirst = useActiveObjectModel('paintFirst')
 
   /**
    * convertCoordsToDeg
@@ -48,7 +49,7 @@
     return css || '#fff'
   })
 
-  const fillChange = (value: string) => {
+  const strokeChange = (value: string) => {
     value = value.replace(/^#/, '')
     if (value.length < 6) {
       value = padHexColor(value)
@@ -57,20 +58,20 @@
     stroke.value.set(`#${color.toHex()}`)
   }
 
-  const fillValue = ref('')
+  const strokeValue = ref('')
   watchEffect(() => {
     let value = stroke.value.modelValue
     if (isString(value)) {
-      fillValue.value = new FabricColor(value).toHex().toUpperCase()
+      strokeValue.value = new FabricColor(value).toHex().toUpperCase()
       return
     } else if (util.isGradient(value)) {
-      fillValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
+      strokeValue.value = value.type === 'linear' ? '线性渐变' : '径向渐变'
       return
     } else if (util.isPattern(value)) {
-      fillValue.value = '图案填充'
+      strokeValue.value = '图案填充'
       return
     }
-    fillValue.value = ''
+    strokeValue.value = ''
   })
 
   watch(canvas.activeObject, () => closeColorPicker())
@@ -82,6 +83,17 @@
     if (!isDefined(canvas.activeObject) || closeFn) return
     closeFn = ColorPicker.open(canvas.activeObject.value, 'stroke')
   }
+
+  const options = reactive([
+    {
+      value: 'fill',
+      label: '内部',
+    },
+    {
+      value: 'stroke',
+      label: '外部',
+    },
+  ])
 
   onUnmounted(() => {
     closeColorPicker()
@@ -103,7 +115,7 @@
   >
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
-        <a-input size="mini" v-model="fillValue" :readonly="readonly" @change="fillChange">
+        <a-input size="mini" v-model="strokeValue" :readonly="readonly" @change="strokeChange">
           <template #prefix>
             <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>
@@ -127,6 +139,9 @@
             <icon-minus />
           </template>
         </a-button>
+      </a-col>
+      <a-col :span="10">
+        <a-select size="small" v-bind="paintFirst" :options="options" />
       </a-col>
     </a-row>
   </Panel>

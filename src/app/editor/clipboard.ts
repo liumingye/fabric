@@ -19,7 +19,8 @@ export class Clipboard extends Disposable {
     keybinding.bind({
       'mod+x': this.clip.bind(this),
       'mod+c': this.copy.bind(this),
-      'mod+v': this.paste.bind(this),
+      'mod+v': this.paste.bind(this, false),
+      'mod+shift+v': this.paste.bind(this, true),
     })
   }
 
@@ -82,7 +83,7 @@ export class Clipboard extends Disposable {
     img.src = URL.createObjectURL(blob)
   }
 
-  private paste() {
+  private paste(currentLocation = false) {
     this.clipboard.readBlob().then((blobs) => {
       if (!blobs) return
       blobs.forEach(async (blob) => {
@@ -146,6 +147,11 @@ export class Clipboard extends Disposable {
           })
           .then((enlived) => {
             const objects = enlived.flatMap((object) => {
+              if (currentLocation) {
+                // object.top = 0
+                // object.left = 0
+              }
+
               // ActiveSelection的元素，退出组
               if (object instanceof ActiveSelection) {
                 return object.removeAll().reverse() as FabricObject[]
@@ -156,6 +162,7 @@ export class Clipboard extends Disposable {
 
             addObjects(objects)
             this.canvas.setActiveObjects(objects)
+
             this.canvas.requestRenderAll()
             this.undoRedo.saveState()
           })

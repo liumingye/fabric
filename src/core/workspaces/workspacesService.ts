@@ -77,4 +77,9 @@ export class WorkspacesService extends Disposable {
   public size(): number {
     return this.workspaces.length
   }
+
+  public dispose() {
+    super.dispose()
+    this.workspaces = []
+  }
 }
