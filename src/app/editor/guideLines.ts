@@ -394,7 +394,7 @@ export class GuideLines extends Disposable {
     // this.canvas.calcOffset()
   }
 
-  clearGuideline() {
+  private clearGuideline() {
     if (!this.dirty) return
     this.dirty = false
     this.canvas.clearContext(this.canvas.getTopContext())

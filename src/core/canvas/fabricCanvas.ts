@@ -157,7 +157,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       const currentObject = stack.pop()
       if (currentObject) {
         const index = idsToFind.indexOf(currentObject.id)
-        if (index !== undefined) {
+        if (index !== -1) {
           foundObjects[index] = currentObject
           numFound++
         }

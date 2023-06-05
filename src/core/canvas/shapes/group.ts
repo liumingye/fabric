@@ -20,7 +20,14 @@ export class Group extends CommonGroup {
 
   // 双击后启用interactive，离开组后关闭
   public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
-    if (!this.canvas || !e.target || e.target !== this || !e.subTargets || this.interactive) {
+    if (
+      !this.canvas ||
+      !e.target ||
+      e.target !== this ||
+      !e.subTargets ||
+      e.subTargets.length === 0 ||
+      this.interactive
+    ) {
       return
     }
 

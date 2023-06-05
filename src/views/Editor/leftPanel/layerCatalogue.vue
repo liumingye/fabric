@@ -187,13 +187,12 @@
 
     if (!dragNode.key || !dropNode.key) return
 
-    const [dropObject] = canvas.findObjectsByIds([dropNode.key])
-    if (!isDefined(dropObject)) return
-
     // 多个拖拽
     if (selectedkeys.value.includes(dragNode.key)) {
       // 通过key查找对象
-      let dragObjects = canvas.findObjectsByIds([...selectedkeys.value])
+      let dragObjects = canvas.findObjectsByIds([dropNode.key, ...selectedkeys.value])
+      const dropObject = dragObjects.shift()
+      if (!isDefined(dropObject)) return
       // 由于列表是倒序，这里把列表翻转过来
       if (dropPosition !== -1) {
         dragObjects = dragObjects.reverse()
@@ -214,9 +213,9 @@
     // 单个拖拽
     else {
       // 通过key查找对象
-      const [dragObject] = canvas.findObjectsByIds([dragNode.key])
+      const [dropObject, dragObject] = canvas.findObjectsByIds([dropNode.key, dragNode.key])
       // 没找到则退出
-      if (!isDefined(dragObject)) return
+      if (!isDefined(dropObject) || !isDefined(dragObject)) return
       moveNode({
         e,
         dragObject,
