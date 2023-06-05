@@ -7,23 +7,25 @@
     TreeInstance,
     DropEvent,
   } from '@/components/tree'
-  import { Board, Group, ObjectRef, util } from '@fabric'
+  import { Board, Ellipse, Group, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
-  import { useMagicKeys, useResizeObserver, isDefined } from '@vueuse/core'
+  import { useMagicKeys, useResizeObserver, isDefined, Fn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
   import ContextMenu from '@/components/contextMenu'
   import { layerItems } from '@/utils/contextMenu'
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import Workspaces from './workspaces.vue'
   import { LinkedList } from '@/utils/linkedList'
+  import { clone } from 'lodash'
 
   interface ITreeNodeData extends TreeNodeData {
     isCollection: boolean
     visible: boolean
     objectRef: ObjectRef
-    setDirty: () => void
+    setDirty: Fn
     children?: ITreeNodeData[]
+    getSvg: Fn
   }
 
   const { canvas, event, undoRedo } = useEditor()
@@ -61,10 +63,36 @@
         setDirty: () => object.group?.setDirty(),
         children,
         draggable: renameNodeKey.value !== object.id,
+        getSvg: () => {
+          // todo: 以后换成图标
+          if (object.isType('Group', 'Board', 'Textbox')) return
+          const { x, y } = object._getTransformedDimensions()
+          const _object = clone(object)
+          // setDimensions
+          _object.set({
+            getSvgTransform: () => {
+              const scale = Math.min(16 / (x + 32), 16 / (y + 32))
+              return `transform="scale(${scale} ${scale})" transform-origin="center"`
+            },
+            width: x,
+            height: y,
+            ...(object instanceof Ellipse && {
+              rx: x / 2,
+              ry: y / 2,
+            }),
+          })
+          // @ts-ignore
+          const shape = _object._createBaseSVGMarkup(_object._toSVG(), {
+            noStyle: true,
+          })
+          const svg = `<svg style="width:16px;height:16px" viewBox='0 0 16 16' fill="transparent" stroke="#fff" stroke-width="1">
+            ${shape}
+          </svg>`
+          return svg
+        },
       }
       if (!searchKey || canAddToResult(nodeData, searchKey)) {
         objs.unshift(nodeData)
-        // objs.push(nodeData)
       }
     }
 
@@ -447,24 +475,27 @@
         @node-dbclick="onNodeDbclick"
       >
         <template #title="nodeData">
-          <a-input
-            v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
-            class="bg-transparent! border-none! px0!"
-            size="mini"
-            :default-value="nodeData.title"
-            @blur="renameNodeKey = undefined"
-            @vue:mounted="onInputMounted"
-            @change="onInputChange"
-            @press-enter="renameNodeKey = undefined"
-          />
-          <span
-            v-else
-            :class="{
-              'op-50': !nodeData.visible,
-            }"
-          >
-            {{ nodeData.title }}
-          </span>
+          <div class="flex items-center">
+            <div v-html="nodeData.getSvg()" class="w16px h16px mr1"></div>
+            <a-input
+              v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
+              class="bg-transparent! border-none! px0!"
+              size="mini"
+              :default-value="nodeData.title"
+              @blur="renameNodeKey = undefined"
+              @vue:mounted="onInputMounted"
+              @change="onInputChange"
+              @press-enter="renameNodeKey = undefined"
+            />
+            <span
+              v-else
+              :class="{
+                'op-50': !nodeData.visible,
+              }"
+            >
+              {{ nodeData.title }}
+            </span>
+          </div>
         </template>
         <template #extra="nodeData">
           <div

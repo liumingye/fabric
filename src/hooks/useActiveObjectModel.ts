@@ -20,59 +20,54 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   // input组件在修改后不回车确定,切换object时,会触发onChange,导致修改错object值
   let lockChange = false
 
-  watchEffect(
-    () => {
-      if (!isDefined(canvas.activeObject)) {
-        modelValue.value = undefined
-        return
+  watchEffect(() => {
+    if (!isDefined(canvas.activeObject)) {
+      modelValue.value = undefined
+      return
+    }
+
+    const activeObject = canvas.activeObject.value as FabricObject & Textbox
+
+    // 锁定修改
+    lockChange = true
+
+    let value
+    if (['width', 'height'].includes(key)) {
+      // 宽高
+      value = activeObject[key === 'width' ? 'getWidth' : 'getHeight']()
+    } else if (['left', 'top'].includes(key) && activeObject.getParent(true)) {
+      // 左上
+      value = activeObject.getLeftTop()[key === 'left' ? 'x' : 'y']
+    } else if (key === 'opacity') {
+      // 透明度
+      value = NP.times(activeObject.opacity, 100)
+    } else if (key === 'angle') {
+      // 旋转
+      value = clampAngle(activeObject.angle)
+    } else if (key === 'fontSize' && activeObject.isType('Text', 'Textbox')) {
+      // 字体大小
+      let lastStyle = activeObject.getStyleAtPosition(0)[key]
+      let allSameStyle = true
+      for (let i = 1; i < activeObject.text.length; i++) {
+        const thisStyle = activeObject.getStyleAtPosition(i)[key]
+        if (!isEqual(thisStyle, lastStyle)) {
+          allSameStyle = false
+          break
+        }
+        lastStyle = thisStyle
       }
-
-      const activeObject = canvas.activeObject.value as FabricObject & Textbox
-
-      // 锁定修改
-      lockChange = true
-
-      let value
-      if (['width', 'height'].includes(key)) {
-        // 宽高
-        value = activeObject[key === 'width' ? 'getWidth' : 'getHeight']()
-      } else if (['left', 'top'].includes(key) && activeObject.getParent(true)) {
-        // 左上
-        value = activeObject.getLeftTop()[key === 'left' ? 'x' : 'y']
-      } else if (key === 'opacity') {
-        // 透明度
-        value = NP.times(activeObject.opacity, 100)
-      } else if (key === 'angle') {
-        // 旋转
-        value = clampAngle(activeObject.angle)
-      } else if (key === 'fontSize') {
-        // 字体大小
-        let lastStyle = activeObject.getStyleAtPosition(0)[key]
-        let allSameStyle = true
-        for (let i = 1; i < activeObject.text.length; i++) {
-          const thisStyle = activeObject.getStyleAtPosition(i)[key]
-          if (!isEqual(thisStyle, lastStyle)) {
-            allSameStyle = false
-            break
-          }
-          lastStyle = thisStyle
-        }
-        if (!allSameStyle) {
-          value = '多个值'
-        } else {
-          value = activeObject[key]
-        }
+      if (!allSameStyle) {
+        value = '多个值'
       } else {
-        // 其它
         value = activeObject[key]
       }
-      modelValue.value = isNumber(value) ? toFixed(value) : value
-      requestAnimationFrame(() => (lockChange = false))
-    },
-    {
-      flush: 'post',
-    },
-  )
+    } else {
+      // 其它
+      value = activeObject[key]
+    }
+    modelValue.value = isNumber(value) ? toFixed(value) : value
+    requestAnimationFrame(() => (lockChange = false))
+  })
 
   const setObjectValue = (obj: FabricObject, newValue: any) => {
     if (key === 'opacity') {
