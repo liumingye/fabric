@@ -17,14 +17,6 @@ export class CommonGroup extends createCollectionMixin(GroupOrigin) {
     )
   }
 
-  override _shouldSetNestedCoords() {
-    // 开启subTargetCheck性能差，优化
-    if (!this.canvas || this.canvas.selection === false || this.canvas.skipTargetFind === true) {
-      return false
-    }
-    return super._shouldSetNestedCoords()
-  }
-
   public setDirty() {
     this._set('dirty', true)
   }

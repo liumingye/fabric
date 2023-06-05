@@ -130,41 +130,46 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
    * @param id 要查找的对象的ID
    * @returns 如果找到对象则返回一个FabricObject类型的对象，否则返回undefined
    */
-  public findObjectById(id: string): FabricObject | undefined {
+  public findObjectById(id: string | number): FabricObject | undefined {
     const object = this.findObjectsByIds([id])
     return object[0]
   }
 
   /**
    * 根据ID数组查找对象
-   * @param ids 要查找的对象的ID数组
+   * @param idsToFind 要查找的对象的ID数组
    * @returns 返回一个包含FabricObject类型对象的数组，数组中每个元素的值为对应的ID在对象集合中的对象。如果没有找到对象，则相应的数组元素值为undefined。
    */
-  public findObjectsByIds(ids: string[]): (FabricObject | undefined)[] {
-    const result = Array(ids.length).fill(undefined)
+  public findObjectsByIds(idsToFind: (string | number)[]): (FabricObject | undefined)[] {
+    const size = idsToFind.length
+    const foundObjects = Array(size).fill(undefined)
+    // hash table
+    const idMap = new Map(idsToFind.map((id, index) => [id, index]))
+    let numFound = 0
     const stack = new LinkedList<FabricObject>()
-    const push = (objects: FabricObject[]) => {
+    const pushObjectsToStack = (objects: FabricObject[]) => {
       for (const object of objects) {
         stack.push(object)
       }
     }
     // 压入全部元素
-    push(this._objects)
-    while (!stack.isEmpty()) {
+    pushObjectsToStack(this._objects)
+    while (!stack.isEmpty() && numFound < size) {
       // 出栈
-      const node = stack.pop()
-      if (node) {
-        const index = ids.indexOf(node.id)
-        if (index !== -1) {
-          result[index] = node
+      const currentObject = stack.pop()
+      if (currentObject) {
+        const index = idMap.get(currentObject.id)
+        if (index !== undefined) {
+          foundObjects[index] = currentObject
+          numFound++
         }
       }
       // 压入组内元素
-      if (util.isCollection(node)) {
-        push(node._objects)
+      if (util.isCollection(currentObject)) {
+        pushObjectsToStack(currentObject._objects)
       }
     }
-    return result
+    return foundObjects
   }
 
   // 重写 findTarget

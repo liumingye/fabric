@@ -1,11 +1,10 @@
 import { StaticCanvas } from 'fabric'
-import { Point, FabricObject, util, Board } from '@fabric'
-import type { fabric } from '@/dts/fabric'
+import { Point, FabricObject, util, Board, TBBox } from '@fabric'
 
 // 收集box内的元素
 const _collectObjects = (
   _objects: FabricObject[] | undefined,
-  box: fabric.TBBox,
+  box: TBBox,
   opt: { includeIntersecting?: boolean },
 ) => {
   const { left, top, width, height } = box
@@ -54,10 +53,6 @@ const _collectObjects = (
   return collected
 }
 
-const mixin = {
-  collectObjects(box: fabric.TBBox, opt = {}) {
-    return _collectObjects(this._objects, box, opt)
-  },
-} as Partial<StaticCanvas>
-
-Object.assign(StaticCanvas.prototype, mixin)
+StaticCanvas.prototype.collectObjects = function (box: TBBox, opt = {}) {
+  return _collectObjects(this._objects, box, opt)
+}

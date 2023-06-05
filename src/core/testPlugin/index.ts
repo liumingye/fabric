@@ -31,7 +31,7 @@ const myPlugin = createEditorPlugin((editor) => {
         height: 300,
         fill: '#f2b8ca',
       })
-      canvas.add(board1, board2)
+      // canvas.add(board1, board2)
       // canvas.add(board2)
 
       const group = new Group(

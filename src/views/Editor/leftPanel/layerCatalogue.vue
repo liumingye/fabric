@@ -7,7 +7,7 @@
     TreeInstance,
     DropEvent,
   } from '@/components/tree'
-  import { Board, ObjectRef, util } from '@fabric'
+  import { Board, Group, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, isDefined } from '@vueuse/core'
@@ -64,6 +64,7 @@
       }
       if (!searchKey || canAddToResult(nodeData, searchKey)) {
         objs.unshift(nodeData)
+        // objs.push(nodeData)
       }
     }
 
@@ -125,15 +126,10 @@
 
     // 如果该对象属于的分组也在拖拽列表，则中止操作。
     if (excludeGroupObject) {
-      const checkNodeVisibility = (obj: FabricObject): boolean => {
-        if (!obj.group || !selectedkeys.value.includes(obj.group.id)) {
-          return false
-        } else if (obj.group.group) {
-          return checkNodeVisibility(obj.group.group)
-        }
-        return true
-      }
-      if (checkNodeVisibility(dragObject)) {
+      const inGroup = dragObject.getAncestors(true).some((group) => {
+        return selectedkeys.value.includes((group as Group).id)
+      })
+      if (inGroup) {
         return
       }
     }
@@ -149,6 +145,11 @@
 
     let dropIndex = dropGroup._objects.indexOf(dropObject)
 
+    // 画板不能进组
+    if ((dragGroup !== dropGroup || dropPosition === 0) && dragObject instanceof Board) {
+      return false
+    }
+
     // 对象同组
     if (dragGroup === dropGroup) {
       const dragIndex = dragGroup._objects.indexOf(dragObject)
@@ -157,19 +158,18 @@
       }
     }
 
-    // 画板不能进组
-    if ((dragGroup !== dropGroup || dropPosition === 0) && dragObject instanceof Board) {
-      return false
-    }
-
-    // 进入组，dropObject是组
-    if (util.isCollection(dropObject) && dropPosition === 0) {
-      dropGroup = dropObject
-      dropIndex = dragGroup._objects.length
+    if (dropPosition === -1) {
+      dropIndex++
     }
 
     const [_dragObject] = dragGroup.remove(dragObject) as FabricObject[]
-    dropGroup.insertAt(dropPosition === 1 ? dropIndex : dropIndex + 1, _dragObject)
+
+    // dropObject是组，dropPosition 为 0 进入组
+    if (util.isCollection(dropObject) && dropPosition === 0) {
+      dropObject.add(_dragObject)
+    } else {
+      dropGroup.insertAt(dropIndex, _dragObject)
+    }
 
     // 回到激活选区
     if (canvas.getActiveObject() === canvas.getActiveSelection()) {
@@ -187,15 +187,20 @@
 
     if (!dragNode.key || !dropNode.key) return
 
-    const [dropObject] = canvas.findObjectsByIds([dropNode.key.toString()])
+    const [dropObject] = canvas.findObjectsByIds([dropNode.key])
     if (!isDefined(dropObject)) return
 
     // 多个拖拽
-    if (selectedkeys.value.includes(dragNode.key.toString())) {
-      for (let i = selectedkeys.value.length - 1; i >= 0; i--) {
-        // 通过key查找对象
-        const [dragObject] = canvas.findObjectsByIds([selectedkeys.value[i].toString()])
+    if (selectedkeys.value.includes(dragNode.key)) {
+      // 通过key查找对象
+      let dragObjects = canvas.findObjectsByIds([...selectedkeys.value])
+      // 由于列表是倒序，这里把列表翻转过来
+      if (dropPosition !== -1) {
+        dragObjects = dragObjects.reverse()
+      }
+      for (let i = dragObjects.length - 1; i >= 0; i--) {
         // 没找到则退出
+        const dragObject = dragObjects[i]
         if (!isDefined(dragObject)) return
         moveNode({
           e,
@@ -209,7 +214,7 @@
     // 单个拖拽
     else {
       // 通过key查找对象
-      const [dragObject] = canvas.findObjectsByIds([dragNode.key.toString()])
+      const [dragObject] = canvas.findObjectsByIds([dragNode.key])
       // 没找到则退出
       if (!isDefined(dragObject)) return
       moveNode({
@@ -398,7 +403,7 @@
     const target = e.target as HTMLElement | null
     target?.blur()
     if (!key || !value) return
-    const object = canvas.findObjectById(key.toString())
+    const object = canvas.findObjectById(key)
     if (!object) return
     object.name = value
     undoRedo.saveState()

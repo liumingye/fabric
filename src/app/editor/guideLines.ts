@@ -1,6 +1,5 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import {
-  ActiveSelection,
   StaticCanvas,
   Board,
   Canvas,
@@ -38,7 +37,7 @@ const Keys = <T extends object>(obj: T): (keyof T)[] => {
 }
 
 export class GuideLines extends Disposable {
-  private aligningLineMargin = 4
+  private aligningLineMargin = 10
   private aligningLineWidth = 1
   private aligningLineColor = '#F68066'
 
