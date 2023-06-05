@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Disposable } from '@/utils/lifecycle'
 import MenuComponent from '@/components/contextMenu'
-import { CanvasEvents } from '@fabric'
+import { CanvasEvents, Point, TPointerEvent } from '@fabric'
 import { layerItems, zoomItems } from '@/utils/contextMenu'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 
@@ -14,8 +14,11 @@ export class ContextMenu extends Disposable {
     canvas.on('contextmenu', this.showLayerContextMenu.bind(this))
   }
 
+  public pointer: Point | undefined
+
   private showBlankContextMenu(e: CanvasEvents['contextmenu']) {
     const event = e.e as MouseEvent
+    this.pointer = this.canvas.getPointer(event)
     const { mod } = this.keybindingService
     MenuComponent.showContextMenu({
       x: event.clientX,
@@ -35,7 +38,6 @@ export class ContextMenu extends Disposable {
             this.keybindingService.trigger('mod+shift+v')
           },
           shortcut: `${mod} ⇧ V`,
-          hidden: true,
         },
         ...zoomItems(),
       ],

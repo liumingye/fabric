@@ -127,7 +127,7 @@ export class FabricTool extends Disposable {
             tempObject.set('noEventObjectAdded', true)
             // 添加对象到画板
             canvas.add(tempObject)
-            // 取消不发生
+            // 取消不发送
             tempObject.set('noEventObjectAdded', false)
             // 设置激活对象
             canvas.setActiveObject(tempObject)

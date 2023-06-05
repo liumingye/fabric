@@ -18,13 +18,16 @@ import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspa
 import { IEventbusService, EventbusService } from '@/core/eventbus/eventbusService'
 import { BaseApp } from '@/app/baseApp'
 import { UsableSolts } from '@/core/types'
+import { toDisposable } from '@/utils/lifecycle'
 import type { DefineComponent } from 'vue'
 import { useEditor } from '@/app'
 
 export class EditorMain extends BaseApp {
   public service!: IInstantiationService
 
-  private pluginInstance = new Map<Symbol, IEditorPluginContext>()
+  private readonly pluginInstance = new Map<Symbol, IEditorPluginContext>()
+
+  public contextMenu: ContextMenu | undefined
 
   constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
     super()
@@ -47,7 +50,7 @@ export class EditorMain extends BaseApp {
         this.service.createInstance(HandleWheelScroll),
         this.service.createInstance(GuideLines),
         this.service.createInstance(Zoom),
-        this.service.createInstance(ContextMenu),
+        (this.contextMenu = this.service.createInstance(ContextMenu)),
         this.service.createInstance(Clipboard),
       ]
       instances.forEach((instance) => {
@@ -67,10 +70,17 @@ export class EditorMain extends BaseApp {
       service: this.service,
       use: this.use,
     }) as IEditorPluginContext
-    const id = Symbol()
-    instance._id = id
+    // 存储实例
+    instance._id = Symbol()
+    this.pluginInstance.set(instance._id, instance)
+    // 生命周期
     instance.setup?.()
-    this.pluginInstance.set(id, instance)
+    this._register(
+      toDisposable(() => {
+        instance.dispose?.()
+        this.pluginInstance.delete(instance._id)
+      }),
+    )
   }
 
   private initServices() {
@@ -92,8 +102,6 @@ export class EditorMain extends BaseApp {
 
   public dispose() {
     try {
-      this.pluginInstance.forEach((p) => p.dispose?.())
-      this.pluginInstance.clear()
       provide('useEditor', undefined)
       super.dispose()
       this.service.invokeFunction((accessor) => {

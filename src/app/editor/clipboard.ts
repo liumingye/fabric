@@ -3,12 +3,15 @@ import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { ClipboardService, IClipboardService } from '@/core/clipboard/clipboardService'
 import { encode, decode } from '@/utils/steganography'
-import { ActiveSelection, FabricObject, Group, Image, Textbox, util } from '@fabric'
+import { ActiveSelection, FabricObject, Group, Image, Point, Textbox, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
+import { appInstance } from '..'
 
 export class Clipboard extends Disposable {
+  private pointer = new Point()
+
   constructor(
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService readonly keybinding: KeybindingService,
@@ -21,6 +24,10 @@ export class Clipboard extends Disposable {
       'mod+c': this.copy.bind(this),
       'mod+v': this.paste.bind(this, false),
       'mod+shift+v': this.paste.bind(this, true),
+    })
+
+    canvas.on('mouse:move', (e) => {
+      this.pointer = e.pointer
     })
   }
 
@@ -115,12 +122,22 @@ export class Clipboard extends Disposable {
           return
         }
 
+        // 如果元素不在画板可视范围内，粘贴元素到中心点
+        let pasteCenterPoint = true
+
         // 递归设置id
-        const setId = (target: FabricObject[]) => {
+        const setAttr = (target: FabricObject[]) => {
           target.forEach((obj) => {
+            // 检查元素是否在可视范围
+            if (pasteCenterPoint) {
+              obj.set('canvas', this.canvas)
+              obj.isOnScreen() && (pasteCenterPoint = false)
+              obj.set('canvas', undefined)
+            }
+
             obj.id = randomText()
             if (util.isCollection(obj)) {
-              setId(obj._objects)
+              setAttr(obj._objects)
             }
           })
         }
@@ -140,16 +157,24 @@ export class Clipboard extends Disposable {
             reviver: (json, object) => {
               // 设置新的id
               if (util.isCollection(object)) {
-                setId(object._objects)
+                setAttr(object._objects)
               }
-              setId([object])
+              setAttr([object])
             },
           })
           .then((enlived) => {
             const objects = enlived.flatMap((object) => {
+              // 粘贴到当前位置
               if (currentLocation) {
-                // object.top = 0
-                // object.left = 0
+                const { x, y } = appInstance.editor.contextMenu?.pointer || this.pointer
+                object.left = x
+                object.top = y
+              }
+              // 粘贴到中心点
+              else if (pasteCenterPoint) {
+                const { x, y } = this.canvas.getVpCenter()
+                object.left = x
+                object.top = y
               }
 
               // ActiveSelection的元素，退出组
@@ -159,6 +184,8 @@ export class Clipboard extends Disposable {
                 return [object]
               }
             })
+
+            currentLocation && (appInstance.editor.contextMenu!.pointer = undefined)
 
             addObjects(objects)
             this.canvas.setActiveObjects(objects)
