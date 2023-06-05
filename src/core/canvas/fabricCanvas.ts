@@ -143,8 +143,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   public findObjectsByIds(idsToFind: (string | number)[]): (FabricObject | undefined)[] {
     const size = idsToFind.length
     const foundObjects = Array(size).fill(undefined)
-    // hash table
-    const idMap = new Map(idsToFind.map((id, index) => [id, index]))
     let numFound = 0
     const stack = new LinkedList<FabricObject>()
     const pushObjectsToStack = (objects: FabricObject[]) => {
@@ -158,7 +156,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       // 出栈
       const currentObject = stack.pop()
       if (currentObject) {
-        const index = idMap.get(currentObject.id)
+        const index = idsToFind.indexOf(currentObject.id)
         if (index !== undefined) {
           foundObjects[index] = currentObject
           numFound++
