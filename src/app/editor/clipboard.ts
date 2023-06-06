@@ -3,13 +3,15 @@ import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { ClipboardService, IClipboardService } from '@/core/clipboard/clipboardService'
 import { encode, decode } from '@/utils/steganography'
-import { ActiveSelection, FabricObject, Group, Image, Point, Textbox, util } from '@fabric'
+import { ActiveSelection, CanvasEvents, FabricObject, Image, Point, Textbox, util } from '@fabric'
 import { randomText } from '@/utils/strings'
 import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
-import { appInstance } from '..'
+import { appInstance } from '@/app'
 
 export class Clipboard extends Disposable {
+  private canvasEvents
+
   private pointer = new Point()
 
   constructor(
@@ -19,6 +21,7 @@ export class Clipboard extends Disposable {
     @IUndoRedoService private readonly undoRedo: UndoRedoService,
   ) {
     super()
+
     keybinding.bind({
       'mod+x': this.clip.bind(this),
       'mod+c': this.copy.bind(this),
@@ -26,21 +29,29 @@ export class Clipboard extends Disposable {
       'mod+shift+v': this.paste.bind(this, true),
     })
 
-    canvas.on('mouse:move', (e) => {
-      this.pointer = e.pointer
-    })
+    this.canvasEvents = {
+      'mouse:move': this.updatePointer.bind(this),
+    }
+
+    canvas.on(this.canvasEvents)
+  }
+
+  private updatePointer(e: CanvasEvents['mouse:move']) {
+    this.pointer = e.pointer
   }
 
   private async copy() {
-    let activeObject = this.canvas.getActiveObject()
-    if (!activeObject) return
+    const _activeObject = this.canvas.getActiveObject()
+    if (!_activeObject) return
+
+    const activeObject = clone(_activeObject)
+
     const canvas = activeObject.toCanvasElement()
 
     // 一个元素且是组内元素，退出组，为了获取正确的xy值
-    if (!util.isCollection(activeObject) && activeObject.group) {
-      activeObject = clone(activeObject)
-      const parent = activeObject.getParent() as Group
-      parent.exitGroup(activeObject)
+    const parent = activeObject.getParent(true)
+    if (parent) {
+      parent?.exitGroup(activeObject)
     }
 
     // 转json
@@ -215,5 +226,11 @@ export class Clipboard extends Disposable {
       u8arr[n] = bstr.charCodeAt(n)
     }
     return new Blob([u8arr], { type: mime })
+  }
+
+  public dispose(): void {
+    super.dispose()
+    this.keybinding.unbind(['mod+x', 'mod+c', 'mod+v', 'mod+shift+v'])
+    this.canvas.off(this.canvasEvents)
   }
 }

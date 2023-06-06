@@ -41,6 +41,7 @@
 
   const treeRef = ref<TreeInstance>()
 
+  // svg缓存
   const svgCacheMap = new Map<string, string>()
 
   const getSvg = (object: FabricObject) => {
@@ -111,13 +112,11 @@
     return objs
   }
 
-  const updateTreeData = () => {
-    treeData.value = getTreeData(canvas.ref.objects.value, searchKey.value)
-  }
-
   const treeData: Ref<ITreeNodeData[]> = ref([])
 
-  watch(searchKey, updateTreeData, { immediate: true })
+  watchEffect(() => {
+    treeData.value = getTreeData(canvas.ref.objects.value, searchKey.value)
+  })
 
   /**
    * 节点搜索
@@ -368,15 +367,11 @@
     'selection:created': updateSelectedkeys,
     'selection:updated': updateSelectedkeys,
     'selection:cleared': updateSelectedkeys,
-    'object:added': updateTreeData,
-    'object:removed': updateTreeData,
     'object:modified': (e: CanvasEvents['object:modified']) => {
       if (!svgCacheMap.has(e.target.id)) return
       svgCacheMap.delete(e.target.id)
-      if (svgCacheMap.size > 100) {
-        svgCacheMap.clear()
-      }
-      updateTreeData()
+      if (svgCacheMap.size > 128) svgCacheMap.clear()
+      treeRef.value?.updateTreeView()
     },
   })
 
@@ -457,6 +452,7 @@
     const object = canvas.findObjectById(key)
     if (!object) return
     object.name = value
+    treeRef.value?.updateTreeView()
     undoRedo.saveState()
   }
 </script>

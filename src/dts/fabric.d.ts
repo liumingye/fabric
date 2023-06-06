@@ -123,6 +123,20 @@ export declare module 'fabric' {
     align(method: AlignMethod): void
   }
 
+  export declare class Group {
+    canvas: Canvas | undefined
+    group: this | undefined
+    _objects: FabricObject[]
+    setDirty(): void
+    updateLayout(): void
+    forEachObject(
+      callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
+    ): void
+    getObjects(): FabricObject[]
+    onActiveTarget(target: FabricObject): void
+    addDeselectedEvent(object: FabricObject): void
+  }
+
   export declare class Object {
     group: Group | undefined
     id: string
@@ -149,20 +163,6 @@ export declare module 'fabric' {
     _type: string
     type: string
     isType<T = boolean>(...types: string[]): this is T
-  }
-
-  export declare class Group {
-    canvas: Canvas | undefined
-    group: this | undefined
-    _objects: FabricObject[]
-    setDirty(): void
-    updateLayout(): void
-    forEachObject(
-      callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
-    ): void
-    getObjects(): FabricObject[]
-    onActiveTarget(target: FabricObject): void
-    addDeselectedEvent(object: FabricObject): void
   }
 
   export declare class StaticCanvas {

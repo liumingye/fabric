@@ -25,19 +25,19 @@ export class Zoom extends Disposable {
     })
 
     // 100%
-    keybindingService.bind('mod+0', (e) => {
-      e.preventDefault?.()
+    keybindingService.bind('mod+0', () => {
       this.zoomToPoint(1)
+      return false
     })
 
-    keybindingService.bind('mod+1', (e) => {
-      e.preventDefault?.()
+    keybindingService.bind('mod+1', () => {
       this.showAllContent()
+      return false
     })
 
-    keybindingService.bind('mod+2', (e) => {
-      e.preventDefault?.()
+    keybindingService.bind('mod+2', () => {
       this.showSelectedContent()
+      return false
     })
 
     const { zoom } = storeToRefs(useAppStore())

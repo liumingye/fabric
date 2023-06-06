@@ -14,47 +14,46 @@ export class Layer extends Disposable {
     @IUndoRedoService private readonly undoRedo: UndoRedoService,
   ) {
     super()
-    this.keybinding.bind(['del', 'backspace'], (e) => {
+    this.keybinding.bind(['del', 'backspace'], () => {
       const objects = canvas.getActiveObjects()
       if (objects.length === 0) return
-      e.preventDefault?.()
       this.deleteLayer(objects)
       canvas.discardActiveObject()
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 移至底层
-    this.keybinding.bind('[', (e) => {
+    this.keybinding.bind('[', () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       this.objForEach((obj) => {
         const group = obj.getParent()
         group.sendObjectToBack(obj)
       }, true)
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 移至顶层
-    this.keybinding.bind(']', (e) => {
+    this.keybinding.bind(']', () => {
       const activeObjects = canvas.getActiveObjects()
       if (!activeObjects) return
-      e.preventDefault?.()
       this.objForEach((obj) => {
         const group = obj.getParent()
         group.bringObjectToFront(obj)
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 向下移动一层
-    this.keybinding.bind('mod+[', (e) => {
+    this.keybinding.bind('mod+[', () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       const isActiveSelection = util.isActiveSelection(activeObject)
       this.objForEach((obj) => {
         const group = obj.getParent()
@@ -69,13 +68,13 @@ export class Layer extends Disposable {
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 向上移动一层
-    this.keybinding.bind('mod+]', (e) => {
+    this.keybinding.bind('mod+]', () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       const isActiveSelection = util.isActiveSelection(activeObject)
       this.objForEach((obj) => {
         const group = obj.getParent()
@@ -91,13 +90,13 @@ export class Layer extends Disposable {
       }, true)
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 创建分组
-    this.keybinding.bind('mod+g', (e) => {
+    this.keybinding.bind('mod+g', () => {
       const objects = canvas.getActiveObjects()
       if (objects.length === 0) return
-      e.preventDefault?.()
       // 获取要插入的分组，在deleteLayer前获取，不然获取不到
       const insertGroup = objects[0].getParent()
       const index = insertGroup._objects.indexOf(objects[0])
@@ -123,13 +122,13 @@ export class Layer extends Disposable {
       // 设置激活对象
       canvas.setActiveObject(group)
       this.undoRedo.saveState()
+      return false
     })
 
     // 解除分组
-    this.keybinding.bind('mod+shift+g', (e) => {
+    this.keybinding.bind('mod+shift+g', () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject || !util.isCollection(activeObject)) return
-      e.preventDefault?.()
       const parentGroup = activeObject.getParent()
       const index = parentGroup._objects.indexOf(activeObject)
       // 移除组
@@ -138,31 +137,31 @@ export class Layer extends Disposable {
       // 设置激活对象
       canvas.setActiveObjects(objects.reverse())
       this.undoRedo.saveState()
+      return false
     })
 
     // 选择全部
-    this.keybinding.bind('mod+a', (e) => {
-      e.preventDefault?.()
+    this.keybinding.bind('mod+a', () => {
       const activeObject = canvas.getActiveObject()
       const parent = activeObject?.getParent() || canvas
       canvas.setActiveObjects(parent.getObjects().reverse())
       canvas.requestRenderAll()
+      return false
     })
 
     // 显示/隐藏
-    this.keybinding.bind('mod+shift+h', (e) => {
-      e.preventDefault?.()
+    this.keybinding.bind('mod+shift+h', () => {
       this.objForEach((obj) => {
         obj.visible = !obj.visible
         obj.getParent(true)?.setDirty()
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 锁定/解锁
-    this.keybinding.bind('mod+shift+l', (e) => {
-      e.preventDefault?.()
+    this.keybinding.bind('mod+shift+l', () => {
       this.objForEach((obj) => {
         obj.evented = !obj.evented
         obj.hasControls = obj.evented
@@ -170,40 +169,41 @@ export class Layer extends Disposable {
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 重命名
-    this.keybinding.bind('mod+r', (e) => {
+    this.keybinding.bind('mod+r', () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       eventbus.emit('layerRename', {
         id: activeObject.id,
       })
+      return false
     })
 
     // 水平翻转
-    this.keybinding.bind('shift+h', (e) => {
+    this.keybinding.bind('shift+h', () => {
       const activeObjects = canvas.getActiveObjects()
       if (activeObjects.length === 0) return
-      e.preventDefault?.()
       activeObjects.forEach((obj) => {
         obj.flipX = !obj.flipX
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     // 垂直翻转
-    this.keybinding.bind('shift+v', (e) => {
+    this.keybinding.bind('shift+v', () => {
       const activeObjects = canvas.getActiveObjects()
       if (activeObjects.length === 0) return
-      e.preventDefault?.()
       activeObjects.forEach((obj) => {
         obj.flipY = !obj.flipY
       })
       canvas.requestRenderAll()
       this.undoRedo.saveState()
+      return false
     })
 
     this.bindAlign()
@@ -215,7 +215,6 @@ export class Layer extends Disposable {
     const move = (e: KeyboardEvent) => {
       const activeObject = this.canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       const amount = e.shiftKey ? 10 : 1
       const { top, left } = activeObject
       switch (e.key) {
@@ -233,11 +232,11 @@ export class Layer extends Disposable {
           break
       }
       this.canvas.requestRenderAll()
+      return false
     }
     const resize = (e: KeyboardEvent) => {
       const activeObject = this.canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       const amount = e.shiftKey ? 10 : 1
       switch (e.key) {
         case 'ArrowUp':
@@ -254,6 +253,7 @@ export class Layer extends Disposable {
           break
       }
       this.canvas.requestRenderAll()
+      return false
     }
     this.keybinding.bind({
       up: move,
@@ -276,20 +276,20 @@ export class Layer extends Disposable {
   }
 
   private bindAlign() {
-    const align = (e: KeyboardEvent, method: AlignMethod) => {
+    const align = (method: AlignMethod) => {
       const activeObject = this.canvas.getActiveObject()
       if (!activeObject) return
-      e.preventDefault?.()
       activeObject[method]()
       this.undoRedo.saveState()
+      return false
     }
     this.keybinding.bind({
-      'alt+a': (e) => align(e, 'alignLeft'),
-      'alt+d': (e) => align(e, 'alignRight'),
-      'alt+h': (e) => align(e, 'alignCenter'),
-      'alt+w': (e) => align(e, 'verticalTop'),
-      'alt+s': (e) => align(e, 'verticalBottom'),
-      'alt+v': (e) => align(e, 'verticalMiddle'),
+      'alt+a': align.bind(this, 'alignLeft'),
+      'alt+d': align.bind(this, 'alignRight'),
+      'alt+h': align.bind(this, 'alignCenter'),
+      'alt+w': align.bind(this, 'verticalTop'),
+      'alt+s': align.bind(this, 'verticalBottom'),
+      'alt+v': align.bind(this, 'verticalMiddle'),
     })
   }
 

@@ -4,10 +4,14 @@ import {
   Board,
   Canvas,
   CanvasEvents,
+  ActiveSelection,
   FabricObject,
   Group,
   Point,
   util,
+  TEvent,
+  TPointerEvent,
+  Transform,
 } from '@fabric'
 import { Disposable } from '@/utils/lifecycle'
 
@@ -37,6 +41,8 @@ const Keys = <T extends object>(obj: T): (keyof T)[] => {
 }
 
 export class GuideLines extends Disposable {
+  private canvasEvents
+
   private aligningLineMargin = 10
   private aligningLineWidth = 1
   private aligningLineColor = '#F68066'
@@ -50,16 +56,22 @@ export class GuideLines extends Disposable {
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     super()
-    // todo: 添加缓存，缓存元素坐标
-    canvas.on('before:render', this.clearGuideline.bind(this))
-    canvas.on('after:render', this.drawGuideLines.bind(this))
-    canvas.on('object:moving', this.objectMoving.bind(this))
-    canvas.on('mouse:up', () => {
+
+    const mouseUp = () => {
       if (this.horizontalLines.length || this.verticalLines.length) {
         this.clearGuideline()
         this.clearLinesMeta()
       }
-    })
+    }
+
+    this.canvasEvents = {
+      'before:render': this.clearGuideline.bind(this),
+      'after:render': this.drawGuideLines.bind(this),
+      'object:moving': this.objectMoving.bind(this),
+      'mouse:up': mouseUp,
+    }
+
+    canvas.on(this.canvasEvents as any)
   }
 
   private objectMoving({ target }: CanvasEvents['object:moving']) {
@@ -73,7 +85,7 @@ export class GuideLines extends Disposable {
     const activeObjects = this.canvas.getActiveObjects()
 
     const canvasObjects: FabricObject[] = []
-    const add = (group: Group | Canvas | Board | StaticCanvas) => {
+    const add = (group: Group | Canvas | Board | StaticCanvas | ActiveSelection) => {
       const objects = group.getObjects().filter((obj) => {
         if (this.ignoreObjTypes.length) {
           return !this.ignoreObjTypes.some((item) => obj.get(item.key) === item.value)
@@ -98,9 +110,9 @@ export class GuideLines extends Disposable {
     }
 
     if (util.isActiveSelection(target)) {
-      const needAddGroup = new Set<Canvas | Group | Board | StaticCanvas>()
+      const needAddGroup = new Set<Group | Canvas | Board | StaticCanvas | ActiveSelection>()
       target.forEachObject((obj) => {
-        const parent = obj.getParent()
+        const parent = obj.getParent() as Group
         needAddGroup.add(parent)
         if (util.isBoard(parent)) {
           needAddGroup.add(parent)
@@ -110,7 +122,7 @@ export class GuideLines extends Disposable {
         add(group)
       })
     } else {
-      const parent = target.getParent()
+      const parent = target.getParent() as Group
       if (util.isBoard(parent)) {
         canvasObjects.push(parent)
       }
@@ -398,5 +410,10 @@ export class GuideLines extends Disposable {
     if (!this.dirty) return
     this.dirty = false
     this.canvas.clearContext(this.canvas.getTopContext())
+  }
+
+  public dispose(): void {
+    super.dispose()
+    this.canvas.off(this.canvasEvents)
   }
 }

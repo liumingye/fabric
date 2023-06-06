@@ -4,11 +4,14 @@ import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybind
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { createDecorator } from '@/core/instantiation/instantiation'
+import { Disposable } from '@/utils/lifecycle'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('editorUndoRedoService')
 
-export class UndoRedoService {
+export class UndoRedoService extends Disposable {
   declare readonly _serviceBrand: undefined
+
+  private canvasEvents
 
   private pageId: string
 
@@ -26,10 +29,16 @@ export class UndoRedoService {
     @IEventbusService private readonly eventbus: EventbusService,
     @IWorkspacesService private readonly workspacesService: WorkspacesService,
   ) {
+    super()
+
     keybinding.bind('mod+z', this.undo.bind(this))
     keybinding.bind(['mod+y', 'mod+shift+z'], this.redo.bind(this))
 
-    canvas.on('object:modified', this.saveState.bind(this))
+    this.canvasEvents = {
+      'object:modified': this.saveState.bind(this),
+    }
+
+    canvas.on(this.canvasEvents)
 
     this.pageId = this.workspacesService.getCurrentId()
 
@@ -133,5 +142,11 @@ export class UndoRedoService {
     this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
       this.pageId = newId
     })
+  }
+
+  public dispose(): void {
+    super.dispose()
+    this.keybinding.unbind(['mod+z', 'mod+y', 'mod+shift+z'])
+    this.canvas.off(this.canvasEvents)
   }
 }

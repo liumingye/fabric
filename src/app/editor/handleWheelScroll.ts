@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { Point, TMat2D, TPointerEvent, TPointerEventInfo } from '@fabric'
+import { CanvasEvents, Point, TMat2D, TPointerEvent, TPointerEventInfo } from '@fabric'
 import { useIntervalFn, useMagicKeys } from '@vueuse/core'
-import { Disposable } from '@/utils/lifecycle'
+import { Disposable, toDisposable } from '@/utils/lifecycle'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
@@ -26,7 +26,7 @@ export class HandleWheelScroll extends Disposable {
   private initWhellScroll() {
     const { ctrl, cmd, shift } = useMagicKeys()
 
-    this.canvas.on('mouse:wheel', (e) => {
+    const mouseWheel = (e: CanvasEvents['mouse:wheel']) => {
       e.e.preventDefault()
       e.e.stopPropagation()
       const { deltaX, deltaY, offsetX, offsetY } = e.e
@@ -49,7 +49,14 @@ export class HandleWheelScroll extends Disposable {
         deltaPoint.y = deltaY > 0 ? -20 : 20
       }
       this.canvas.relativePan(deltaPoint)
-    })
+    }
+
+    this.canvas.on('mouse:wheel', mouseWheel)
+    this._register(
+      toDisposable(() => {
+        this.canvas.off('mouse:wheel', mouseWheel)
+      }),
+    )
   }
 
   /**

@@ -124,11 +124,11 @@ export class FabricTool extends Disposable {
               scaleY: 0.01,
             })
             // 不发送ObjectAdded事件
-            tempObject.set('noEventObjectAdded', true)
+            tempObject.noEventObjectAdded = true
             // 添加对象到画板
             canvas.add(tempObject)
             // 取消不发送
-            tempObject.set('noEventObjectAdded', false)
+            tempObject.noEventObjectAdded = false
             // 设置激活对象
             canvas.setActiveObject(tempObject)
             tempObject.__corner = 'br'

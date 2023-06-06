@@ -966,6 +966,7 @@
         internalSetSelectedKeys: setSelectedKeys,
         internalExpandNodes: expandNodes,
         internalSetExpandedKeys: setExpandedKeys,
+        updateTreeView: () => triggerRef(flattenTreeData),
       }
     },
 

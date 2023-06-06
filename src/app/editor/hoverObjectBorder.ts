@@ -8,13 +8,20 @@ import { addDisposableListener } from '@/utils/dom'
  * 对象获得焦点后在外围显示一个边框
  */
 export class HoverObjectBorder extends Disposable {
+  private canvasEvents
+
   private lineWidth = 2
   private hoveredTarget: FabricObject | undefined
 
   constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
     super()
-    canvas.on('mouse:out', this.drawBorder.bind(this))
-    canvas.on('mouse:over', this.clearBorder.bind(this))
+
+    this.canvasEvents = {
+      'mouse:out': this.drawBorder.bind(this),
+      'mouse:over': this.clearBorder.bind(this),
+    }
+
+    canvas.on(this.canvasEvents)
 
     this._register(
       addDisposableListener(this.canvas.upperCanvasEl, 'mouseout', () => {
@@ -125,5 +132,10 @@ export class HoverObjectBorder extends Disposable {
 
     ctx.restore()
     this.canvas.contextTopDirty = true
+  }
+
+  public dispose(): void {
+    super.dispose()
+    this.canvas.off(this.canvasEvents)
   }
 }

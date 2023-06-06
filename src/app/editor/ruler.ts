@@ -1,8 +1,8 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Disposable } from '@/utils/lifecycle'
-import { useFabricEvent } from '@/hooks/useFabricEvent'
 import { useThemes } from '@/hooks/useThemes'
 import { PiBy180 } from '@/utils/constants'
+import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import type { TAxis } from '@fabric'
 
 type Rect = { left: number; top: number; width: number; height: number }
@@ -55,6 +55,8 @@ export type HighlightRect = {
 } & Rect
 
 export class Ruler extends Disposable {
+  private canvasEvents
+
   /**
    * 配置
    */
@@ -70,14 +72,17 @@ export class Ruler extends Disposable {
         y: HighlightRect[]
       }
 
-  constructor(@IFabricCanvas private readonly canvas: FabricCanvas) {
+  constructor(
+    @IFabricCanvas private readonly canvas: FabricCanvas,
+    @IKeybindingService readonly keybinding: KeybindingService,
+  ) {
     super()
 
     // 合并默认配置
     this.options = Object.assign({
       ruleSize: 24,
       fontSize: 10,
-      enabled: false,
+      enabled: true,
     })
 
     const { isDark } = useThemes()
@@ -102,9 +107,30 @@ export class Ruler extends Disposable {
       this.render()
     })
 
-    useFabricEvent({
+    this.canvasEvents = {
       'after:render': this.render.bind(this),
+    }
+
+    this.keybinding.bind('shift+r', () => {
+      this.enabled = !this.enabled
     })
+
+    this.enabled = this.options.enabled
+  }
+
+  public get enabled() {
+    return this.options.enabled
+  }
+
+  public set enabled(value) {
+    this.options.enabled = value
+    if (value) {
+      this.canvas.on(this.canvasEvents)
+      this.render()
+    } else {
+      this.canvas.off(this.canvasEvents)
+      this.canvas.requestRenderAll()
+    }
   }
 
   /**
@@ -408,5 +434,10 @@ export class Ruler extends Disposable {
     // 加入数组
     mergedLines.push(currentLine)
     return mergedLines
+  }
+
+  public dispose(): void {
+    super.dispose()
+    this.enabled = false
   }
 }
