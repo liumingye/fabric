@@ -142,7 +142,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       changeValue(value, 'change')
       // 保存历史
       if (!isDefined(canvas.activeObject)) return
-      useEditor().undoRedo.saveState()
+      canvas.fire('object:modified', { target: canvas.activeObject.value })
     },
     onChange: (value: T) => proxy.value.set(value),
   }))

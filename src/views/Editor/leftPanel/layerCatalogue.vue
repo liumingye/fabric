@@ -7,7 +7,7 @@
     TreeInstance,
     DropEvent,
   } from '@/components/tree'
-  import { Board, Ellipse, Group, ObjectRef, util } from '@fabric'
+  import { Board, CanvasEvents, Group, ObjectRef, util } from '@fabric'
   import { FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, isDefined, Fn } from '@vueuse/core'
@@ -17,7 +17,6 @@
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import Workspaces from './workspaces.vue'
   import { LinkedList } from '@/utils/linkedList'
-  import { clone, debounce } from 'lodash'
   import IFolder from '@/assets/images/folder.svg?raw'
   import IBoard from '@/assets/images/board.svg?raw'
   import IText from '@/assets/images/text.svg?raw'
@@ -42,6 +41,8 @@
 
   const treeRef = ref<TreeInstance>()
 
+  const svgCacheMap = new Map<string, string>()
+
   const getSvg = (object: FabricObject) => {
     if (object.isType('Textbox', 'IText', 'Text')) {
       return IText
@@ -50,6 +51,7 @@
     } else if (object.isType('Board', 'Textbox')) {
       return IBoard
     }
+    if (svgCacheMap.has(object.id)) return svgCacheMap.get(object.id)
     const { x, y } = object._getTransformedDimensions()
     const xValues = Object.values(object.aCoords).map((point) => point.x)
     const yValues = Object.values(object.aCoords).map((point) => point.y)
@@ -69,8 +71,9 @@
     const shape = object._createBaseSVGMarkup(object._toSVG(), {
       noStyle: true,
     })
-    const viewBox = `${left - 2} ${top - 2} ${size + 4} ${size + 4}`
-    const svg = `<svg style="width:16px;height:16px" viewBox="${viewBox}" fill="transparent" stroke="#fff">${shape}</svg>`
+    const viewBox = `${left - 4} ${top - 4} ${size + 8} ${size + 8}`
+    const svg = `<svg style="width:12px;height:12px" viewBox="${viewBox}" fill="transparent" stroke="var(--color-text-2)">${shape}</svg>`
+    svgCacheMap.set(object.id, svg)
     return svg
   }
 
@@ -115,11 +118,6 @@
   const treeData: Ref<ITreeNodeData[]> = ref([])
 
   watch(searchKey, updateTreeData, { immediate: true })
-
-  useFabricEvent({
-    'object:added': updateTreeData,
-    'object:removed': updateTreeData,
-  })
 
   /**
    * 节点搜索
@@ -370,6 +368,16 @@
     'selection:created': updateSelectedkeys,
     'selection:updated': updateSelectedkeys,
     'selection:cleared': updateSelectedkeys,
+    'object:added': updateTreeData,
+    'object:removed': updateTreeData,
+    'object:modified': (e: CanvasEvents['object:modified']) => {
+      if (!svgCacheMap.has(e.target.id)) return
+      svgCacheMap.delete(e.target.id)
+      if (svgCacheMap.size > 100) {
+        svgCacheMap.clear()
+      }
+      updateTreeData()
+    },
   })
 
   const splitRef = ref<SplitInstance>()
@@ -492,7 +500,7 @@
       >
         <template #title="nodeData">
           <div class="flex items-center">
-            <div v-html="nodeData.getSvg()" class="w16px h16px mr1"></div>
+            <div v-html="nodeData.getSvg()" class="w12px h12px mr2"></div>
             <a-input
               v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
               class="bg-transparent! border-none! px0!"
