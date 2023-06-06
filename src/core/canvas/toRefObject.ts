@@ -9,6 +9,7 @@ const toRefObject = (object: Textbox | FabricObject) => {
   const keyArr: (keyof ObjectRef)[] = [
     'id',
     'name',
+    'hideOnLayer',
     'originX',
     'originY',
     'top',

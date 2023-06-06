@@ -25,7 +25,7 @@
     isCollection: boolean
     visible: boolean
     objectRef: ObjectRef
-    setDirty?: Fn
+    setDirty: Fn
     children?: ITreeNodeData[]
     getSvg: Fn
   }
@@ -93,13 +93,14 @@
       const children = isCollection
         ? getTreeData(object._objects, searchKey, parentVisible && object.visible)
         : []
+      if (object.hideOnLayer) continue
       const nodeData: ITreeNodeData = {
         visible: parentVisible && object.visible,
         objectRef: object.ref,
         isCollection,
         title: object.name || object.constructor.name,
         key: object.id,
-        setDirty: object.group?.setDirty,
+        setDirty: () => object.group?.setDirty(),
         children,
         draggable: renameNodeKey.value !== object.id,
         getSvg: getSvg.bind(this, object),
@@ -284,7 +285,7 @@
   const visibleClick = (e: Event, node: ITreeNodeData) => {
     e.stopPropagation()
     node.objectRef.visible = !node.objectRef.visible
-    node.setDirty?.()
+    node.setDirty()
     canvas.requestRenderAll()
   }
 
@@ -496,7 +497,7 @@
       >
         <template #title="nodeData">
           <div class="flex items-center">
-            <div v-html="nodeData.getSvg()" class="w12px h12px mr2"></div>
+            <div v-html="nodeData.getSvg()" class="mr2"></div>
             <a-input
               v-if="isDefined(nodeData.key) && renameNodeKey === nodeData.key"
               class="bg-transparent! border-none! px0!"

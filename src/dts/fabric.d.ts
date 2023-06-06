@@ -7,6 +7,7 @@ export declare module 'fabric' {
     FabricObject,
     | 'id'
     | 'name'
+    | 'hideOnLayer'
     | 'originX'
     | 'originY'
     | 'top'
@@ -163,6 +164,8 @@ export declare module 'fabric' {
     _type: string
     type: string
     isType<T = boolean>(...types: string[]): this is T
+    /** 在图层上隐藏 */
+    hideOnLayer: boolean
   }
 
   export declare class StaticCanvas {

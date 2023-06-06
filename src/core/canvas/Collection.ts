@@ -27,7 +27,7 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
     }
 
     override _onObjectAdded(obj: FabricObject) {
-      if (obj.get('noEventObjectAdded')) {
+      if (obj.noEventObjectAdded) {
         obj._set('canvas', this)
       } else {
         super._onObjectAdded(obj)

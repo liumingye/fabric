@@ -122,6 +122,7 @@ export class FabricTool extends Disposable {
               height: 100,
               scaleX: 0.01,
               scaleY: 0.01,
+              hideOnLayer: true,
             })
             // 不发送ObjectAdded事件
             tempObject.noEventObjectAdded = true
@@ -151,6 +152,7 @@ export class FabricTool extends Disposable {
               height: tempObject.getScaledHeight(),
               scaleX: 1,
               scaleY: 1,
+              hideOnLayer: false,
             })
             // 特殊形状处理
             if (tempObject instanceof Ellipse) {
