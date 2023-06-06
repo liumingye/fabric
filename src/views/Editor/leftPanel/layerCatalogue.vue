@@ -23,7 +23,7 @@
     isCollection: boolean
     visible: boolean
     objectRef: ObjectRef
-    setDirty: Fn
+    setDirty?: Fn
     children?: ITreeNodeData[]
     getSvg: Fn
   }
@@ -38,6 +38,36 @@
   const expandedKeys = ref<TreeNodeKey[]>([])
 
   const treeRef = ref<TreeInstance>()
+
+  const getSvg = (object: FabricObject) => {
+    // todo: 以后换成图标
+    if (object.isType('Group', 'Board', 'Textbox')) {
+      return object.type[0]
+    }
+    const { x, y } = object._getTransformedDimensions()
+    const _object = clone(object)
+    // setDimensions
+    _object.set({
+      getSvgTransform: () => {
+        const scale = Math.min(16 / (x + 32), 16 / (y + 32))
+        return `transform="scale(${scale} ${scale})" transform-origin="center"`
+      },
+      width: x,
+      height: y,
+      ...(object instanceof Ellipse && {
+        rx: x / 2,
+        ry: y / 2,
+      }),
+    })
+    // @ts-ignore
+    const shape = _object._createBaseSVGMarkup(_object._toSVG(), {
+      noStyle: true,
+    })
+    const svg = `<svg style="width:16px;height:16px" viewBox='0 0 16 16' fill="transparent" stroke="#fff" stroke-width="1">
+            ${shape}
+          </svg>`
+    return svg
+  }
 
   /**
    * 获得树节点数据
@@ -60,36 +90,10 @@
         isCollection,
         title: object.name || object.constructor.name,
         key: object.id,
-        setDirty: () => object.group?.setDirty(),
+        setDirty: object.group?.setDirty,
         children,
         draggable: renameNodeKey.value !== object.id,
-        getSvg: () => {
-          // todo: 以后换成图标
-          if (object.isType('Group', 'Board', 'Textbox')) return
-          const { x, y } = object._getTransformedDimensions()
-          const _object = clone(object)
-          // setDimensions
-          _object.set({
-            getSvgTransform: () => {
-              const scale = Math.min(16 / (x + 32), 16 / (y + 32))
-              return `transform="scale(${scale} ${scale})" transform-origin="center"`
-            },
-            width: x,
-            height: y,
-            ...(object instanceof Ellipse && {
-              rx: x / 2,
-              ry: y / 2,
-            }),
-          })
-          // @ts-ignore
-          const shape = _object._createBaseSVGMarkup(_object._toSVG(), {
-            noStyle: true,
-          })
-          const svg = `<svg style="width:16px;height:16px" viewBox='0 0 16 16' fill="transparent" stroke="#fff" stroke-width="1">
-            ${shape}
-          </svg>`
-          return svg
-        },
+        getSvg: getSvg.bind(this, object),
       }
       if (!searchKey || canAddToResult(nodeData, searchKey)) {
         objs.unshift(nodeData)
@@ -271,7 +275,7 @@
   const visibleClick = (e: Event, node: ITreeNodeData) => {
     e.stopPropagation()
     node.objectRef.visible = !node.objectRef.visible
-    node.setDirty()
+    node.setDirty?.()
     canvas.requestRenderAll()
   }
 

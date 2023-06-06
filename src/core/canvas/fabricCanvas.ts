@@ -107,6 +107,14 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.ref.zoom.value = toFixed(this.getZoom(), 2)
   }
 
+  override setActiveObject(object: FabricObject, e?: TPointerEvent) {
+    const group = object.group
+    if (group && group instanceof Group) {
+      group.onActiveTarget(object)
+    }
+    return super.setActiveObject(object, e)
+  }
+
   public setActiveObjects(objects: FabricObject[]) {
     if (objects.length === 0) {
       this.discardActiveObject()

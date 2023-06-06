@@ -160,7 +160,8 @@ export declare module 'fabric' {
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
     getObjects(): FabricObject[]
-    doubleClickHandler(e: TPointerEventInfo<TPointerEvent>): void
+    onActiveTarget(target: FabricObject): void
+    addDeselectedEvent(object: FabricObject): void
   }
 
   export declare class StaticCanvas {

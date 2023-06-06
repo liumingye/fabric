@@ -1,7 +1,6 @@
-import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, Rect } from '@fabric'
+import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent } from '@fabric'
 import type { GroupProps } from 'fabric/src/shapes/Group'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
-import { clone } from 'lodash'
 
 export class Group extends CommonGroup {
   public subTargetCheck = true
@@ -18,8 +17,45 @@ export class Group extends CommonGroup {
     this.on('mousedblclick', this.doubleClickHandler.bind(this))
   }
 
-  // 双击后启用interactive，离开组后关闭
-  public doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
+  /**
+   * 绑定target的deselected事件，在target被取消激活后，关闭组的interactive
+   */
+  public addDeselectedEvent(target: FabricObject) {
+    target.once('deselected', () => {
+      const activeObject = this.canvas?.getActiveObject()
+      if (!activeObject || !activeObject.getAncestors(true).includes(this)) {
+        // 关闭
+        this.set({
+          interactive: false,
+          objectCaching: true,
+        })
+      } else {
+        // 事件传递
+        this.addDeselectedEvent(activeObject)
+      }
+    })
+  }
+
+  /**
+   * 组内元素被激活
+   */
+  public onActiveTarget(target: FabricObject) {
+    if (!this.canvas || !target.group || target.group.interactive) return
+    target.getAncestors(true).forEach((_group) => {
+      const group = _group as Group
+      if (group.interactive) return
+      group.set({
+        interactive: true,
+        objectCaching: false,
+      })
+      group.addDeselectedEvent(target)
+    })
+  }
+
+  /**
+   * 双击后启用interactive，离开组后关闭
+   */
+  private doubleClickHandler(e: TPointerEventInfo<TPointerEvent>) {
     if (
       !this.canvas ||
       !e.target ||
@@ -31,31 +67,17 @@ export class Group extends CommonGroup {
       return
     }
 
-    const addDeselectedEvent = (target: FabricObject) => {
-      target.once('deselected', () => {
-        const activeObject = this.canvas?.getActiveObject()
-        if (!activeObject || !activeObject.getAncestors(true).includes(this)) {
-          // 关闭
-          this.set({
-            interactive: false,
-            objectCaching: true,
-          })
-        } else {
-          // 事件传递
-          addDeselectedEvent(activeObject)
-        }
-      })
-    }
-
     // 启用
     this.set({
       interactive: true,
       objectCaching: false,
     })
 
-    addDeselectedEvent(e.target)
+    // 绑定事件
+    this.addDeselectedEvent(this)
 
-    const index = e.subTargets.indexOf(e.target)
+    // 搜索被双击的目标并激活
+    const index = e.subTargets.indexOf(this)
     const prevTarget = e.subTargets[index - 1] ?? e.subTargets[e.subTargets.length - 1]
     this.canvas.setActiveObject(prevTarget)
 
@@ -69,22 +91,6 @@ export class Group extends CommonGroup {
       const parent = this.getParent()
       parent && parent.remove(this)
     }
-  }
-
-  override render(ctx: CanvasRenderingContext2D) {
-    this._transformDone = true
-    super.render(ctx)
-
-    if (this.stroke && this.strokeWidth !== 0) {
-      ctx.save()
-      this.transform(ctx)
-      const obj = clone(this)
-      obj.fill = ''
-      Rect.prototype._render.call(obj, ctx)
-      ctx.restore()
-    }
-
-    this._transformDone = false
   }
 }
 
