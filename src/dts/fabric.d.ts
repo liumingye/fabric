@@ -133,6 +133,7 @@ export declare module 'fabric' {
     ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
     /** 不发送 object:added 事件 */
     noEventObjectAdded: boolean
+    getWidthHeight(): Point
     getHeight(): number
     getWidth(): number
     getLeftTop(): Point

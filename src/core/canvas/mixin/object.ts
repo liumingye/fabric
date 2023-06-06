@@ -39,32 +39,44 @@ Object.assign(FabricObject.ownDefaults, {
 } as FabricObject)
 
 const mixin = {
-  getHeight() {
-    let height = this.getScaledHeight()
+  getWidthHeight() {
+    const point = this._getTransformedDimensions()
     if (this.group) {
-      height = NP.times(height, this.group.scaleY)
+      point.setX(NP.times(point.x, this.group.scaleX))
+      point.setY(NP.times(point.y, this.group.scaleY))
     }
-    return toFixed(height)
+    point.setX(toFixed(point.x))
+    point.setY(toFixed(point.y))
+    return point
+  },
+  getHeight() {
+    return this.getWidthHeight().y
   },
   getWidth() {
-    let width = this.getScaledWidth()
-    if (this.group) {
-      width = NP.times(width, this.group.scaleX)
-    }
-    return toFixed(width)
+    return this.getWidthHeight().x
   },
   setHeight(value: number) {
     if (this.group) {
       value = NP.divide(value, this.group.scaleY)
     }
-    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), this.height))
+    const height = this._getTransformedDimensions({
+      scaleX: 1,
+      scaleY: 1,
+      strokeWidth: 0,
+    }).y
+    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), height))
     this.fire('scaling')
   },
   setWidth(value: number) {
     if (this.group) {
       value = NP.divide(value, this.group.scaleX)
     }
-    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), this.width))
+    const width = this._getTransformedDimensions({
+      scaleX: 1,
+      scaleY: 1,
+      strokeWidth: 0,
+    }).x
+    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), width))
     this.fire('scaling')
   },
   setAngle(value: number) {

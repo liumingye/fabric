@@ -9,7 +9,6 @@ import {
   Transform,
   TDegree,
 } from '@fabric'
-import { toFixed } from '@/utils/math'
 import { PiBy180 } from '@/utils/constants'
 
 const positionHandler: Control['positionHandler'] = (
@@ -27,10 +26,10 @@ const positionHandler: Control['positionHandler'] = (
 const positionHandlerH: Control['positionHandler'] = (
   dim,
   finalMatrix,
-  fabricObject,
+  fabricObject: FabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getBoundingRect(false, true).height
+  const size = fabricObject.getHeight()
   currentControl.sizeX = fabricObject.cornerSize
   currentControl.sizeY = size
   currentControl.touchSizeX = fabricObject.touchCornerSize
@@ -41,10 +40,10 @@ const positionHandlerH: Control['positionHandler'] = (
 const positionHandlerV: Control['positionHandler'] = (
   dim,
   finalMatrix,
-  fabricObject,
+  fabricObject: FabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getBoundingRect(false, true).width
+  const size = fabricObject.getWidth()
   currentControl.sizeX = size
   currentControl.sizeY = fabricObject.cornerSize
   currentControl.touchSizeX = size + 8
@@ -105,39 +104,39 @@ export const createObjectDefaultControls = (): TControlSet => ({
     sizeY: 0,
     touchSizeX: 0,
     touchSizeY: 0,
-    render: (ctx, left, top, styleOverride, fabricObject) => {
+    render: (ctx, left, top, styleOverride, fabricObject: FabricObject) => {
       // todo: 支持组内反转的对象
       ctx.save()
       ctx.translate(left, top)
 
-      const objectAngle = fabricObject.group ? fabricObject.getTotalAngle() : fabricObject.angle
-      const angleInRadians = objectAngle * PiBy180
-      const x = Math.sin(angleInRadians)
-      const y = Math.cos(angleInRadians)
-
-      const absX = Math.abs(x)
-      const absY = Math.abs(y)
-
-      if (absX > absY) {
-        ctx.rotate((objectAngle - Math.sign(x) * 90) * PiBy180)
-      } else {
-        ctx.rotate((objectAngle - Math.sign(y) * 90 + 90) * PiBy180)
+      const calcRotate = () => {
+        const objectAngle = fabricObject.group ? fabricObject.getTotalAngle() : fabricObject.angle
+        const angleInRadians = objectAngle * PiBy180
+        const x = Math.sin(angleInRadians)
+        const y = Math.cos(angleInRadians)
+        const angle = Math.abs(x) > Math.abs(y) ? Math.sign(x) * 90 : Math.sign(y) * 90 - 90
+        return (objectAngle - angle) * PiBy180
       }
+
+      ctx.rotate(calcRotate())
 
       const fontSize = 12
       ctx.font = `${fontSize}px Tahoma`
-      const { width, height } = fabricObject.getBoundingRect(true, true)
-      const text = `${toFixed(width)} × ${toFixed(height)}`
-      const width2 = ctx.measureText(text).width + 8
-      const height2 = fontSize + 6
-      // 背景
-      ctx.roundRect(-width2 / 2, -height2 / 2, width2, height2, 4)
-      ctx.fillStyle = '#0066ff'
-      ctx.fill()
-      // 文字
-      ctx.fillStyle = '#fff'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
+
+      const { x, y } = fabricObject.getWidthHeight()
+      const text = `${x} × ${y}`
+      const width = ctx.measureText(text).width + 8
+      const height = fontSize + 6
+
+      // 背景
+      ctx.roundRect(-width / 2, -height / 2, width, height, 4)
+      ctx.fillStyle = '#0066ff'
+      ctx.fill()
+
+      // 文字
+      ctx.fillStyle = '#fff'
       ctx.fillText(text, 0, 1)
       ctx.restore()
     },
@@ -149,10 +148,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
       const x = Math.sin(angleInRadians)
       const y = Math.cos(angleInRadians)
 
-      const absX = Math.abs(x)
-      const absY = Math.abs(y)
-
-      if (absX >= absY) {
+      if (Math.abs(x) >= Math.abs(y)) {
         const sign = Math.sign(x)
         currentControl.x = sign / 2
         currentControl.y = 0
