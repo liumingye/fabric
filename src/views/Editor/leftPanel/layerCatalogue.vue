@@ -17,7 +17,10 @@
   import { useFabricEvent } from '@/hooks/useFabricEvent'
   import Workspaces from './workspaces.vue'
   import { LinkedList } from '@/utils/linkedList'
-  import { clone } from 'lodash'
+  import { clone, debounce } from 'lodash'
+  import IFolder from '@/assets/images/folder.svg?raw'
+  import IBoard from '@/assets/images/board.svg?raw'
+  import IText from '@/assets/images/text.svg?raw'
 
   interface ITreeNodeData extends TreeNodeData {
     isCollection: boolean
@@ -40,32 +43,34 @@
   const treeRef = ref<TreeInstance>()
 
   const getSvg = (object: FabricObject) => {
-    // todo: 以后换成图标
-    if (object.isType('Group', 'Board', 'Textbox')) {
-      return object.type[0]
+    if (object.isType('Textbox', 'IText', 'Text')) {
+      return IText
+    } else if (object.isType('Group')) {
+      return IFolder
+    } else if (object.isType('Board', 'Textbox')) {
+      return IBoard
     }
     const { x, y } = object._getTransformedDimensions()
-    const _object = clone(object)
-    // setDimensions
-    _object.set({
-      getSvgTransform: () => {
-        const scale = Math.min(16 / (x + 32), 16 / (y + 32))
-        return `transform="scale(${scale} ${scale})" transform-origin="center"`
-      },
-      width: x,
-      height: y,
-      ...(object instanceof Ellipse && {
-        rx: x / 2,
-        ry: y / 2,
-      }),
-    })
+    const xValues = Object.values(object.aCoords).map((point) => point.x)
+    const yValues = Object.values(object.aCoords).map((point) => point.y)
+    let left = Math.min(...xValues)
+    let top = Math.min(...yValues)
+    const right = Math.max(...xValues)
+    const bottom = Math.max(...yValues)
+    let size
+    if (right - left > bottom - top) {
+      size = right - left
+      top = bottom - size / 2 - y / 2
+    } else {
+      size = bottom - top
+      left = right - size / 2 - x / 2
+    }
     // @ts-ignore
-    const shape = _object._createBaseSVGMarkup(_object._toSVG(), {
+    const shape = object._createBaseSVGMarkup(object._toSVG(), {
       noStyle: true,
     })
-    const svg = `<svg style="width:16px;height:16px" viewBox='0 0 16 16' fill="transparent" stroke="#fff" stroke-width="1">
-            ${shape}
-          </svg>`
+    const viewBox = `${left - 2} ${top - 2} ${size + 4} ${size + 4}`
+    const svg = `<svg style="width:16px;height:16px" viewBox="${viewBox}" fill="transparent" stroke="#fff">${shape}</svg>`
     return svg
   }
 
@@ -103,10 +108,17 @@
     return objs
   }
 
+  const updateTreeData = () => {
+    treeData.value = getTreeData(canvas.ref.objects.value, searchKey.value)
+  }
+
   const treeData: Ref<ITreeNodeData[]> = ref([])
 
-  watchEffect(() => {
-    treeData.value = getTreeData(canvas.ref.objects.value, searchKey.value)
+  watch(searchKey, updateTreeData, { immediate: true })
+
+  useFabricEvent({
+    'object:added': updateTreeData,
+    'object:removed': updateTreeData,
   })
 
   /**

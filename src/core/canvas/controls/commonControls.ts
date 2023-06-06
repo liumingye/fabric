@@ -29,11 +29,11 @@ const positionHandlerH: Control['positionHandler'] = (
   fabricObject: FabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getHeight()
+  const size = fabricObject.getBoundingRect(false, true).height
   currentControl.sizeX = fabricObject.cornerSize
   currentControl.sizeY = size
   currentControl.touchSizeX = fabricObject.touchCornerSize
-  currentControl.touchSizeY = size + 8
+  currentControl.touchSizeY = size
   return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
 }
 
@@ -43,10 +43,10 @@ const positionHandlerV: Control['positionHandler'] = (
   fabricObject: FabricObject,
   currentControl,
 ) => {
-  const size = fabricObject.getWidth()
+  const size = fabricObject.getBoundingRect(false, true).width
   currentControl.sizeX = size
   currentControl.sizeY = fabricObject.cornerSize
-  currentControl.touchSizeX = size + 8
+  currentControl.touchSizeX = size
   currentControl.touchSizeY = fabricObject.touchCornerSize
   return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
 }

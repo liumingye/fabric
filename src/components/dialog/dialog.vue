@@ -28,7 +28,7 @@
     }
   }
 
-  const { style, x, y, position } = useDraggable(el, {
+  const { style, position } = useDraggable(el, {
     initialValue: { x: props.left ?? 0, y: props.top ?? 0 },
     handle,
     onMove(position) {
@@ -58,7 +58,7 @@
     <div
       v-if="mounted"
       ref="el"
-      class="absolute flex flex-col bg-$color-bg-3 rounded-md z1000 shadow-lg"
+      class="absolute flex flex-col bg-$color-bg-4 border border-$color-border-2 rounded-md z1000 shadow-lg"
       :style="[
         {
           width: width ? `${width}px` : undefined,
@@ -68,7 +68,7 @@
       ]"
     >
       <div ref="handle" class="flex items-center p1 border-b border-$color-border-2">
-        <div class="truncate flex-1 pl2">
+        <div class="truncate flex-1 pl3">
           <slot name="title"></slot>
         </div>
         <div v-if="!hideClose">

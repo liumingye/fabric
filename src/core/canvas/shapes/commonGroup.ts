@@ -25,4 +25,9 @@ export class CommonGroup extends createCollectionMixin(GroupOrigin) {
     this._applyLayoutStrategy({ type: 'object_modified' })
     this.setDirty()
   }
+
+  override _onObjectRemoved(object: FabricObject, removeParentTransform?: boolean): void {
+    super._onObjectRemoved(object, removeParentTransform)
+    this.canvas?.fire('object:removed', { target: object })
+  }
 }
