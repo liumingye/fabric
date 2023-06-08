@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { Disposable } from '@/utils/lifecycle'
 import MenuComponent from '@/components/contextMenu'
-import { CanvasEvents, Point, TPointerEvent } from '@fabric'
+import { CanvasEvents, Point } from '@fabric'
 import { layerItems, zoomItems } from '@/utils/contextMenu'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 

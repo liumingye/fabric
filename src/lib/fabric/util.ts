@@ -1,23 +1,33 @@
 import { util as utilOrgin } from 'fabric'
-import { FabricObject, Group, ActiveSelection, Gradient, Pattern } from '@fabric'
+import { FabricObject, Group, ActiveSelection, Gradient, Pattern, Text } from '@fabric'
 import { Board } from '@/core/canvas/shapes/board'
 
-const isActiveSelection = (object: any): object is ActiveSelection => {
-  return object instanceof ActiveSelection
+const isActiveSelection = (thing: unknown): thing is ActiveSelection => {
+  return thing instanceof ActiveSelection
 }
 
-const isBoard = (object: any): object is Board => {
-  return object instanceof Board
+const isBoard = (thing: unknown): thing is Board => {
+  return thing instanceof Board
 }
 
-const isCollection = (fabricObject?: FabricObject): fabricObject is Group | ActiveSelection => {
-  return !!fabricObject && Array.isArray((fabricObject as Group)._objects)
+const isCollection = (thing?: FabricObject): thing is Group | ActiveSelection => {
+  return !!thing && Array.isArray((thing as Group)._objects)
 }
 
 // 类型工具
-const isGradient = (obj: unknown): obj is Gradient<'linear' | 'radial'> => obj instanceof Gradient
+const isGradient = (thing: unknown): thing is Gradient<'linear' | 'radial'> => {
+  return thing instanceof Gradient
+}
 
-const isPattern = (obj: unknown): obj is Pattern => obj instanceof Pattern
+const isPattern = (thing: unknown): thing is Pattern => {
+  return thing instanceof Pattern
+}
+
+const isTextObject = (thing?: FabricObject): thing is Text => {
+  // we could use instanceof but that would mean pulling in Text code for a simple check
+  // @todo discuss what to do and how to do
+  return !!thing && thing.isType('Text', 'IText', 'Textbox')
+}
 
 export const util = {
   ...utilOrgin,
@@ -26,4 +36,5 @@ export const util = {
   isGradient,
   isPattern,
   isActiveSelection,
+  isTextObject,
 }

@@ -90,6 +90,7 @@
           onClick: () => {
             keybinding.trigger('mod+2')
           },
+          disabled: !isDefined(canvas.activeObject),
           shortcut: `${keybinding.mod} 2`,
         },
       ],

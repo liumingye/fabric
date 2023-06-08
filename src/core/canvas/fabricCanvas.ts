@@ -15,9 +15,11 @@ import {
   TPointerEvent,
   Textbox,
   util,
+  ActiveSelection,
+  Board,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
-import { isObject } from 'lodash'
+import { debounce, isObject } from 'lodash'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
@@ -63,26 +65,40 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // 初始化激活选区
     this.initActiveSelection()
 
+    // 初始化画板
+    this.initBoard()
+
     // 响应式
-    const objectsProxy = <K extends keyof FabricCanvas['ref']>(targetKey: any, refKey: K) => {
+    const objectsProxy = <K extends keyof FabricCanvas['ref']>(
+      targetKey: any,
+      refKey: K,
+      setCallback?: (target: any, key: any, value: any) => void,
+    ) => {
       return new Proxy(targetKey, {
         get: (target, key, receiver) => {
           const res = Reflect.get(target, key, receiver)
           // 分组对象
           if ((isObject(res) as any) && res._objects && !res._isRef_objects) {
             res._isRef_objects = true
-            res._objects = objectsProxy(res._objects, 'objects')
+            res._objects = objectsProxy(res._objects, 'objects', setCallback)
           }
           return res
         },
         set: (target, key, value, receiver) => {
           const res = Reflect.set(target, key, value, receiver)
-          triggerRef(this.ref[refKey])
+          setCallback?.(target, key, value)
           return res
         },
       })
     }
-    this._objects = objectsProxy(this._objects, 'objects')
+    const updateObjects = debounce(() => {
+      triggerRef(this.ref.objects)
+    }, 0)
+    this._objects = objectsProxy(this._objects, 'objects', (target, key) => {
+      if (key === 'length') {
+        updateObjects()
+      }
+    })
 
     this.pageId = this.workspacesService.getCurrentId()
     this.initWorkspace()
@@ -321,6 +337,123 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       skewing: updateGroup,
       // @ts-ignore
       changed: updateGroup,
+    })
+  }
+
+  override absolutePan(point: Point, skipSetCoords?: boolean) {
+    const vpt: TMat2D = [...this.viewportTransform]
+    vpt[4] = -point.x
+    vpt[5] = -point.y
+    // 执行 setCoords 导致卡顿，添加一个跳过属性
+    if (skipSetCoords) {
+      this.viewportTransform = vpt
+      this._cacheBoards?.forEach((board) => {
+        board.setCoords()
+      })
+      this.calcViewportBoundaries()
+      this.requestRenderAll()
+      return
+    }
+    this.setViewportTransform(vpt)
+  }
+
+  /**
+   * Pans viewpoint relatively
+   * @param {Point} point (position vector) to move by
+   */
+  override relativePan(point: Point, skipSetCoords?: boolean) {
+    return this.absolutePan(
+      new Point(-point.x - this.viewportTransform[4], -point.y - this.viewportTransform[5]),
+      skipSetCoords,
+    )
+  }
+
+  private _cacheBoards: FabricObject[] | undefined
+
+  private _cacheCurrentBoard: Group | undefined
+
+  /**
+   * 初始化画板
+   */
+  private initBoard() {
+    this.on('mouse:move', ({ e, target, absolutePointer }) => {
+      if (!target || !target.isMoving || util.isBoard(target)) return
+
+      if (!this._cacheBoards) {
+        this._cacheBoards = this.getObjects('Board').filter((board) => board !== target)
+      }
+
+      this.once('mouse:up', () => {
+        this._cacheBoards = undefined
+        this._cacheCurrentBoard = undefined
+      })
+
+      if (this._cacheBoards.length === 0) {
+        return
+      }
+
+      // 获取当前鼠标坐标下Board
+      this.targets = []
+      const board = this._searchPossibleTargets(this._cacheBoards, absolutePointer) as
+        | Group
+        | undefined
+
+      // console.log(board?.name)
+      // 和缓存对象没有变化，则返回
+      if (board === this._cacheCurrentBoard) return
+
+      this._cacheCurrentBoard = board
+
+      if (util.isActiveSelection(target)) {
+        const length = target._objects.length
+        let needSetCoords = false
+        for (let index = length - 1; index >= 0; index--) {
+          const obj = target._objects[index]
+          if (obj.__owningGroup !== board) {
+            // exit ActiveSelection
+            obj.group?.remove(obj)
+            // exit Group
+            const [object] = obj.getParent().remove(obj) as FabricObject[]
+            // add Board or Canvas
+            ;(board || this).add(object)
+            object.__owningGroup = board
+            // enter ActiveSelection
+            this.getActiveSelection().add(object)
+            needSetCoords = true
+          }
+        }
+        if (needSetCoords) {
+          this.getActiveSelection().setCoords()
+        }
+        return
+      }
+
+      // todo 待优化
+      if (!board || !target.getAncestors(true).includes(board)) {
+        // 出画板
+        if (target.group) {
+          const [object] = target.group.remove(target) as FabricObject[]
+          target.group?.setDirty()
+
+          if (!board) {
+            this.add(object)
+          } else {
+            ;(board as Board).add(object)
+            ;(board as Board).setDirty()
+          }
+
+          this._setupCurrentTransform(e, object, false)
+          this.setActiveObject(object)
+        }
+        // 进画板
+        else if (board && target !== board) {
+          const [object] = target.getParent().remove(target) as FabricObject[]
+          ;(board as Board).add(object)
+          ;(board as Board).setDirty()
+          this._setupCurrentTransform(e, object, false)
+          this.setActiveObject(object)
+        }
+      }
     })
   }
 }

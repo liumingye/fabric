@@ -105,7 +105,9 @@ export declare module 'fabric' {
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void
-    getObjects(): FabricObject[]
+    getObjects(...types: string[]): FabricObject[]
+    absolutePan(point: Point, skipSetCoords?: boolean): void
+    relativePan(point: Point, skipSetCoords?: boolean): void
   }
 
   export declare class ActiveSelection {
@@ -136,6 +138,7 @@ export declare module 'fabric' {
     getObjects(): FabricObject[]
     onActiveTarget(target: FabricObject): void
     addDeselectedEvent(object: FabricObject): void
+    doubleClickHandler(e: TPointerEventInfo<TPointerEvent>): void
   }
 
   export declare class Object {

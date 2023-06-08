@@ -32,39 +32,69 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     lockChange = true
 
     let value
-    if (['width', 'height'].includes(key)) {
-      // 宽高
-      value = activeObject[key === 'width' ? 'getWidth' : 'getHeight']()
-    } else if (['left', 'top'].includes(key) && activeObject.getParent(true)) {
-      // 左上
-      value = activeObject.getLeftTop()[key === 'left' ? 'x' : 'y']
-    } else if (key === 'opacity') {
-      // 透明度
-      value = NP.times(activeObject.opacity, 100)
-    } else if (key === 'angle') {
-      // 旋转
-      value = clampAngle(activeObject.angle)
-    } else if (key === 'fontSize' && activeObject.isType('Text', 'Textbox')) {
-      // 字体大小
-      let lastStyle = activeObject.getStyleAtPosition(0)[key]
-      let allSameStyle = true
-      for (let i = 1; i < activeObject.text.length; i++) {
-        const thisStyle = activeObject.getStyleAtPosition(i)[key]
-        if (!isEqual(thisStyle, lastStyle)) {
-          allSameStyle = false
-          break
+    switch (key) {
+      case 'width':
+        value = activeObject.getWidth()
+        break
+
+      case 'height':
+        value = activeObject.getHeight()
+        break
+
+      case 'opacity':
+        // 透明度
+        value = NP.times(activeObject.opacity, 100)
+        break
+
+      case 'angle':
+        // 旋转
+        value = clampAngle(activeObject.angle)
+        break
+
+      case 'left':
+        if (activeObject.getParent(true)) {
+          value = activeObject.getLeftTop().x
+        } else {
+          value = activeObject.left
         }
-        lastStyle = thisStyle
-      }
-      if (!allSameStyle) {
-        value = '多个值'
-      } else {
+        break
+
+      case 'top':
+        if (activeObject.getParent(true)) {
+          value = activeObject.getLeftTop().y
+        } else {
+          value = activeObject.top
+        }
+        break
+
+      case 'fontSize':
+        if (util.isTextObject(activeObject)) {
+          // 字体大小
+          let lastStyle = activeObject.getStyleAtPosition(0).fontSize
+          let allSameStyle = true
+          for (let i = 1; i < activeObject.text.length; i++) {
+            const thisStyle = activeObject.getStyleAtPosition(i).fontSize
+            if (!isEqual(thisStyle, lastStyle)) {
+              allSameStyle = false
+              break
+            }
+            lastStyle = thisStyle
+          }
+          if (!allSameStyle) {
+            value = '多个值'
+          } else {
+            value = activeObject.fontSize
+          }
+        } else {
+          value = activeObject[key]
+        }
+        break
+
+      default:
         value = activeObject[key]
-      }
-    } else {
-      // 其它
-      value = activeObject[key]
+        break
     }
+
     modelValue.value = isNumber(value) ? toFixed(value) : value
     requestAnimationFrame(() => (lockChange = false))
   })

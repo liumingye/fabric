@@ -89,13 +89,7 @@ export class HandleWheelScroll extends Disposable {
           deltaPoint = deltaPoint.scalarDivide(1.5)
         }
 
-        // relativePan 会执行 setCoords 导致卡顿，不使用
-        const vpt: TMat2D = [...this.canvas.viewportTransform]
-        vpt[4] += deltaPoint.x
-        vpt[5] += deltaPoint.y
-        this.canvas.viewportTransform = vpt
-        this.canvas.calcViewportBoundaries()
-        this.canvas.requestRenderAll()
+        this.canvas.relativePan(deltaPoint, true)
         this.canvas._onMouseMove(event.e)
         needSetCoords = true
       },

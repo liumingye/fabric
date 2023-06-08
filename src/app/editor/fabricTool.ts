@@ -227,13 +227,11 @@ export class FabricTool extends Disposable {
         canvas.setCursor('grabbing')
 
         requestAnimationFrame(() => {
-          // absolutePan 会执行 setCoords 导致卡顿，不使用
-          const deltaVpt: TMat2D = [...vpt]
-          deltaVpt[4] += lengthX.value
-          deltaVpt[5] += lengthY.value
-          canvas.viewportTransform = deltaVpt
-          canvas.requestRenderAll()
-
+          const deltaPoint = new Point(lengthX.value, lengthY.value)
+            .scalarDivide(canvas.getZoom())
+            .transform(vpt)
+            .scalarMultiply(-1)
+          canvas.absolutePan(deltaPoint, true)
           needSetCoords = true
         })
       },
