@@ -129,7 +129,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       overlayObject.setCoords()
     }
     this.calcViewportBoundaries()
-  }, 150)
+  }, 50)
 
   override setViewportTransform(vpt: TMat2D) {
     this.viewportTransform = vpt
@@ -255,17 +255,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     }
 
     return this.searchPossibleTargets(this._objects, pointer)
-  }
-
-  private __searchPossibleTargets = throttle((objects: FabricObject[], pointer: Point) => {
-    return super._searchPossibleTargets(objects, pointer)
-  }, 15)
-
-  override _searchPossibleTargets(
-    objects: FabricObject[],
-    pointer: Point,
-  ): FabricObject | undefined {
-    return this.__searchPossibleTargets(objects, pointer)
   }
 
   override searchPossibleTargets(
