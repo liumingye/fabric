@@ -24,6 +24,9 @@ export interface Emitter<Events extends Record<EventType, unknown>> {
   on<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
   on(type: '*', handler: WildcardHandler<Events>): void
 
+  once<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
+  once(type: '*', handler: WildcardHandler<Events>): void
+
   off<Key extends keyof Events>(type: Key, handler?: Handler<Events[Key]>): void
   off(type: '*', handler: WildcardHandler<Events>): void
 
@@ -56,6 +59,16 @@ export class Mitt<Events extends Record<EventType, unknown>> implements Emitter<
     } else {
       this.all.set(type, [handler] as EventHandlerList<Events[keyof Events]>)
     }
+  }
+
+  public once<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void
+  public once(type: '*', handler: WildcardHandler<Events>): void
+  public once(type: any, handler: any) {
+    const _handler = () => {
+      this.off(type, _handler)
+      handler()
+    }
+    this.on(type, _handler)
   }
 
   /**

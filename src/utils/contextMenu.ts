@@ -1,5 +1,6 @@
 import { useEditor } from '@/app'
-import { ActiveSelection, Group } from '@fabric'
+import { keybindMap } from '@/utils/constants'
+import { ActiveSelection, Board, Group } from '@fabric'
 
 export const layerItems = () => {
   const { canvas, keybinding } = useEditor()
@@ -36,8 +37,9 @@ export const layerItems = () => {
     },
     {
       label: '创建分组',
+      hidden: canvas.getActiveObject() instanceof Board,
       onClick: () => {
-        keybinding.trigger('mod+g')
+        keybinding.trigger(keybindMap.group)
       },
       shortcut: `${mod} G`,
     },
@@ -45,7 +47,7 @@ export const layerItems = () => {
       label: '解除分组',
       hidden: !(canvas.getActiveObject() instanceof Group),
       onClick: () => {
-        keybinding.trigger('mod+shift+g')
+        keybinding.trigger(keybindMap.ungroup)
       },
       shortcut: `${mod} ⇧ G`,
     },

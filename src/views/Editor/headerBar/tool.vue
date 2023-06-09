@@ -18,6 +18,10 @@
       icon: 'bxs-hand',
     },
     {
+      name: 'vector',
+      icon: 'bx-pen',
+    },
+    {
       name: 'rect',
       icon: 'bx-square',
     },

@@ -1,6 +1,5 @@
 import { useResizeObserver } from '@vueuse/core'
 import { useEditor } from '@/app'
-import { h } from 'vue'
 
 export default defineComponent({
   setup() {
@@ -24,6 +23,6 @@ export default defineComponent({
     return { divRef }
   },
   render() {
-    return h('div', { ref: 'divRef', class: 'relative h-full w-full bg-$color-fill-1' })
+    return <div ref='divRef' class='relative h-full w-full bg-$color-fill-1'></div>
   },
 })

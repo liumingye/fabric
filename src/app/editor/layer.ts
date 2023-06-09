@@ -5,6 +5,7 @@ import type { AlignMethod } from 'app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
+import { keybindMap } from '@/utils/constants'
 
 export class Layer extends Disposable {
   constructor(
@@ -94,7 +95,7 @@ export class Layer extends Disposable {
     })
 
     // 创建分组
-    this.keybinding.bind('mod+g', () => {
+    this.keybinding.bind(keybindMap.group, () => {
       const objects = canvas.getActiveObjects()
       if (objects.length === 0) return
       // 获取要插入的分组，在deleteLayer前获取，不然获取不到
@@ -126,7 +127,7 @@ export class Layer extends Disposable {
     })
 
     // 解除分组
-    this.keybinding.bind('mod+shift+g', () => {
+    this.keybinding.bind(keybindMap.ungroup, () => {
       const activeObject = canvas.getActiveObject()
       if (!activeObject || !util.isCollection(activeObject)) return
       const parentGroup = activeObject.getParent()

@@ -14,7 +14,7 @@ export const appInstance: ICoreApp = {
 }
 
 export const useEditor = () => {
-  if (!appInstance.editor.service) {
+  if (!appInstance.editor) {
     console.warn('app is not ready')
     return undefined!
   }

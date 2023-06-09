@@ -35,7 +35,7 @@ Object.assign(FabricObject.ownDefaults, {
   snapAngle: 1,
   paintFirst: 'stroke',
   // 等待bug修复后开启
-  // perPixelTargetFind: true,
+  perPixelTargetFind: true,
 } as FabricObject)
 
 const mixin = {
@@ -223,7 +223,7 @@ FabricObject.prototype._type = 'Object'
 Group.prototype._type = 'Group'
 ActiveSelection.prototype._type = 'ActiveSelection'
 
-// const cancelPerPixel = [Text, IText, Textbox, Group]
-// cancelPerPixel.forEach((obj) => {
-//   obj.ownDefaults.perPixelTargetFind = false
-// })
+const cancelPerPixel = [Text, IText, Textbox, Group, Board]
+cancelPerPixel.forEach((obj) => {
+  obj.ownDefaults.perPixelTargetFind = false
+})

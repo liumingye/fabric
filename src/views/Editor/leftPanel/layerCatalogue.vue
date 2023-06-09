@@ -1,14 +1,12 @@
 <script setup lang="ts">
-  import Tree from '@/components/tree'
-  import type {
+  import Tree, {
     TreeNodeData,
     DropPosition,
     TreeNodeKey,
     TreeInstance,
     DropEvent,
   } from '@/components/tree'
-  import { Board, CanvasEvents, Group, ObjectRef, util } from '@fabric'
-  import { FabricObject } from '@fabric'
+  import { Board, CanvasEvents, Group, ObjectRef, util, FabricObject } from '@fabric'
   import { useEditor } from '@/app'
   import { useMagicKeys, useResizeObserver, isDefined, Fn } from '@vueuse/core'
   import type { SplitInstance } from '@arco-design/web-vue'
@@ -301,7 +299,7 @@
         obj.forEachObject(add)
       }
       if (_selectedkeys.includes(obj.id)) {
-        objects.push(obj)
+        objects.unshift(obj)
       }
     })
     if (objects.length) {

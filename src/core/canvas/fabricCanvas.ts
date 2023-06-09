@@ -4,6 +4,7 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
+import { runWhenIdle, IdleValue } from '@/utils/async'
 import { LinkedList } from '@/utils/linkedList'
 import {
   Canvas,
@@ -15,11 +16,10 @@ import {
   TPointerEvent,
   Textbox,
   util,
-  ActiveSelection,
   Board,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
-import { debounce, isObject } from 'lodash'
+import { debounce, throttle, isObject } from 'lodash'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
@@ -41,25 +41,20 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   constructor(
     @IWorkspacesService private readonly workspacesService: WorkspacesService,
     @IEventbusService private readonly eventbus: EventbusService,
-    el?: string | HTMLCanvasElement,
-    options?: Partial<Canvas>,
   ) {
     const createCanvasElement = () => document.createElement('canvas')
     super(
-      el || createCanvasElement(),
-      Object.assign(
-        {
-          hoverCursor: 'default',
-          preserveObjectStacking: true,
-          selectionBorderColor: 'rgba(60,126,255,0.8)',
-          selectionColor: 'rgba(60,126,255,0.2)',
-          uniformScaling: false,
-          stopContextMenu: true,
-          fireMiddleClick: true,
-          includeDefaultValues: false,
-        },
-        options,
-      ),
+      createCanvasElement(),
+      Object.assign({
+        hoverCursor: 'default',
+        preserveObjectStacking: true,
+        selectionBorderColor: 'rgba(60,126,255,0.8)',
+        selectionColor: 'rgba(60,126,255,0.2)',
+        uniformScaling: false,
+        stopContextMenu: true,
+        fireMiddleClick: true,
+        includeDefaultValues: false,
+      }),
     )
 
     // 初始化激活选区
@@ -118,8 +113,28 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     super.zoomToPoint(point, value)
   }
 
+  private _setCoords = throttle(() => {
+    const backgroundObject = this.backgroundImage,
+      overlayObject = this.overlayImage,
+      len = this._objects.length
+
+    for (let i = 0; i < len; i++) {
+      const object = this._objects[i]
+      object.group || object.setCoords()
+    }
+    if (backgroundObject) {
+      backgroundObject.setCoords()
+    }
+    if (overlayObject) {
+      overlayObject.setCoords()
+    }
+    this.calcViewportBoundaries()
+  }, 150)
+
   override setViewportTransform(vpt: TMat2D) {
-    super.setViewportTransform(vpt)
+    this.viewportTransform = vpt
+    this._setCoords()
+    this.renderOnAddRemove && this.requestRenderAll()
     this.ref.zoom.value = toFixed(this.getZoom(), 2)
   }
 
@@ -242,6 +257,17 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     return this.searchPossibleTargets(this._objects, pointer)
   }
 
+  private __searchPossibleTargets = throttle((objects: FabricObject[], pointer: Point) => {
+    return super._searchPossibleTargets(objects, pointer)
+  }, 15)
+
+  override _searchPossibleTargets(
+    objects: FabricObject[],
+    pointer: Point,
+  ): FabricObject | undefined {
+    return this.__searchPossibleTargets(objects, pointer)
+  }
+
   override searchPossibleTargets(
     objects: FabricObject[],
     pointer: Point,
@@ -280,7 +306,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         const json = this.pages.get(newId)
         if (json) {
           this.loadFromJSON(json).then(() => {
-            this.requestRenderAll()
+            // this.requestRenderAll()
             this.setViewportTransform(this.viewportTransform)
           })
         } else {
@@ -312,6 +338,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // 双击选中当前元素
     this._activeSelection.on('mousedblclick', (e) => {
       if (e.subTargets && e.subTargets.length > 0) {
+        console.log(e)
         this.discardActiveObject()
         this.setActiveObject(e.subTargets[e.subTargets.length - 1])
         this.requestRenderAll()
@@ -350,7 +377,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       this._cacheBoards?.forEach((board) => {
         board.setCoords()
       })
-      this.calcViewportBoundaries()
       this.requestRenderAll()
       return
     }
@@ -381,12 +407,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
       if (!this._cacheBoards) {
         this._cacheBoards = this.getObjects('Board').filter((board) => board !== target)
-      }
 
-      this.once('mouse:up', () => {
-        this._cacheBoards = undefined
-        this._cacheCurrentBoard = undefined
-      })
+        this.once('mouse:up', () => {
+          this._cacheBoards = undefined
+          this._cacheCurrentBoard = undefined
+        })
+      }
 
       if (this._cacheBoards.length === 0) {
         return
@@ -405,6 +431,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       this._cacheCurrentBoard = board
 
       if (util.isActiveSelection(target)) {
+        const hasBoard = target._objects.some((obj) => util.isBoard(obj))
+        if (hasBoard) return
+
         const length = target._objects.length
         let needSetCoords = false
         for (let index = length - 1; index >= 0; index--) {
@@ -418,12 +447,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
             ;(board || this).add(object)
             object.__owningGroup = board
             // enter ActiveSelection
-            this.getActiveSelection().add(object)
+            this._activeSelection.insertAt(index, object)
             needSetCoords = true
           }
         }
         if (needSetCoords) {
-          this.getActiveSelection().setCoords()
+          this._activeSelection.setCoords()
         }
         return
       }

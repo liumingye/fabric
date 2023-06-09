@@ -1,9 +1,9 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, TMat2D } from '@fabric'
+import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, Path } from '@fabric'
 import { useAppStore } from '@/store'
-import { useMagicKeys, useActiveElement, toValue } from '@vueuse/core'
+import { useMagicKeys, useActiveElement, toValue, Fn } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
@@ -58,18 +58,13 @@ export class FabricTool extends Disposable {
   }
 
   private initWatch() {
-    const canvas = this.canvas
     const { activeTool } = storeToRefs(useAppStore())
-
-    let swipeStop: (() => void) | undefined
-    let tempObject: FabricObject | undefined
 
     // 监听activeTool
     watch(activeTool, (newTool, oldTool) => {
-      if (swipeStop) {
-        swipeStop()
-        swipeStop = undefined
-        tempObject = undefined
+      if (this.toolStop) {
+        this.toolStop()
+        this.toolStop = undefined
       }
 
       if (oldTool === 'handMove') {
@@ -85,103 +80,152 @@ export class FabricTool extends Disposable {
 
       // 图形工具
       else if (['rect', 'ellipse', 'triangle', 'text'].includes(newTool)) {
-        let coordsStart: Point | undefined
-        const { stop, isSwiping } = useFabricSwipe({
-          onSwipeStart: (e) => {
-            if (e.button !== 1 || this.space.value) return
-            /*
-             * 只有mouseMove的时候isSwiping才会为true
-             * mouseUp会判断isSwiping的值来决定是否执行onSwipeEnd
-             * 这里强制设置成true，让点击也可执行onSwipeEnd
-             */
-            isSwiping.value = true
-            // 获得坐标
-            coordsStart = canvas.getPointer(e.e)
-            // 创建形状
-            switch (newTool as 'rect' | 'ellipse' | 'triangle' | 'text') {
-              case 'rect':
-                tempObject = new Rect({})
-                break
-              case 'ellipse':
-                tempObject = new Ellipse({
-                  rx: 50,
-                  ry: 50,
-                })
-                break
-              case 'triangle':
-                tempObject = new Triangle({})
-                break
-              case 'text':
-                tempObject = new Textbox('', {})
-                break
-            }
-            tempObject.set({
-              left: coordsStart.x,
-              top: coordsStart.y,
-              width: 100,
-              height: 100,
-              scaleX: 0.01,
-              scaleY: 0.01,
-              hideOnLayer: true,
-            })
-            // 不发送ObjectAdded事件
-            tempObject.noEventObjectAdded = true
-            // 添加对象到画板
-            canvas.add(tempObject)
-            // 取消不发送
-            tempObject.noEventObjectAdded = false
-            // 设置激活对象
-            canvas.setActiveObject(tempObject)
-            tempObject.__corner = 'br'
-            canvas._setupCurrentTransform(e.e, tempObject, true)
-          },
-          onSwipeEnd: (e) => {
-            if (!tempObject) return
-            // 如果点击画板，没有移动，设置默认宽高
-            if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
-              tempObject.set({
-                left: tempObject.left - 50,
-                top: tempObject.top - 50,
-                scaleX: 1,
-                scaleY: 1,
-              })
-            }
-            // 设置宽高缩放
-            tempObject.set({
-              width: tempObject.getScaledWidth(),
-              height: tempObject.getScaledHeight(),
-              scaleX: 1,
-              scaleY: 1,
-              hideOnLayer: false,
-            })
-            // 特殊形状处理
-            if (tempObject instanceof Ellipse) {
-              tempObject.set({
-                rx: tempObject.width / 2,
-                ry: tempObject.height / 2,
-              })
-            } else if (tempObject instanceof Textbox) {
-              tempObject.set({
-                text: '输入文本',
-              })
-              this.canvas.defaultCursor = 'default'
-              tempObject.enterEditing(e.e)
-              tempObject.selectAll()
-            }
-            // 通知事件
-            if (tempObject.group) {
-              tempObject.group._onObjectAdded(tempObject)
-            } else {
-              canvas._onObjectAdded(tempObject)
-            }
-            canvas.requestRenderAll()
-            tempObject = undefined
-            activeTool.value = 'move'
-          },
-        })
-        swipeStop = stop
+        this.switchShape(newTool as 'rect' | 'ellipse' | 'triangle' | 'text')
+      }
+
+      // 矢量|钢笔
+      else if (newTool === 'vector') {
+        this.switchVector()
       }
     })
+  }
+
+  private toolStop: Fn | undefined
+
+  private switchShape(shape: 'rect' | 'ellipse' | 'triangle' | 'text') {
+    const { canvas } = this
+    let coordsStart: Point | undefined
+    let tempObject: FabricObject | undefined
+    const { stop, isSwiping } = useFabricSwipe({
+      onSwipeStart: (e) => {
+        if (e.button !== 1 || this.space.value) return
+        /*
+         * 只有mouseMove的时候isSwiping才会为true
+         * mouseUp会判断isSwiping的值来决定是否执行onSwipeEnd
+         * 这里强制设置成true，让点击也可执行onSwipeEnd
+         */
+        isSwiping.value = true
+        // 获得坐标
+        coordsStart = e.pointer
+        // 创建形状
+        switch (shape) {
+          case 'rect':
+            tempObject = new Rect({})
+            break
+          case 'ellipse':
+            tempObject = new Ellipse({
+              rx: 50,
+              ry: 50,
+            })
+            break
+          case 'triangle':
+            tempObject = new Triangle({})
+            break
+          case 'text':
+            tempObject = new Textbox('', {})
+            break
+        }
+        tempObject.set({
+          left: coordsStart.x,
+          top: coordsStart.y,
+          width: 100,
+          height: 100,
+          scaleX: 0.01,
+          scaleY: 0.01,
+          hideOnLayer: true,
+        })
+        // 不发送ObjectAdded事件
+        tempObject.noEventObjectAdded = true
+        // 添加对象到画板
+        canvas.add(tempObject)
+        // 取消不发送
+        tempObject.noEventObjectAdded = false
+        // 设置激活对象
+        canvas.setActiveObject(tempObject)
+        tempObject.__corner = 'br'
+        canvas._setupCurrentTransform(e.e, tempObject, true)
+      },
+      onSwipeEnd: (e) => {
+        if (!tempObject) return
+        // 如果点击画板，没有移动，设置默认宽高
+        if (tempObject.scaleX <= 0.01 && tempObject.scaleY <= 0.01) {
+          tempObject.set({
+            left: tempObject.left - 50,
+            top: tempObject.top - 50,
+            scaleX: 1,
+            scaleY: 1,
+          })
+        }
+        // 设置宽高缩放
+        tempObject.set({
+          width: tempObject.getScaledWidth(),
+          height: tempObject.getScaledHeight(),
+          scaleX: 1,
+          scaleY: 1,
+          hideOnLayer: false,
+        })
+        // 特殊形状处理
+        if (tempObject instanceof Ellipse) {
+          tempObject.set({
+            rx: tempObject.width / 2,
+            ry: tempObject.height / 2,
+          })
+        } else if (tempObject instanceof Textbox) {
+          tempObject.set({
+            text: '输入文本',
+          })
+          canvas.defaultCursor = 'default'
+          tempObject.enterEditing(e.e)
+          tempObject.selectAll()
+        }
+        // 通知事件
+        if (tempObject.group) {
+          tempObject.group._onObjectAdded(tempObject)
+        } else {
+          canvas._onObjectAdded(tempObject)
+        }
+        canvas.requestRenderAll()
+        tempObject = undefined
+        useAppStore().activeTool = 'move'
+      },
+    })
+    this.toolStop = stop
+  }
+
+  /**
+   * L: lineto, absolute
+   * M: moveto, absolute
+   * C: bezierCurveTo, absolute
+   * Q: quadraticCurveTo, absolute
+   * Z: closepath
+   */
+  private switchVector() {
+    const tempPath = new Path([])
+    let added = false
+    const { stop } = useFabricSwipe({
+      onSwipeStart: (e) => {
+        if (!added) {
+          added = true
+          tempPath.left = e.pointer.x
+          tempPath.top = e.pointer.y
+          tempPath.path.push(['M', e.pointer.x, e.pointer.y])
+          this.canvas.add(tempPath)
+          return
+        }
+        tempPath.path.push(['L', e.pointer.x, e.pointer.y])
+        tempPath.setDimensions()
+        tempPath._set('dirty', true)
+        this.canvas.requestRenderAll()
+        // console.log(e)
+      },
+      onSwipe: () => {
+        //
+      },
+      onSwipeEnd: () => {
+        //
+      },
+    })
+    this.toolStop = stop
   }
 
   private _handMoveActivate = false
@@ -218,6 +262,7 @@ export class FabricTool extends Disposable {
           isSwiping.value = true
           vpt = canvas.viewportTransform
           this.handMoveActivate = true
+          this.applyOption('handMove')
           canvas.setCursor('grabbing')
         }
       },

@@ -1,6 +1,5 @@
 import { tryOnScopeDispose } from '@vueuse/shared'
 import type { TPointerEventInfo, TPointerEvent } from '@fabric'
-import { useEditor } from '@/app'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 
 export interface UseSwipeOptions {
@@ -40,8 +39,6 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
     coordsEnd.x = x
     coordsEnd.y = y
   }
-
-  const { canvas } = useEditor()
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return

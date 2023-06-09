@@ -2,6 +2,7 @@ import mousetrap, { ExtendedKeyboardEvent } from 'mousetrap'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { isArray, isFunction, isObject, isString } from 'lodash'
 import { registerSingleton, InstantiationType } from '@/core/instantiation/extensions'
+import { runWhenIdle } from '@/utils/async'
 
 export const IKeybindingService = createDecorator<KeybindingService>('keybindingServices')
 
@@ -48,6 +49,13 @@ export class KeybindingService extends mousetrap {
       }
     }
 
+    return this
+  }
+
+  override trigger(keys: string, action?: string | undefined) {
+    runWhenIdle(() => {
+      super.trigger(keys, action)
+    })
     return this
   }
 }
