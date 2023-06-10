@@ -1,5 +1,5 @@
 import { tryOnScopeDispose } from '@vueuse/shared'
-import type { TPointerEventInfo, TPointerEvent } from '@fabric'
+import type { TPointerEventInfo, TPointerEvent, Point } from '@fabric'
 import { useFabricEvent } from '@/hooks/useFabricEvent'
 
 export interface UseSwipeOptions {
@@ -20,39 +20,27 @@ export function useFabricSwipe(options: UseSwipeOptions = {}) {
   const diffX = computed(() => coordsEnd.x - coordsStart.x)
   const diffY = computed(() => coordsEnd.y - coordsStart.y)
 
-  const getTouchEventCoords = (e: TPointerEvent) => {
-    if (e instanceof PointerEvent) {
-      return [e.x, e.y]
-    }
-    if (e instanceof TouchEvent) {
-      return [e.touches[0].clientX, e.touches[0].clientY]
-    }
-    return [e.clientX, e.clientY]
+  const updateCoordsStart = (point: Point) => {
+    coordsStart.x = point.x
+    coordsStart.y = point.y
   }
 
-  const updateCoordsStart = (x: number, y: number) => {
-    coordsStart.x = x
-    coordsStart.y = y
-  }
-
-  const updateCoordsEnd = (x: number, y: number) => {
-    coordsEnd.x = x
-    coordsEnd.y = y
+  const updateCoordsEnd = (point: Point) => {
+    coordsEnd.x = point.x
+    coordsEnd.y = point.y
   }
 
   const mouseDown = (e: TPointerEventInfo<TPointerEvent>) => {
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
     isPointerDown.value = true
-    const [x, y] = getTouchEventCoords(e.e)
-    updateCoordsStart(x, y)
-    updateCoordsEnd(x, y)
+    updateCoordsStart(e.absolutePointer)
+    updateCoordsEnd(e.absolutePointer)
     onSwipeStart?.(e)
   }
   const mouseMove = (e: TPointerEventInfo<TPointerEvent>) => {
     if (!isPointerDown.value) return
     if (e.e instanceof TouchEvent && e.e.touches.length !== 1) return
-    const [x, y] = getTouchEventCoords(e.e)
-    updateCoordsEnd(x, y)
+    updateCoordsEnd(e.absolutePointer)
     isSwiping.value = true
     onSwipe?.(e)
   }

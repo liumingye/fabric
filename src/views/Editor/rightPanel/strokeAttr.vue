@@ -9,6 +9,7 @@
   import { Fn, isDefined } from '@vueuse/core'
   import { padHexColor } from '@/utils/fill'
   import SwipeNumber from '@/components/swipeNumber'
+  import type { SelectProps } from '@arco-design/web-vue/es/select'
 
   const { canvas } = useEditor()
 
@@ -24,7 +25,7 @@
 
   const stroke = useActiveObjectModel('stroke')
   const strokeWidth = useActiveObjectModel('strokeWidth')
-  const paintFirst = useActiveObjectModel('paintFirst')
+  const paintFirst = useActiveObjectModel<'paintFirst', SelectProps['modelValue']>('paintFirst')
 
   /**
    * convertCoordsToDeg
@@ -55,7 +56,7 @@
       value = padHexColor(value)
     }
     const color = new Color(value)
-    stroke.value.set(`#${color.toHex()}`)
+    stroke.value.onChange(`#${color.toHex()}`)
   }
 
   const strokeValue = ref('')
@@ -110,9 +111,9 @@
     @click-add="
       () => {
         if (stroke.modelValue === null) {
-          stroke.set('#979797')
+          stroke.onChange('#979797')
         }
-        strokeWidth.set(1)
+        strokeWidth.onChange(1)
       }
     "
   >
@@ -137,7 +138,7 @@
         <SwipeNumber size="small" :min="1" label="W" v-bind="strokeWidth" :hide-button="false" />
       </a-col>
       <a-col :span="3.5" class="mlauto">
-        <a-button size="small" class="icon-btn" @click="strokeWidth.set(0)">
+        <a-button size="small" class="icon-btn" @click="strokeWidth.onChange(0)">
           <template #icon>
             <icon-minus />
           </template>

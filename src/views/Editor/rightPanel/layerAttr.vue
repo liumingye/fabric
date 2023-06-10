@@ -2,11 +2,12 @@
   import Panel from './panel.vue'
   import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import { popupMaxHeight } from '@/utils/arco'
+  import type { SelectProps } from '@arco-design/web-vue/es/select'
 
   const opacity = useActiveObjectModel('opacity')
   const globalCompositeOperation = useActiveObjectModel<
     'globalCompositeOperation',
-    string | number | Record<string, any> | (string | number | Record<string, any>)[]
+    SelectProps['modelValue']
   >('globalCompositeOperation')
   const visible = useActiveObjectModel('visible')
 
@@ -128,7 +129,7 @@
         </a-inputNumber>
       </a-col>
       <a-col :span="3.5" class="mlauto">
-        <a-button size="small" class="icon-btn" @click="visible.set(!visible.modelValue)">
+        <a-button size="small" class="icon-btn" @click="visible.onChange(!visible.modelValue)">
           <template #icon>
             <icon-eye v-if="visible.modelValue === true" />
             <icon-eye-invisible v-else />

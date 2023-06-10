@@ -94,14 +94,14 @@ export class Ruler extends Disposable {
           ? {
               backgroundColor: '#242424',
               borderColor: '#555',
-              highlightColor: '#0d75f8',
+              highlightColor: '#165dff3b',
               textColor: '#ddd',
             }
           : {
               backgroundColor: '#fff',
               borderColor: '#ccc',
-              highlightColor: '#165dff',
-              textColor: '#222',
+              highlightColor: '#165dff3b',
+              textColor: '#444',
             }),
       }
       this.render()
@@ -248,8 +248,7 @@ export class Ruler extends Disposable {
           : [0, (rect.top - startCalibration) * zoom, ruleSize, rect.height * zoom]
 
         // 高亮遮罩
-        ctx.save()
-        ctx.globalAlpha = 0.5
+        // ctx.save()
         this.darwRect(ctx, {
           left,
           top,
@@ -257,7 +256,7 @@ export class Ruler extends Disposable {
           height,
           fill: highlightColor,
         })
-        ctx.restore()
+        // ctx.restore()
       })
     }
 

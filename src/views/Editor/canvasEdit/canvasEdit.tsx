@@ -23,6 +23,6 @@ export default defineComponent({
     return { divRef }
   },
   render() {
-    return <div ref='divRef' class='relative h-full w-full bg-$color-fill-1'></div>
+    return <div ref='divRef' class='relative h-full w-full bg-$color-neutral-1'></div>
   },
 })

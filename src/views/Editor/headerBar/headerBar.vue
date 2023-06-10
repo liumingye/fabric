@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import { isDefined } from '@vueuse/core'
   import { useEditor } from '@/app'
-  import Tool from './tool.vue'
-  import Zoom from './zoom.vue'
-  import ToolBar from './toolBar'
-  import Title from './title'
-  import Preview from './preview.vue'
+  import Tool from './left/tool.vue'
+  import Zoom from './left/zoom.vue'
+  import Toolbar from './center/toolbar'
+  import Title from './center/title'
+  import Preview from './right/preview.vue'
 
   const { canvas } = useEditor()
 </script>
@@ -18,7 +18,7 @@
       <Zoom />
     </div>
     <div class="truncate">
-      <ToolBar v-if="isDefined(canvas.activeObject)" />
+      <Toolbar v-if="isDefined(canvas.activeObject)" />
       <Title v-else />
     </div>
     <div class="flex-1 flex justify-end">

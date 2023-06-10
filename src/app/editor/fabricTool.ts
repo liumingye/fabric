@@ -2,9 +2,11 @@ import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, Path } from '@fabric'
+import type { TSimpleParsedCommand } from 'fabric/src/util/path/typedefs'
 import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue, Fn } from '@vueuse/core'
 import { Disposable } from '@/utils/lifecycle'
+import { getMirrorPoint } from '@/utils/fill'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 
 type ToolOption = {
@@ -42,6 +44,9 @@ export class FabricTool extends Disposable {
     @IEventbusService private readonly eventbus: EventbusService,
   ) {
     super()
+
+    useAppStore().activeTool = 'move'
+
     this.initWatch()
     this.initHandMove()
     this.initKeybinding()
@@ -193,39 +198,98 @@ export class FabricTool extends Disposable {
   }
 
   /**
+   * Vector | Pen | Path
    * L: lineto, absolute
    * M: moveto, absolute
    * C: bezierCurveTo, absolute
    * Q: quadraticCurveTo, absolute
    * Z: closepath
+   * getPointOnPath
    */
   private switchVector() {
-    const tempPath = new Path([])
+    const path = new Path([], {
+      fill: '',
+      stroke: '#979797',
+      strokeWidth: 1,
+      padding: 2,
+    })
     let added = false
-    const { stop } = useFabricSwipe({
+    let tempPoint: TSimpleParsedCommand | undefined = undefined
+    let button: number | undefined
+    let isMove = false
+    const { stop, lengthX, lengthY } = useFabricSwipe({
       onSwipeStart: (e) => {
+        button = e.button
+        if (button !== 1) return
+        const { pointer } = e
         if (!added) {
           added = true
-          tempPath.left = e.pointer.x
-          tempPath.top = e.pointer.y
-          tempPath.path.push(['M', e.pointer.x, e.pointer.y])
-          this.canvas.add(tempPath)
+          path.left = pointer.x
+          path.top = pointer.y
+          path.path.push(['M', pointer.x, pointer.y])
+          this.canvas.add(path)
           return
         }
-        tempPath.path.push(['L', e.pointer.x, e.pointer.y])
-        tempPath.setDimensions()
-        tempPath._set('dirty', true)
+        const lastPath = path.path[path.path.length - 1]
+        // console.log(lastPath)
+        if (isMove && lastPath[0] === 'C') {
+          const point = getMirrorPoint(
+            new Point(lastPath[5], lastPath[6]),
+            new Point(lastPath[1], lastPath[2]),
+          )
+          tempPoint = ['C', point.x, point.y, pointer.x, pointer.y, pointer.x, pointer.y]
+        } else {
+          tempPoint = ['L', pointer.x, pointer.y]
+        }
+        path.path.push(tempPoint)
+        path.setBoundingBox(true)
+        path.setCoords()
+        path._set('dirty', true)
         this.canvas.requestRenderAll()
-        // console.log(e)
+
+        isMove = false
       },
       onSwipe: () => {
+        if (button !== 1 || !tempPoint || tempPoint[0] === 'M') return
+
+        path.path.pop()
+
+        if (tempPoint[0] === 'L') {
+          path.path.push([
+            'C',
+            tempPoint[1] - lengthX.value,
+            tempPoint[2] - lengthY.value,
+            tempPoint[1],
+            tempPoint[2],
+            tempPoint[1],
+            tempPoint[2],
+          ])
+        } else {
+          path.path.push([
+            'C',
+            tempPoint[1]! - lengthX.value,
+            tempPoint[2]! - lengthY.value,
+            tempPoint[3]! - lengthX.value,
+            tempPoint[4]! - lengthY.value,
+            tempPoint[5]!,
+            tempPoint[6]!,
+          ])
+        }
+        path.setBoundingBox(true)
+        path.setCoords()
+        path._set('dirty', true)
+        this.canvas.requestRenderAll()
+        isMove = true
         //
       },
       onSwipeEnd: () => {
-        //
+        tempPoint = undefined
+        button = undefined
       },
     })
-    this.toolStop = stop
+    this.toolStop = () => {
+      stop()
+    }
   }
 
   private _handMoveActivate = false

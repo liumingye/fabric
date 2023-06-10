@@ -234,7 +234,7 @@
       const dropObject = dragObjects.shift()
       if (!isDefined(dropObject)) return
       // 由于列表是倒序，这里把列表翻转过来
-      if (dropPosition !== -1) {
+      if (dropPosition === -1) {
         dragObjects = dragObjects.reverse()
       }
       for (let i = dragObjects.length - 1; i >= 0; i--) {

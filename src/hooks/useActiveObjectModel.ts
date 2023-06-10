@@ -1,17 +1,17 @@
 import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
 import { ObjectRef, Textbox } from '@fabric'
-import { WritableComputedRef } from 'vue'
 import { clampAngle, toFixed } from '@/utils/math'
 import { isEqual, isNumber } from 'lodash'
 import { FabricObject, util } from '@fabric'
 import NP from 'number-precision'
+import type { WritableComputedRef } from 'vue'
 
 export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K] | undefined>(
   key: K,
 ): WritableComputedRef<{
   modelValue: T
-  set: (value: T) => void
+  onChange: (value: T) => void
 }> => {
   const { canvas } = useEditor()
 
@@ -162,20 +162,17 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
     canvas.requestRenderAll()
   }
 
-  const proxy = computed(() => ({
+  return computed(() => ({
     disabled: !isDefined(canvas.activeObject.value),
     modelValue: modelValue.value as T,
     onSwipe: (value: T) => {
       changeValue(value, 'swipe')
     },
-    set: (value: T) => {
+    onChange: (value: T) => {
       changeValue(value, 'change')
       // 保存历史
       if (!isDefined(canvas.activeObject)) return
       canvas.fire('object:modified', { target: canvas.activeObject.value })
     },
-    onChange: (value: T) => proxy.value.set(value),
   }))
-
-  return proxy
 }

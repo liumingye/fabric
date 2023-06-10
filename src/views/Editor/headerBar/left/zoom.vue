@@ -25,7 +25,7 @@
     if (isDefined(button)) {
       const rect = button.value?.$el.getBoundingClientRect()
       x = Math.max(rect.x - 8, 0)
-      y = rect.y + rect.height + 8
+      y = rect.y + rect.height + 4
     }
     ContextMenu.showContextMenu({
       x,

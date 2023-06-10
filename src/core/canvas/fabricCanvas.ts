@@ -237,20 +237,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         // active selection does not select sub targets like normal groups
         return activeObject
       } else if (activeObject === possibleTarget) {
-        if (!this.preserveObjectStacking) {
-          return activeObject
-        } else {
-          const subTargets = this.targets
-          this.targets = []
-          const target = this.searchPossibleTargets(this._objects, pointer)
-          if (e[this.altSelectionKey as ModifierKey] && target && target !== activeObject) {
-            // alt selection: select active object even though it is not the top most target
-            // restore targets
-            this.targets = subTargets
-            return activeObject
-          }
-          return target || activeObject
-        }
+        return activeObject
       }
     }
 
@@ -324,10 +311,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     // @ts-ignore
     this._activeSelection = toRefObject(this._activeSelection)
     this._activeSelection.subTargetCheck = true
-    // 双击选中当前元素
-    this._activeSelection.on('mousedblclick', (e) => {
+    // 单击选中当前元素
+    this._activeSelection.on('mouseup', (e) => {
       if (e.subTargets && e.subTargets.length > 0) {
-        console.log(e)
         this.discardActiveObject()
         this.setActiveObject(e.subTargets[e.subTargets.length - 1])
         this.requestRenderAll()

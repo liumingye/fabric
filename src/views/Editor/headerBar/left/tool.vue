@@ -5,7 +5,7 @@
 
   const { activeTool } = storeToRefs(useAppStore())
 
-  const buttonList: {
+  const editToolList: {
     name: EditTool
     icon: string
   }[] = [
@@ -51,7 +51,7 @@
         'icon-btn': activeTool !== button.name,
       }"
       :type="activeTool === button.name ? 'primary' : 'secondary'"
-      v-for="button in buttonList"
+      v-for="button in editToolList"
       :key="button.name"
       @click="onClick(button.name)"
     >

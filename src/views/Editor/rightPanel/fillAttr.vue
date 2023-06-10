@@ -52,7 +52,7 @@
       value = padHexColor(value)
     }
     const color = new Color(value)
-    fill.value.set(`#${color.toHex()}`)
+    fill.value.onChange(`#${color.toHex()}`)
   }
 
   const fillValue = ref('')
@@ -90,7 +90,7 @@
 </script>
 
 <template>
-  <Panel title="填充" :disable-add="!!fill.modelValue" @click-add="fill.set('#cccccc')">
+  <Panel title="填充" :disable-add="!!fill.modelValue" @click-add="fill.onChange('#cccccc')">
     <!-- <div>点击 + 重置并修改多个内容</div> -->
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
@@ -110,7 +110,7 @@
         </a-input>
       </a-col>
       <a-col :span="3.5" class="mlauto">
-        <a-button size="small" class="icon-btn" @click="fill.set(null)">
+        <a-button size="small" class="icon-btn" @click="fill.onChange(null)">
           <template #icon>
             <icon-minus />
           </template>
