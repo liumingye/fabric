@@ -315,7 +315,7 @@
   const updateSelectedkeys = async () => {
     const activeObject = canvas.activeObject.value
 
-    if (!activeObject) {
+    if (!activeObject || activeObject.hideOnLayer) {
       selectedkeys.value = []
       return
     }

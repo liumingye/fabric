@@ -1,7 +1,7 @@
-import { FabricObject, util } from '@fabric'
-import type { Group, Canvas } from '@fabric'
+import { FabricObject, util, Group, Canvas } from '@fabric'
 import { toRefObject } from '@/core/canvas/toRefObject'
 import { randomText } from '@/utils/strings'
+import { noop } from '@vueuse/core'
 
 export type Constructor<T = any> = new (...args: any[]) => T
 
@@ -27,8 +27,14 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
     }
 
     override _onObjectAdded(obj: FabricObject) {
-      if (obj.noEventObjectAdded) {
-        obj._set('canvas', this)
+      if (obj.noEventObjectAdded && this.fire !== noop) {
+        const fire = this.fire
+        this.fire = noop
+        try {
+          super._onObjectAdded(obj)
+        } finally {
+          this.fire = fire
+        }
       } else {
         super._onObjectAdded(obj)
       }

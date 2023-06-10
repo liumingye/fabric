@@ -1,7 +1,7 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { KeybindingService, IKeybindingService } from '@/core/keybinding/keybindingService'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
-import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, Path } from '@fabric'
+import { Ellipse, Point, Rect, Triangle, Textbox, FabricObject, Path, Board } from '@fabric'
 import type { TSimpleParsedCommand } from 'fabric/src/util/path/typedefs'
 import { useAppStore } from '@/store'
 import { useMagicKeys, useActiveElement, toValue, Fn } from '@vueuse/core'
@@ -142,7 +142,12 @@ export class FabricTool extends Disposable {
         // 不发送ObjectAdded事件
         tempObject.noEventObjectAdded = true
         // 添加对象到画板
-        canvas.add(tempObject)
+        const board = this.canvas._searchPossibleTargets(
+          this.canvas.getObjects('Board'),
+          e.absolutePointer,
+        ) as Board | undefined
+        const parent = board || canvas
+        parent.add(tempObject)
         // 取消不发送
         tempObject.noEventObjectAdded = false
         // 设置激活对象
@@ -184,11 +189,10 @@ export class FabricTool extends Disposable {
           tempObject.selectAll()
         }
         // 通知事件
-        if (tempObject.group) {
-          tempObject.group._onObjectAdded(tempObject)
-        } else {
+        if (!tempObject.group) {
           canvas._onObjectAdded(tempObject)
         }
+        canvas.fire('selection:updated')
         canvas.requestRenderAll()
         tempObject = undefined
         useAppStore().activeTool = 'move'

@@ -1,4 +1,4 @@
-import { FabricObject, ObjectRef, Textbox } from '@fabric'
+import { FabricObject, ObjectRef, Textbox, Rect } from '@fabric'
 
 /**
  * 元素添加相应式属性
@@ -24,9 +24,6 @@ const toRefObject = (object: Textbox | FabricObject) => {
     'angle',
     'skewX',
     'skewY',
-    'cornerSize',
-    'touchCornerSize',
-    'transparentCorners',
     'hoverCursor',
     'moveCursor',
     'padding',
@@ -51,7 +48,6 @@ const toRefObject = (object: Textbox | FabricObject) => {
     'strokeLineJoin',
     'strokeMiterLimit',
     'shadow',
-    'borderOpacityWhenMoving',
     'borderScaleFactor',
     'minScaleLimit',
     'selectable',
@@ -81,6 +77,10 @@ const toRefObject = (object: Textbox | FabricObject) => {
     'absolutePositioned',
   ]
 
+  if (object.isType('Rect')) {
+    keyArr.push('rx', 'ry')
+  }
+
   if (object.isType('Text', 'Textbox')) {
     keyArr.push(
       'text',
@@ -103,7 +103,7 @@ const toRefObject = (object: Textbox | FabricObject) => {
   object.ref = reactive({}) as ObjectRef
 
   keyArr.forEach(<K extends keyof ObjectRef>(key: K) => {
-    object.ref[key] = (object as Textbox & FabricObject)[key]
+    object.ref[key] = (object as Textbox & Rect & FabricObject)[key]
 
     Object.defineProperty(object, key, {
       get() {

@@ -1,5 +1,5 @@
 import type { AlignMethod } from 'app'
-import type { FabricObject, Point, TPointerEventInfo, TPointerEvent } from '@fabric'
+import type { FabricObject, Point, TPointerEventInfo, TPointerEvent, Rect } from '@fabric'
 import 'fabric/src/typedefs'
 
 export declare module 'fabric' {
@@ -22,9 +22,6 @@ export declare module 'fabric' {
     | 'angle'
     | 'skewX'
     | 'skewY'
-    | 'cornerSize'
-    | 'touchCornerSize'
-    | 'transparentCorners'
     | 'hoverCursor'
     | 'moveCursor'
     | 'padding'
@@ -49,7 +46,6 @@ export declare module 'fabric' {
     | 'strokeLineJoin'
     | 'strokeMiterLimit'
     | 'shadow'
-    | 'borderOpacityWhenMoving'
     | 'borderScaleFactor'
     | 'minScaleLimit'
     | 'selectable'
@@ -91,7 +87,8 @@ export declare module 'fabric' {
     | 'linethrough'
     | 'textAlign'
     | 'direction'
-  >
+  > &
+    Pick<Rect, 'rx' | 'ry'>
 
   export declare class Canvas {
     _objects: FabricObject[]
@@ -99,9 +96,6 @@ export declare module 'fabric' {
       zoom: Ref<number>
       objects: ComputedRef<FabricObject[]>
     }
-    // computed: {
-    //   objects: ComputedRef<FabricObject[]>
-    // }
     forEachObject(
       callback: (object: FabricObject, index: number, array: FabricObject[]) => any,
     ): void

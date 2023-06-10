@@ -46,6 +46,8 @@
         component: StrokeAttr,
         visual: isDefined(activeObject) && !util.isCollection(activeObject),
       },
+      // 阴影
+      // 模糊
     ]
   })
 

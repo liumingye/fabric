@@ -6,13 +6,15 @@
   import { useEditor } from '@/app'
   import { isDefined } from '@vueuse/core'
 
+  const { keybinding, canvas, undoRedo } = useEditor()
+
   const left = useActiveObjectModel('left')
   const top = useActiveObjectModel('top')
   const angle = useActiveObjectModel('angle')
   const width = useActiveObjectModel('width')
   const height = useActiveObjectModel('height')
-
-  const { keybinding, canvas } = useEditor()
+  const rx = useActiveObjectModel('rx')
+  const ry = useActiveObjectModel('ry')
 </script>
 
 <template>
@@ -71,6 +73,38 @@
             </template>
           </a-tooltip>
         </a-space>
+      </a-col>
+      <a-col
+        :span="10"
+        v-if="
+          isDefined(canvas.activeObject) &&
+          'rx' in canvas.activeObject.value.ref &&
+          'ry' in canvas.activeObject.value.ref
+        "
+      >
+        <SwipeNumber
+          size="small"
+          :min="0"
+          :max="Math.min(canvas.activeObject.value.width, canvas.activeObject.value.height) / 2"
+          v-model="rx.modelValue"
+          @swipe="
+            (value) => {
+              rx.onSwipe(value)
+              ry.onSwipe(value)
+            }
+          "
+          @change="
+            (value) => {
+              rx.onSwipe(value)
+              ry.onSwipe(value)
+              undoRedo.saveState()
+            }
+          "
+        >
+          <template #label>
+            <SvgIcon name="round" />
+          </template>
+        </SwipeNumber>
       </a-col>
     </a-row>
   </div>

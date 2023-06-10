@@ -312,8 +312,8 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this._activeSelection = toRefObject(this._activeSelection)
     this._activeSelection.subTargetCheck = true
     // 单击选中当前元素
-    this._activeSelection.on('mouseup', (e) => {
-      if (e.subTargets && e.subTargets.length > 0) {
+    this._activeSelection.on('mouseup:before', (e) => {
+      if (!this._activeSelection.isMoving && e.subTargets && e.subTargets.length > 0) {
         this.discardActiveObject()
         this.setActiveObject(e.subTargets[e.subTargets.length - 1])
         this.requestRenderAll()

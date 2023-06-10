@@ -1,9 +1,8 @@
 import { useEditor } from '@/app'
 import { isDefined } from '@vueuse/core'
-import { ObjectRef, Textbox } from '@fabric'
+import { ObjectRef, Textbox, FabricObject, util, Rect } from '@fabric'
 import { clampAngle, toFixed } from '@/utils/math'
 import { isEqual, isNumber } from 'lodash'
-import { FabricObject, util } from '@fabric'
 import NP from 'number-precision'
 import type { WritableComputedRef } from 'vue'
 
@@ -11,6 +10,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
   key: K,
 ): WritableComputedRef<{
   modelValue: T
+  onSwipe: (value: T) => void
   onChange: (value: T) => void
 }> => {
   const { canvas } = useEditor()
@@ -26,7 +26,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       return
     }
 
-    const activeObject = canvas.activeObject.value as FabricObject & Textbox
+    const activeObject = canvas.activeObject.value as FabricObject & Textbox & Rect
 
     // 锁定修改
     lockChange = true

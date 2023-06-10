@@ -100,6 +100,11 @@ export class GuideLines extends Disposable {
           return false
         }
         // 元素为组，把组内元素加入，同时排除组本身
+        if (util.isActiveSelection(obj)) {
+          add(obj)
+          return false
+        }
+        // 元素为组，把组内元素加入，同时排除组本身
         if (util.isCollection(obj) && target.group && obj === target.group) {
           add(obj)
           return false
