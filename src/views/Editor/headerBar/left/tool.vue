@@ -18,6 +18,10 @@
       icon: 'bxs-hand',
     },
     {
+      name: 'board',
+      icon: 'artboard',
+    },
+    {
       name: 'vector',
       icon: 'bx-pen',
     },

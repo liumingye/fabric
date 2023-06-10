@@ -99,7 +99,7 @@
 </script>
 
 <template>
-  <a-button ref="button" class="icon-btn px2" @click="openMenu">
+  <a-button ref="button" class="icon-btn px2!" @click="openMenu">
     {{ NP.times(zoom, 100) }}%
     <icon-down class="ml1" />
   </a-button>

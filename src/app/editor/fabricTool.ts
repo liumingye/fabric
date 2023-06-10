@@ -84,8 +84,8 @@ export class FabricTool extends Disposable {
       }
 
       // 图形工具
-      else if (['rect', 'ellipse', 'triangle', 'text'].includes(newTool)) {
-        this.switchShape(newTool as 'rect' | 'ellipse' | 'triangle' | 'text')
+      else if (['board', 'rect', 'ellipse', 'triangle', 'text'].includes(newTool)) {
+        this.switchShape(newTool as 'board' | 'rect' | 'ellipse' | 'triangle' | 'text')
       }
 
       // 矢量|钢笔
@@ -97,7 +97,7 @@ export class FabricTool extends Disposable {
 
   private toolStop: Fn | undefined
 
-  private switchShape(shape: 'rect' | 'ellipse' | 'triangle' | 'text') {
+  private switchShape(shape: 'board' | 'rect' | 'ellipse' | 'triangle' | 'text') {
     const { canvas } = this
     let coordsStart: Point | undefined
     let tempObject: FabricObject | undefined
@@ -114,6 +114,11 @@ export class FabricTool extends Disposable {
         coordsStart = e.pointer
         // 创建形状
         switch (shape) {
+          case 'board':
+            tempObject = new Board([], {
+              fill: '',
+            })
+            break
           case 'rect':
             tempObject = new Rect({})
             break
@@ -175,7 +180,11 @@ export class FabricTool extends Disposable {
           hideOnLayer: false,
         })
         // 特殊形状处理
-        if (tempObject instanceof Ellipse) {
+        if (tempObject instanceof Board) {
+          tempObject.set({
+            fill: '#ffffff',
+          })
+        } else if (tempObject instanceof Ellipse) {
           tempObject.set({
             rx: tempObject.width / 2,
             ry: tempObject.height / 2,

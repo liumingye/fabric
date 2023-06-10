@@ -12,6 +12,7 @@ declare module 'app' {
   export type EditTool =
     | 'move'
     | 'handMove'
+    | 'board'
     | 'rect'
     | 'ellipse'
     | 'triangle'
