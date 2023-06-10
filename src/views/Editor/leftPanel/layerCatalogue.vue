@@ -51,7 +51,7 @@
       return IBoard
     }
     if (svgCacheMap.has(object.id)) return svgCacheMap.get(object.id)
-    const { tl, tr, br, bl } = object._getCoords()
+    const { tl, tr, br, bl } = object._getCoords(true, true)
     let { left, top, height, width } = util.makeBoundingBoxFromPoints([tl, tr, br, bl])
     let size = Math.max(height, width)
     if (width > height) {
