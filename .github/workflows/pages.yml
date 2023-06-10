@@ -20,3 +20,4 @@ jobs:
         with:
           branch: gh-pages  ##指定推送到的远程分支
           folder: dist # The folder the action should deploy.
+          clean: true
