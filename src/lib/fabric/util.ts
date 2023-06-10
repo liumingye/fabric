@@ -1,6 +1,9 @@
 import { util as utilOrgin } from 'fabric'
-import { FabricObject, Group, ActiveSelection, Gradient, Pattern, Text } from '@fabric'
+import { FabricObject, ActiveSelection, Gradient, Pattern, Text, Group, Canvas } from '@fabric'
+import { Group as NativeGroup } from 'fabric'
 import { Board } from '@/core/canvas/shapes/board'
+
+// 类型工具
 
 const isActiveSelection = (thing: unknown): thing is ActiveSelection => {
   return thing instanceof ActiveSelection
@@ -10,11 +13,23 @@ const isBoard = (thing: unknown): thing is Board => {
   return thing instanceof Board
 }
 
-const isCollection = (thing?: FabricObject): thing is Group | ActiveSelection => {
+const isGroup = (thing?: unknown): thing is Group => {
+  return thing instanceof Group
+}
+
+const isCollection = (thing?: unknown): thing is Group | ActiveSelection | Canvas => {
   return !!thing && Array.isArray((thing as Group)._objects)
 }
 
-// 类型工具
+/**
+ * 判断是否为原生组
+ * @param thing
+ * @returns NativeGroup | Group | Board
+ */
+const isNativeGroup = (thing?: unknown): thing is NativeGroup => {
+  return thing instanceof NativeGroup
+}
+
 const isGradient = (thing: unknown): thing is Gradient<'linear' | 'radial'> => {
   return thing instanceof Gradient
 }
@@ -37,4 +52,6 @@ export const util = {
   isPattern,
   isActiveSelection,
   isTextObject,
+  isGroup,
+  isNativeGroup,
 }

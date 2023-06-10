@@ -9,9 +9,6 @@ import {
   Group,
   Point,
   util,
-  TEvent,
-  TPointerEvent,
-  Transform,
 } from '@fabric'
 import { Disposable } from '@/utils/lifecycle'
 
@@ -115,20 +112,20 @@ export class GuideLines extends Disposable {
     }
 
     if (util.isActiveSelection(target)) {
-      const needAddGroup = new Set<Group | Canvas | Board | StaticCanvas | ActiveSelection>()
+      const needAddParent = new Set<Group | Canvas | StaticCanvas>()
       target.forEachObject((obj) => {
-        const parent = obj.getParent() as Group
-        needAddGroup.add(parent)
-        if (util.isBoard(parent)) {
-          needAddGroup.add(parent)
-        }
+        const parent = obj.getParent()
+        needAddParent.add(parent)
       })
-      needAddGroup.forEach((group) => {
-        add(group)
+      needAddParent.forEach((parent) => {
+        if (util.isNativeGroup(parent)) {
+          canvasObjects.push(parent)
+        }
+        add(parent)
       })
     } else {
       const parent = target.getParent() as Group
-      if (util.isBoard(parent)) {
+      if (util.isNativeGroup(parent)) {
         canvasObjects.push(parent)
       }
       add(parent)

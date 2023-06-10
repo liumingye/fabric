@@ -4,23 +4,24 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
-import { runWhenIdle, IdleValue } from '@/utils/async'
 import { LinkedList } from '@/utils/linkedList'
 import {
   Canvas,
   FabricObject,
   Group,
-  ModifierKey,
   Point,
   TMat2D,
   TPointerEvent,
   Textbox,
   util,
   Board,
+  config,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
 import { debounce, throttle, isObject } from 'lodash'
 import './mixin'
+
+config.NUM_FRACTION_DIGITS = 2
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
@@ -149,6 +150,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   public setActiveObjects(objects: FabricObject[]) {
     if (objects.length === 0) {
       this.discardActiveObject()
+      this.requestRenderAll()
       return
     }
     if (objects.length === 1) {
@@ -312,9 +314,14 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this._activeSelection = toRefObject(this._activeSelection)
     this._activeSelection.subTargetCheck = true
     // 单击选中当前元素
-    this._activeSelection.on('mouseup:before', (e) => {
-      if (!this._activeSelection.isMoving && e.subTargets && e.subTargets.length > 0) {
-        this.discardActiveObject()
+    this._activeSelection.on('mouseup', (e) => {
+      if (
+        e.isClick &&
+        !this._activeSelection.isMoving &&
+        !this._isSelectionKeyPressed(e.e) &&
+        e.subTargets &&
+        e.subTargets.length > 0
+      ) {
         this.setActiveObject(e.subTargets[e.subTargets.length - 1])
         this.requestRenderAll()
       }

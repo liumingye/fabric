@@ -237,14 +237,13 @@ export class FabricTool extends Disposable {
         const { pointer } = e
         if (!added) {
           added = true
-          path.left = pointer.x
-          path.top = pointer.y
           path.path.push(['M', pointer.x, pointer.y])
+          path.setBoundingBox(true)
           this.canvas.add(path)
+          path.setCoords()
           return
         }
         const lastPath = path.path[path.path.length - 1]
-        // console.log(lastPath)
         if (isMove && lastPath[0] === 'C') {
           const point = getMirrorPoint(
             new Point(lastPath[5], lastPath[6]),
@@ -289,7 +288,6 @@ export class FabricTool extends Disposable {
           ])
         }
         path.setBoundingBox(true)
-        path.setCoords()
         path._set('dirty', true)
         this.canvas.requestRenderAll()
         isMove = true
@@ -301,6 +299,8 @@ export class FabricTool extends Disposable {
       },
     })
     this.toolStop = () => {
+      // path.path.push(['Z'])
+      path.setCoords()
       stop()
     }
   }
@@ -411,6 +411,14 @@ export class FabricTool extends Disposable {
       r: () => (activeTool.value = 'rect'),
       o: () => (activeTool.value = 'ellipse'),
       t: () => (activeTool.value = 'text'),
+      esc: () => {
+        if (activeTool.value !== 'move') {
+          activeTool.value = 'move'
+        } else {
+          this.canvas.discardActiveObject()
+          this.canvas.requestRenderAll()
+        }
+      },
     })
   }
 }

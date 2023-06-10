@@ -173,6 +173,28 @@ export class Layer extends Disposable {
       return false
     })
 
+    // 透明度
+    const setOpacity = (opacity: number) => {
+      const activeObject = canvas.getActiveObject()
+      if (!activeObject) return
+      activeObject.set('opacity', opacity)
+      canvas.requestRenderAll()
+      this.undoRedo.saveState()
+      return false
+    }
+    this.keybinding.bind({
+      0: setOpacity.bind(this, 1),
+      1: setOpacity.bind(this, 0.1),
+      2: setOpacity.bind(this, 0.2),
+      3: setOpacity.bind(this, 0.3),
+      4: setOpacity.bind(this, 0.4),
+      5: setOpacity.bind(this, 0.5),
+      6: setOpacity.bind(this, 0.6),
+      7: setOpacity.bind(this, 0.7),
+      8: setOpacity.bind(this, 0.8),
+      9: setOpacity.bind(this, 0.9),
+    })
+
     // 重命名
     this.keybinding.bind('mod+r', () => {
       const activeObject = canvas.getActiveObject()

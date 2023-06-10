@@ -51,20 +51,13 @@
       return IBoard
     }
     if (svgCacheMap.has(object.id)) return svgCacheMap.get(object.id)
-    const { x, y } = object._getTransformedDimensions()
-    const xValues = Object.values(object.aCoords).map((point) => point.x)
-    const yValues = Object.values(object.aCoords).map((point) => point.y)
-    let left = Math.min(...xValues)
-    let top = Math.min(...yValues)
-    const right = Math.max(...xValues)
-    const bottom = Math.max(...yValues)
-    let size
-    if (right - left > bottom - top) {
-      size = right - left
-      top = bottom - size / 2 - y / 2
+    const { tl, tr, br, bl } = object._getCoords()
+    let { left, top, height, width } = util.makeBoundingBoxFromPoints([tl, tr, br, bl])
+    let size = Math.max(height, width)
+    if (width > height) {
+      top += (height - size) / 2
     } else {
-      size = bottom - top
-      left = right - size / 2 - x / 2
+      left += (width - size) / 2
     }
     // @ts-ignore
     const shape = object._createBaseSVGMarkup(object._toSVG(), {

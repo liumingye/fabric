@@ -1,8 +1,11 @@
+import { getActiveCore } from '@/core'
 import { useEditor } from '@/app'
 import { keybindMap } from '@/utils/constants'
 import { ActiveSelection, Board, Group } from '@fabric'
+import type { MenuItem } from '@/components/contextMenu/ContextMenuDefine'
+import { IClipboardService } from '@/core/clipboard/clipboardService'
 
-export const layerItems = () => {
+export const layerItems = (): MenuItem[] => {
   const { canvas, keybinding } = useEditor()
   const { mod } = keybinding
   return [
@@ -73,11 +76,46 @@ export const layerItems = () => {
         keybinding.trigger('mod+shift+l')
       },
       shortcut: `${mod} ⇧ L`,
+      // divided: true,
     },
+    // {
+    //   label: '复制/粘贴',
+    //   children: [
+    //     {
+    //       label: '复制SVG代码',
+    //       onClick: () => {
+    //         getActiveCore().service.invokeFunction((accessor) => {
+    //           if (!isDefined(canvas.activeObject)) return
+    //           const bounding = canvas.activeObject.value.getBoundingRect()
+    //           const markup = []
+    //           const viewBox = `viewBox="${bounding.left} ${bounding.top} ${bounding.width} ${bounding.height}" `
+    //           markup.push(
+    //             '<svg ',
+    //             'xmlns="http://www.w3.org/2000/svg" ',
+    //             'xmlns:xlink="http://www.w3.org/1999/xlink" ',
+    //             'version="1.1" ',
+    //             'width="',
+    //             canvas.activeObject.value.width,
+    //             '" ',
+    //             'height="',
+    //             canvas.activeObject.value.height,
+    //             '" ',
+    //             viewBox,
+    //             'xml:space="preserve">\n',
+    //           )
+    //           const svg = canvas.activeObject.value.toSVG()
+    //           markup.push(svg, '</svg>')
+    //           accessor.get(IClipboardService).writeText(markup.join(''))
+    //         })
+    //       },
+    //     },
+    //     // { label: '复制PNG图片' },
+    //   ],
+    // },
   ]
 }
 
-export const zoomItems = () => {
+export const zoomItems = (): MenuItem[] => {
   const { keybinding } = useEditor()
   return [
     {
