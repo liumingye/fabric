@@ -18,6 +18,6 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages  ##指定推送到的远程分支
+          branch: gh-pages # 指定推送到的远程分支
           folder: dist # The folder the action should deploy.
-          clean: true
+          single-commit: true # 单个提交
