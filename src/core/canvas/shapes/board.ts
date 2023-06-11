@@ -5,8 +5,9 @@ import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
 export const boardDefaultValues = {
   padding: 4,
-  // selectable: false,
+  selectable: false,
   layout: 'fixed',
+  fill: '#FFFFFF',
 }
 
 export class Board extends CommonGroup {

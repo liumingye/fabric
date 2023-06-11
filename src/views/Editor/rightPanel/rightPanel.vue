@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import BackgroundColor from './backgroundColorAttr.vue'
   import LayoutAlign from './layoutAlign.vue'
   import BaseAttr from './baseAttr.vue'
   import LayerAttr from './layerAttr.vue'
@@ -23,6 +24,11 @@
         name: 'BaseAttr',
         component: BaseAttr,
         visual: true,
+      },
+      {
+        name: 'BackgroundColor',
+        component: BackgroundColor,
+        visual: !isDefined(activeObject),
       },
       {
         name: 'LayerAttr',
@@ -103,13 +109,12 @@
 
   :deep(.arco-input-prefix) {
     padding-right: 0 !important;
-    margin-left: -1px;
     margin-right: 4px;
     justify-content: center;
 
     .arco-btn {
-      height: 28px;
-      width: 28px;
+      height: 26px;
+      width: 26px;
     }
   }
 </style>

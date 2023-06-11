@@ -15,3 +15,9 @@
     </template>
   </a-space>
 </template>
+
+<style lang="less" scoped>
+  :deep(.key) {
+    background-color: var(--color-tooltip-bg);
+  }
+</style>

@@ -1,5 +1,6 @@
 import { useResizeObserver } from '@vueuse/core'
 import { useEditor } from '@/app'
+import { useThemes } from '@/hooks/useThemes'
 
 export default defineComponent({
   setup() {
@@ -20,9 +21,18 @@ export default defineComponent({
       })
     })
 
-    return { divRef }
+    const { isDark } = useThemes()
+
+    return { divRef, isDark }
   },
   render() {
-    return <div ref='divRef' class='relative h-full w-full bg-$color-neutral-1'></div>
+    return (
+      <div
+        ref='divRef'
+        class={[
+          'relative h-full w-full',
+          this.isDark ? ' bg-$color-neutral-1' : ' bg-$color-neutral-2',
+        ]}></div>
+    )
   },
 })

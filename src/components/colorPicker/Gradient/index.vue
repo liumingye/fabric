@@ -7,7 +7,11 @@
  * @LastEditTime: 2023-05-12 22:58:54
 -->
 <template>
-  <GradientControls :type="state.gradientType" :change-gradient-control="changeGradientControl" />
+  <GradientControls
+    v-if="!solidColor"
+    :type="state.gradientType"
+    :change-gradient-control="changeGradientControl"
+  />
   <Area
     :red="state.colorRed"
     :green="state.colorGreen"
@@ -44,37 +48,23 @@
   import Preview from '../Preview/index.vue'
   import Area from '../Area/index.vue'
   import { clamp } from '@vueuse/core'
-  import { ColorPoint, Mode, ColorType } from '@/components/colorPicker/interface'
+  import { ColorType, Props } from '@/components/colorPicker/interface'
   import { Color, RGBA } from '@/utils/color'
 
-  interface Iprops {
-    mode: Mode
-    type: ColorType
-    points: ColorPoint[]
-    onStartChange: (data: { points: ColorPoint[]; type: ColorType }) => void
-    onChange: (data: { points: ColorPoint[]; type: ColorType }) => void
-    onEndChange: (data: { points: ColorPoint[]; type: ColorType }) => void
-  }
-
-  const props = defineProps<Iprops>()
+  const props = defineProps<Required<Props>>()
 
   const state = reactive({
     activePointIndex: 0,
-    gradientPoints: props.points,
-    activePoint: props.points[0],
-    colorRed: props.points[0].red,
-    colorGreen: props.points[0].green,
-    colorBlue: props.points[0].blue,
-    colorAlpha: props.points[0].alpha,
+    gradientPoints: props.gradient.points,
+    activePoint: props.gradient.points[0],
+    colorRed: props.gradient.points[0].red,
+    colorGreen: props.gradient.points[0].green,
+    colorBlue: props.gradient.points[0].blue,
+    colorAlpha: props.gradient.points[0].alpha,
     colorHue: 0,
     colorSaturation: 1,
     colorValue: 1,
-    gradientType: props.type,
-    actions: {
-      onStartChange: props.onStartChange,
-      onChange: props.onChange,
-      onEndChange: props.onEndChange,
-    },
+    gradientType: props.gradient.type,
   })
 
   const getChangeData = () => ({
@@ -182,7 +172,7 @@
     state.colorValue = value
     state.gradientPoints = localGradientPoints
 
-    const action = state.actions[actionName]
+    const action = props[actionName]
 
     action && action(getChangeData())
   }
@@ -194,7 +184,7 @@
   ) => {
     state.gradientPoints[index].left = clamp(left, 0, 100)
 
-    const action = state.actions[actionName]
+    const action = props[actionName]
 
     action && action(getChangeData())
   }

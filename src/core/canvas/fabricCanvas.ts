@@ -5,6 +5,7 @@ import { createDecorator } from '@/core/instantiation/instantiation'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
 import { LinkedList } from '@/utils/linkedList'
+import { runWhenIdle } from '@/utils/async'
 import {
   Canvas,
   FabricObject,
@@ -107,6 +108,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   override set _activeObject(value) {
     this.activeObject.value = value
+  }
+
+  override requestRenderAll() {
+    runWhenIdle(() => {
+      super.requestRenderAll()
+    })
   }
 
   override zoomToPoint(point: Point, value: number) {

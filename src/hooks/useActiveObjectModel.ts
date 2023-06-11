@@ -143,6 +143,12 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       activeObject.setSelectionStyles({
         fontSize: newValue,
       })
+    } else if (
+      util.isBoard(activeObject) &&
+      // 排除要给组设置的属性
+      ['fill'].includes(key)
+    ) {
+      setObjectValue(activeObject, newValue)
     }
     // 组
     else if (

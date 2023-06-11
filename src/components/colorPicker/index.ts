@@ -9,7 +9,7 @@ import { isDefined } from '@vueuse/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { ServicesAccessor } from '@/core/instantiation/instantiation'
-import { ColorPickerOption } from './interface'
+import { ColorPickerOption, Props } from './interface'
 
 let dialog: DialogReturn | undefined
 
@@ -23,7 +23,7 @@ const dialogClose = () => {
 
 const openDialog = (
   accessor: ServicesAccessor,
-  { object, attr, dialogOption }: ColorPickerOption,
+  { object, attr, dialogOption, initialColor, ...props }: ColorPickerOption & Partial<Props>,
 ) => {
   const canvas = accessor.get(IFabricCanvas)
   const undoRedo = accessor.get(IUndoRedoService)
@@ -31,9 +31,9 @@ const openDialog = (
   let points: ColorPoint[]
   let type: ColorType = 'color'
 
-  const colorValue = object[attr]
+  const colorValue = object && attr ? object[attr] : initialColor
 
-  if (colorValue instanceof Gradient<'linear' | 'radial'>) {
+  if (colorValue instanceof Gradient) {
     points = fabricGradientToPoints(colorValue)
     type = colorValue.type
   } else if (colorValue instanceof Pattern) {
@@ -67,12 +67,8 @@ const openDialog = (
     ...dialogOption,
     body: () =>
       h(_ColorPicker, {
-        gradient: {
-          type,
-          points,
-        },
         onChange(data) {
-          if (!isDefined(object)) return
+          if (!isDefined(object) || !isDefined(attr)) return
           if (data.type === 'color') {
             if (data.points.length < 1) return
             const [{ red, green, blue, alpha }] = data.points
@@ -85,7 +81,7 @@ const openDialog = (
 
             const colorValue = object[attr]
 
-            if (colorValue instanceof Gradient<'linear'>) {
+            if (colorValue instanceof Gradient) {
               coords = colorValue.coords
               // angle = getAngle(coords)
             }
@@ -114,6 +110,11 @@ const openDialog = (
         onEndChange() {
           undoRedo.saveState()
         },
+        ...props,
+        gradient: {
+          type,
+          points,
+        },
       }),
     onClose() {
       dialog = undefined
@@ -122,13 +123,13 @@ const openDialog = (
   })
 }
 
-const open = (option: ColorPickerOption) => {
+const open = (option: ColorPickerOption & Partial<Props>) => {
   if (!dialog) {
     dialog = appInstance.editor.service.invokeFunction(openDialog, option)
   }
   return dialogClose
 }
 
-const ColorPicker = Object.assign(_ColorPicker, { open })
+const ColorPicker = Object.assign(_ColorPicker, { open, close: dialogClose })
 
 export default ColorPicker

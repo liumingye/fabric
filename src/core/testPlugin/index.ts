@@ -22,7 +22,6 @@ const myPlugin = createEditorPlugin((editor) => {
         left: 50,
         width: 300,
         height: 300,
-        fill: 'rgb(244,244,244)',
       })
       const board2 = new Board([], {
         top: 400,

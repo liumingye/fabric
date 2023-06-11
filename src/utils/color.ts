@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -33,7 +35,7 @@ export class RGBA {
    */
   readonly a: number
 
-  constructor(r: number, g: number, b: number, a: number = 1) {
+  constructor(r: number, g: number, b: number, a = 1) {
     this.r = Math.min(255, Math.max(0, r)) | 0
     this.g = Math.min(255, Math.max(0, g)) | 0
     this.b = Math.min(255, Math.max(0, b)) | 0
@@ -531,6 +533,7 @@ export namespace Color {
         ).toFixed(2)}%, ${color.hsla.a.toFixed(2)})`
       }
 
+      // eslint-disable-next-line no-inner-declarations
       function _toTwoDigitHex(n: number): string {
         const r = n.toString(16)
         return r.length !== 2 ? '0' + r : r
@@ -626,6 +629,7 @@ export namespace Color {
         return null
       }
 
+      // eslint-disable-next-line no-inner-declarations
       function _parseHexDigit(charCode: CharCode): number {
         switch (charCode) {
           case CharCode.Digit0:

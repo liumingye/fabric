@@ -1,47 +1,77 @@
 <script setup lang="ts">
   import SvgIcon from '@/components/svgIcon'
+  import DropdownButton from '@/components/dropdown/dropdownButton.vue'
   import { useAppStore } from '@/store'
   import type { EditTool } from 'app'
 
   const { activeTool } = storeToRefs(useAppStore())
 
-  const editToolList: {
-    name: EditTool
+  type EditToolListItem = {
+    key: EditTool
     icon: string
-  }[] = [
+    name: string
+  }
+
+  type EditToolList = (EditToolListItem & {
+    doption?: EditToolListItem[]
+  })[]
+
+  const editToolList = ref<EditToolList>([
     {
-      name: 'move',
+      key: 'move',
       icon: 'bxs-pointer',
+      name: '选择工具',
+      doption: [
+        {
+          key: 'move',
+          icon: 'bxs-pointer',
+          name: '选择工具',
+        },
+        {
+          key: 'handMove',
+          icon: 'bxs-hand',
+          name: '移动视图',
+        },
+      ],
     },
     {
-      name: 'handMove',
-      icon: 'bxs-hand',
-    },
-    {
-      name: 'board',
+      key: 'board',
       icon: 'artboard',
+      name: '画板',
     },
     {
-      name: 'vector',
-      icon: 'bx-pen',
-    },
-    {
-      name: 'rect',
+      key: 'rect',
       icon: 'bx-square',
+      name: '矩形',
+      doption: [
+        {
+          key: 'rect',
+          icon: 'bx-square',
+          name: '矩形',
+        },
+        {
+          key: 'ellipse',
+          icon: 'bx-circle',
+          name: '圆形',
+        },
+        {
+          key: 'triangle',
+          icon: 'bx-triangle',
+          name: '三角形',
+        },
+      ],
     },
     {
-      name: 'ellipse',
-      icon: 'bx-circle',
+      key: 'vector',
+      icon: 'bx-pen',
+      name: '钢笔',
     },
     {
-      name: 'triangle',
-      icon: 'bx-triangle',
-    },
-    {
-      name: 'text',
+      key: 'text',
       icon: 'bx-text',
+      name: '文本',
     },
-  ]
+  ])
 
   const onClick = (toolName: EditTool) => {
     activeTool.value = toolName
@@ -50,19 +80,28 @@
 
 <template>
   <a-space>
-    <a-button
-      :class="{
-        'icon-btn': activeTool !== button.name,
-      }"
-      :type="activeTool === button.name ? 'primary' : 'secondary'"
-      v-for="button in editToolList"
-      :key="button.name"
-      @click="onClick(button.name)"
+    <DropdownButton
+      v-for="(button, index) in editToolList"
+      :key="button.key"
+      :active="activeTool === button.key"
+      @click="onClick(button.key)"
+      @select="
+        (value) => {
+          editToolList[index] = { ...editToolList[index], ...value as EditToolListItem }
+          onClick((value as EditToolListItem).key)
+        }
+      "
     >
-      <template #icon>
-        <SvgIcon :name="button.icon" />
+      <SvgIcon :name="button.icon" />
+      <template #content v-if="button.doption">
+        <a-doption v-for="doption in button.doption" :key="doption.key" :value="doption">
+          <template #icon>
+            <SvgIcon :name="doption.icon" />
+          </template>
+          {{ doption.name }}
+        </a-doption>
       </template>
-    </a-button>
+    </DropdownButton>
   </a-space>
 </template>
 
