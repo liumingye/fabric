@@ -22,7 +22,7 @@
         @popup-visible-change="handlePopupVisibleChange"
       >
         <a-button
-          class="more absolute w12px! h12px! bottom-0 right-0 bg-transparent! transition translate-0"
+          class="more absolute! w12px! h12px! bottom-0 right-0 bg-transparent! transition translate-0"
           :disabled="disabled"
         >
           <template #icon>

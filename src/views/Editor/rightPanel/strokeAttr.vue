@@ -52,7 +52,13 @@
   >
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
-        <a-input size="mini" v-model="formatValue" :readonly="readonly" @change="changeColor">
+        <a-input
+          size="mini"
+          v-model="formatValue"
+          :readonly="readonly"
+          @change="changeColor"
+          class="pl0!"
+        >
           <template #prefix>
             <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>
@@ -84,8 +90,4 @@
   </Panel>
 </template>
 
-<style scoped lang="less">
-  :deep(.arco-input-wrapper) {
-    padding-left: 0 !important;
-  }
-</style>
+<style scoped lang="less"></style>

@@ -76,7 +76,7 @@
   >
     <a-row :gutter="[4, 4]" align="center">
       <a-col :span="10">
-        <a-input size="mini" v-model="state.inputValue" @change="onChange">
+        <a-input size="mini" v-model="state.inputValue" @change="onChange" class="pl0!">
           <template #prefix>
             <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>

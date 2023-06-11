@@ -145,7 +145,7 @@ export const useActiveObjectModel = <K extends keyof ObjectRef, T = ObjectRef[K]
       })
     } else if (
       util.isBoard(activeObject) &&
-      // 排除要给组设置的属性
+      // 要给画板设置的属性
       ['fill'].includes(key)
     ) {
       setObjectValue(activeObject, newValue)
