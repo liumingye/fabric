@@ -86,19 +86,16 @@ export class Clipboard extends Disposable {
 
   private async readImage(blob: Blob) {
     const center = this.canvas.getVpCenter()
-    const img = new window.Image()
-
-    img.onload = () => {
-      const image = new Image(img, {
-        width: img.width,
-        height: img.height,
-        left: center.x - img.width / 2,
-        top: center.y - img.height / 2,
-      })
-      this.canvas.add(image)
-    }
-
-    img.src = URL.createObjectURL(blob)
+    util.loadImage(URL.createObjectURL(blob)).then((img) => {
+      this.canvas.add(
+        new Image(img, {
+          width: img.width,
+          height: img.height,
+          left: center.x - img.width / 2,
+          top: center.y - img.height / 2,
+        }),
+      )
+    })
   }
 
   private paste(currentLocation = false) {

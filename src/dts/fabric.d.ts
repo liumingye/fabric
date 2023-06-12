@@ -1,6 +1,5 @@
 import type { AlignMethod } from 'app'
 import type { FabricObject, Point, TPointerEventInfo, TPointerEvent, Rect } from '@fabric'
-import 'fabric/src/typedefs'
 
 export declare module 'fabric' {
   export declare type ObjectRef = Pick<
@@ -165,6 +164,22 @@ export declare module 'fabric' {
     hideOnLayer: boolean
   }
 
+  type ExportedKeys =
+    | 'crossOrigin'
+    | 'offsetX'
+    | 'offsetY'
+    | 'patternTransform'
+    | 'repeat'
+    | 'source'
+    | 'fit'
+  export declare type PatternOptions = Partial<Pick<Pattern, ExportedKeys>>
+
+  export declare class Pattern {
+    constructor(options?: PatternOptions)
+    /** 契合度 */
+    fit: 'fill' | 'padding' | 'clip' | 'repeat' | ''
+  }
+
   export declare class StaticCanvas {
     _objects: FabricObject[]
     getObjects(): FabricObject[]
@@ -173,5 +188,4 @@ export declare module 'fabric' {
 
 export declare namespace fabric {
   export * from 'fabric'
-  export * from 'fabric/src/typedefs'
 }

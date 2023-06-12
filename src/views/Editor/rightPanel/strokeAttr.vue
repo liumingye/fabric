@@ -12,7 +12,7 @@
   const strokeWidth = useActiveObjectModel('strokeWidth')
   const paintFirst = useActiveObjectModel<'paintFirst', SelectProps['modelValue']>('paintFirst')
 
-  const { formatValue, background, changeColor, closeColorPicker, openColorPicker, readonly } =
+  const { formatValue, colorBlock, changeColor, closeColorPicker, openColorPicker, readonly } =
     useColor(
       computed(() => stroke.value.modelValue),
       {
@@ -62,12 +62,7 @@
           <template #prefix>
             <a-button size="mini" class="icon-btn" @click="openColorPicker">
               <template #icon>
-                <div
-                  class="w18px h18px rd-4px"
-                  :style="{
-                    background,
-                  }"
-                ></div>
+                <div v-bind="colorBlock"></div>
               </template>
             </a-button>
           </template>

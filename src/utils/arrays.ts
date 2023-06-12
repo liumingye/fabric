@@ -24,7 +24,7 @@ export const findFirstMissingPositive = (nums: number[]) => {
   return n + 1
 }
 
-// function testPerformance(func) {
+// export function testPerformance(func: () => void) {
 //   const iterations = 100000 // 测试次数
 //   let totalTime = 0
 //   for (let i = 0; i < iterations; i++) {

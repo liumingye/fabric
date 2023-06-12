@@ -1,9 +1,7 @@
 <template>
   <a-button
-    class="icon-btn btn-box"
-    :style="{
-      backgroundColor: active ? 'rgb(var(--primary-6)) !important' : undefined,
-    }"
+    class="btn-box"
+    :class="{ active }"
     :size="size"
     :disabled="disabled"
     v-bind="buttonProps"
@@ -22,7 +20,7 @@
         @popup-visible-change="handlePopupVisibleChange"
       >
         <a-button
-          class="more absolute! w12px! h12px! bottom-0 right-0 bg-transparent! transition translate-0"
+          class="more-btn absolute! w12px! h12px! bottom-0 right-0 bg-transparent! transition translate-0"
           :disabled="disabled"
         >
           <template #icon>
@@ -198,8 +196,27 @@
 
 <style lang="less" scoped>
   .btn-box {
+    background-color: transparent;
+
     &:hover {
-      .more {
+      background-color: var(--color-secondary-hover);
+    }
+
+    &:active {
+      background-color: var(--color-secondary-active);
+    }
+
+    &.active {
+      background-color: rgb(var(--primary-6));
+      color: #fff;
+
+      .more-btn {
+        color: #fff;
+      }
+    }
+
+    &:hover {
+      .more-btn {
         --un-translate-x: 2px;
         --un-translate-y: 2px;
       }

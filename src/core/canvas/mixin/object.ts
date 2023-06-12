@@ -13,6 +13,9 @@ import {
   Board,
   Rect,
   Image,
+  TFiller,
+  Pattern,
+  Gradient,
 } from '@fabric'
 import type { ControlRenderingStyleOverride } from 'fabric/src/controls/controlRendering'
 import { AlignMethod } from 'app'
@@ -190,6 +193,50 @@ const mixin = {
       styleOverride,
       childrenOverride,
     )
+  },
+  _applyPatternGradientTransform(ctx: CanvasRenderingContext2D, filler: TFiller) {
+    if (!util.isFiller(filler)) {
+      return { offsetX: 0, offsetY: 0 }
+    }
+    const t =
+      (filler as Gradient<'linear'>).gradientTransform || (filler as Pattern).patternTransform
+    const offsetX = -this.width / 2 + filler.offsetX || 0,
+      offsetY = -this.height / 2 + filler.offsetY || 0
+
+    if ((filler as Gradient<'linear'>).gradientUnits === 'percentage') {
+      ctx.transform(this.width, 0, 0, this.height, offsetX, offsetY)
+    }
+
+    // 填充｜适应｜平铺｜裁剪
+    else if (util.isPattern(filler) && filler.fit && filler.isImageSource()) {
+      const method = filler.fit || 'fill'
+      // 填充 | 适应
+      if (['fill', 'padding'].includes(method)) {
+        // 计算缩放比例和偏移量
+        const objScaleX = this.group ? this.scaleX * this.group.scaleX : this.scaleX
+        const objScaleY = this.group ? this.scaleY * this.group.scaleY : this.scaleY
+        const { naturalHeight, naturalWidth } = filler.source
+        const { x: objWidth, y: objHeight } = this.getWidthHeight()
+        const scaleX = objWidth / naturalWidth
+        const scaleY = objHeight / naturalHeight
+        const scale = Math[method === 'fill' ? 'max' : 'min'](scaleX, scaleY)
+        let offsetX = -this.width / 2,
+          offsetY = -this.height / 2
+        if (method === 'fill' ? scaleX > scaleY : scaleX < scaleY) {
+          offsetY -= (naturalHeight * scale - objHeight) / objScaleY / 2
+        } else {
+          offsetX -= (naturalWidth * scale - objWidth) / objScaleX / 2
+        }
+        ctx.transform(scale / objScaleX, 0, 0, scale / objScaleY, offsetX, offsetY)
+        return { offsetX, offsetY }
+      }
+    } else {
+      ctx.transform(1, 0, 0, 1, offsetX, offsetY)
+    }
+    if (t) {
+      ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5])
+    }
+    return { offsetX, offsetY }
   },
 } as FabricObject
 

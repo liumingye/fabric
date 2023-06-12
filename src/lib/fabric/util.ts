@@ -1,6 +1,14 @@
-import { util as utilOrgin } from 'fabric'
-import { FabricObject, ActiveSelection, Gradient, Pattern, Text, Group, Canvas } from '@fabric'
-import { Group as NativeGroup } from 'fabric'
+import {
+  FabricObject,
+  ActiveSelection,
+  Gradient,
+  Pattern,
+  Text,
+  Group,
+  Canvas,
+  TFiller,
+} from '@fabric'
+import { util as utilOrgin, Group as NativeGroup } from 'fabric'
 import { Board } from '@/core/canvas/shapes/board'
 
 // 类型工具
@@ -44,6 +52,10 @@ const isTextObject = (thing?: FabricObject): thing is Text => {
   return !!thing && thing.isType('Text', 'IText', 'Textbox')
 }
 
+const isFiller = (filler: TFiller | string | null): filler is TFiller => {
+  return !!filler && (filler as TFiller).toLive !== undefined
+}
+
 export const util = {
   ...utilOrgin,
   isBoard,
@@ -54,4 +66,5 @@ export const util = {
   isTextObject,
   isGroup,
   isNativeGroup,
+  isFiller,
 }

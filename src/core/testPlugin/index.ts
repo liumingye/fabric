@@ -1,7 +1,7 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
-import { Board, Gradient, Group, Rect } from '@fabric'
+import { Board, Gradient, Group, Rect, util, Pattern } from '@fabric'
 import { random } from 'lodash'
 import TestSlot from './testSlot.vue'
 
@@ -63,6 +63,31 @@ const myPlugin = createEditorPlugin((editor) => {
 
       const rects = []
 
+      const rect = new Rect({
+        top: 10,
+        left: 10,
+        width: 200,
+        height: 200,
+        fill: '',
+      })
+      canvas.add(rect)
+      util
+        .loadImage(
+          'https://img.js.design/assets/img/6486fff21a74fef8078bf782.jpg#4d6a3f65b147c75a22effca8347bc5ce',
+          {
+            crossOrigin: 'anonymous',
+          },
+        )
+        .then((image) => {
+          rect.fill = new Pattern({
+            crossOrigin: 'anonymous',
+            source: image,
+            fit: 'fill',
+          })
+          rect.set('dirty', true)
+          canvas.requestRenderAll()
+        })
+
       for (let index = 0; index < 50; index++) {
         rects.push(
           new Rect({
@@ -77,24 +102,6 @@ const myPlugin = createEditorPlugin((editor) => {
           }),
         )
 
-        // board1.add(
-        //   new Rect({
-        //     top: random(0, 200),
-        //     left: random(0, 200),
-        //     width: random(50, 100),
-        //     height: random(50, 100),
-        //     fill: new Gradient({
-        //       type: 'radial',
-        //       coords: { x1: 50, y1: 50, r1: 0, x2: 50, y2: 50, r2: 50 },
-        //       colorStops: [
-        //         { color: '#000000', offset: 0 },
-        //         { color: '#ffffff', offset: 1 },
-        //       ],
-        //     }),
-        //     strokeWidth: random(0, 10),
-        //     stroke:getRandomColor(),
-        //   }),
-        // )
         board2.add(
           new Rect({
             top: random(400, 500),

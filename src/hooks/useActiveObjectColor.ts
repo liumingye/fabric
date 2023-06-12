@@ -23,19 +23,28 @@ export function useColor(
   },
 ) {
   /** 小方块颜色图标 */
-  const background = computed(() => {
-    let css = ''
+  const colorBlock = computed(() => {
+    let background = ''
     if (isString(color.value)) {
-      css += color.value
+      background += color.value
     } else if (util.isGradient(color.value)) {
       if (color.value.type === 'linear') {
-        css += `linear-gradient(${convertCoordsToDeg(color.value.coords)}deg`
+        background += `linear-gradient(${convertCoordsToDeg(color.value.coords)}deg`
       } else {
-        css += `radial-gradient(8px 8px at 8px 8px`
+        background += `radial-gradient(8px 8px at 8px 8px`
       }
-      css += `,${color.value.colorStops.map((cs) => `${cs.color} ${cs.offset * 100}%`).join(',')})`
+      background += `,${color.value.colorStops
+        .map((cs) => `${cs.color} ${cs.offset * 100}%`)
+        .join(',')})`
     }
-    return css || '#fff'
+
+    return {
+      class: 'w18px h18px rd-4px',
+      style: {
+        border: '1px solid #cccccc90',
+        background: background || '#fff',
+      },
+    }
   })
 
   /** 透明度 */
@@ -99,7 +108,7 @@ export function useColor(
 
   return {
     formatValue,
-    background,
+    colorBlock,
     opacity,
     openColorPicker,
     closeColorPicker,

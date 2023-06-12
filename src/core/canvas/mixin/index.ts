@@ -1,3 +1,4 @@
+import './pattern'
 import './object'
 import './group'
 import './activeSelection'

@@ -17,10 +17,32 @@ class Node<E> {
   }
 }
 
+/**
+ * 链表
+ */
 export class LinkedList<E> {
   private _first: Node<E> = Node.Undefined
   private _last: Node<E> = Node.Undefined
   private _size = 0
+
+  /**
+   * Returns the node at the specified index
+   * @param index
+   */
+  // getAtIndex(index: number): E | undefined {
+  //   if (this.isEmpty() || index < 0 || index > this.size) {
+  //     return undefined
+  //   } else {
+  //     let currentNode = this._first
+  //     for (let i = 0; i < index; i++) {
+  //       if (currentNode === Node.Undefined) {
+  //         return undefined
+  //       }
+  //       currentNode = currentNode.next
+  //     }
+  //     return currentNode.element
+  //   }
+  // }
 
   get size(): number {
     return this._size
