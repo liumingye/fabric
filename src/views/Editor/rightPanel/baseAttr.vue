@@ -27,10 +27,10 @@
         <SwipeNumber size="small" label="Y" v-bind="top" />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber size="small" :min="1" label="W" v-bind="width" />
+        <SwipeNumber size="small" :min="0.5" label="W" v-bind="width" />
       </a-col>
       <a-col :span="10">
-        <SwipeNumber size="small" :min="1" label="H" v-bind="height" />
+        <SwipeNumber size="small" :min="0.5" label="H" v-bind="height" />
       </a-col>
       <a-col :span="10">
         <SwipeNumber size="small" v-bind="angle">

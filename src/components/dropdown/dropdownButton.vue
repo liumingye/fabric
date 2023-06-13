@@ -196,18 +196,18 @@
 
 <style lang="less" scoped>
   .btn-box {
-    background-color: transparent;
+    background-color: transparent !important;
 
     &:hover {
-      background-color: var(--color-secondary-hover);
+      background-color: var(--color-secondary-hover) !important;
     }
 
     &:active {
-      background-color: var(--color-secondary-active);
+      background-color: var(--color-secondary-active) !important;
     }
 
     &.active {
-      background-color: rgb(var(--primary-6));
+      background-color: rgb(var(--primary-6)) !important;
       color: #fff;
 
       .more-btn {

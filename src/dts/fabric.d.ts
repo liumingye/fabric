@@ -144,7 +144,7 @@ export declare module 'fabric' {
     ): T extends true ? Group | undefined : Group | Canvas | StaticCanvas
     /** 不发送 object:added 事件 */
     noEventObjectAdded: boolean
-    getWidthHeight(): Point
+    getWidthHeight(noFixed?: boolean): Point
     getHeight(): number
     getWidth(): number
     getLeftTop(): Point
@@ -177,7 +177,7 @@ export declare module 'fabric' {
   export declare class Pattern {
     constructor(options?: PatternOptions)
     /** 契合度 */
-    fit: 'fill' | 'padding' | 'clip' | 'repeat' | ''
+    fit: 'fill' | 'padding' | 'clip' | 'repeat'
   }
 
   export declare class StaticCanvas {

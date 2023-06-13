@@ -22,6 +22,8 @@ import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
 import NP from 'number-precision'
+import { fill } from 'lodash'
+import { Tr } from '@arco-design/web-vue'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
@@ -42,14 +44,16 @@ Object.assign(FabricObject.ownDefaults, {
 } as FabricObject)
 
 const mixin = {
-  getWidthHeight() {
-    const point = this._getTransformedDimensions()
-    if (this.group) {
-      point.setX(NP.times(point.x, this.group.scaleX))
-      point.setY(NP.times(point.y, this.group.scaleY))
+  getWidthHeight(noFixed = false) {
+    const objScale = this.getObjectScaling()
+    const point = this._getTransformedDimensions({
+      scaleX: objScale.x,
+      scaleY: objScale.y,
+    })
+    if (!noFixed) {
+      point.setX(toFixed(point.x))
+      point.setY(toFixed(point.y))
     }
-    point.setX(toFixed(point.x))
-    point.setY(toFixed(point.y))
     return point
   },
   getHeight() {
@@ -59,27 +63,19 @@ const mixin = {
     return this.getWidthHeight().x
   },
   setHeight(value: number) {
-    if (this.group) {
-      value = NP.divide(value, this.group.scaleY)
-    }
-    const height = this._getTransformedDimensions({
-      scaleX: 1,
-      scaleY: 1,
-      strokeWidth: 0,
-    }).y
-    this.set('scaleY', NP.divide(NP.minus(value, this.strokeWidth), height))
+    value = Math.max(value, this.strokeWidth, 0.5)
+    const height = NP.divide(NP.minus(this.getWidthHeight(true).y, this.strokeWidth), this.scaleY)
+    const newScale = NP.divide(NP.minus(value, this.strokeWidth), height)
+    if (newScale === Infinity || Number.isNaN(newScale)) return
+    this.set('scaleY', newScale || 0.00001)
     this.fire('scaling')
   },
   setWidth(value: number) {
-    if (this.group) {
-      value = NP.divide(value, this.group.scaleX)
-    }
-    const width = this._getTransformedDimensions({
-      scaleX: 1,
-      scaleY: 1,
-      strokeWidth: 0,
-    }).x
-    this.set('scaleX', NP.divide(NP.minus(value, this.strokeWidth), width))
+    value = Math.max(value, this.strokeWidth, 0.5)
+    const width = NP.divide(NP.minus(this.getWidthHeight(true).x, this.strokeWidth), this.scaleX)
+    const newScale = NP.divide(NP.minus(value, this.strokeWidth), width)
+    if (newScale === Infinity || Number.isNaN(newScale)) return
+    this.set('scaleX', newScale || 0.00001)
     this.fire('scaling')
   },
   setAngle(value: number) {
@@ -200,36 +196,32 @@ const mixin = {
     }
     const t =
       (filler as Gradient<'linear'>).gradientTransform || (filler as Pattern).patternTransform
-    const offsetX = -this.width / 2 + filler.offsetX || 0,
+    let offsetX = -this.width / 2 + filler.offsetX || 0,
       offsetY = -this.height / 2 + filler.offsetY || 0
 
     if ((filler as Gradient<'linear'>).gradientUnits === 'percentage') {
       ctx.transform(this.width, 0, 0, this.height, offsetX, offsetY)
     }
 
-    // 填充｜适应｜平铺｜裁剪
-    else if (util.isPattern(filler) && filler.fit && filler.isImageSource()) {
-      const method = filler.fit || 'fill'
-      // 填充 | 适应
-      if (['fill', 'padding'].includes(method)) {
-        // 计算缩放比例和偏移量
-        const objScaleX = this.group ? this.scaleX * this.group.scaleX : this.scaleX
-        const objScaleY = this.group ? this.scaleY * this.group.scaleY : this.scaleY
-        const { naturalHeight, naturalWidth } = filler.source
-        const { x: objWidth, y: objHeight } = this.getWidthHeight()
-        const scaleX = objWidth / naturalWidth
-        const scaleY = objHeight / naturalHeight
-        const scale = Math[method === 'fill' ? 'max' : 'min'](scaleX, scaleY)
-        let offsetX = -this.width / 2,
-          offsetY = -this.height / 2
-        if (method === 'fill' ? scaleX > scaleY : scaleX < scaleY) {
-          offsetY -= (naturalHeight * scale - objHeight) / objScaleY / 2
-        } else {
-          offsetX -= (naturalWidth * scale - objWidth) / objScaleX / 2
-        }
-        ctx.transform(scale / objScaleX, 0, 0, scale / objScaleY, offsetX, offsetY)
-        return { offsetX, offsetY }
+    // 填充 | 适应
+    else if (
+      util.isPattern(filler) &&
+      (filler.fit == 'fill' || filler.fit == 'padding') &&
+      filler.isImageSource()
+    ) {
+      // 计算缩放比例和偏移量
+      const objScale = this.getObjectScaling()
+      const { naturalHeight, naturalWidth } = filler.source
+      const { x: objWidth, y: objHeight } = this.getWidthHeight()
+      const scaleX = objWidth / naturalWidth
+      const scaleY = objHeight / naturalHeight
+      const scale = Math[filler.fit === 'fill' ? 'max' : 'min'](scaleX, scaleY)
+      if (filler.fit === 'fill' ? scaleX > scaleY : scaleX < scaleY) {
+        offsetY -= (naturalHeight * scale - objHeight) / objScale.y / 2
+      } else {
+        offsetX -= (naturalWidth * scale - objWidth) / objScale.x / 2
       }
+      ctx.transform(scale / objScale.x, 0, 0, scale / objScale.y, offsetX, offsetY)
     } else {
       ctx.transform(1, 0, 0, 1, offsetX, offsetY)
     }
