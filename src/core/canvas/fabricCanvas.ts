@@ -15,13 +15,10 @@ import {
   Textbox,
   util,
   Board,
-  config,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
 import { debounce, throttle, isObject } from 'lodash'
 import './mixin'
-
-config.NUM_FRACTION_DIGITS = 2
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 

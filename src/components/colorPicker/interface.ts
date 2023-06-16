@@ -25,7 +25,7 @@ export type Mode = 'hex' | 'rgb' | 'hsb' | 'hsl'
 
 export type ActionName = 'onStartChange' | 'onChange' | 'onEndChange'
 
-export type ColorType = 'color' | 'linear' | 'radial'
+export type ColorType = 'color' | 'linear' | 'radial' | 'pattern'
 
 export type UpdateColor = (
   color: {

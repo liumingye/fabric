@@ -22,8 +22,6 @@ import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
 import NP from 'number-precision'
-import { fill } from 'lodash'
-import { Tr } from '@arco-design/web-vue'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
@@ -88,6 +86,7 @@ const mixin = {
     }
     const transformMatrix = this.group.calcTransformMatrix()
     const point = relativePosition.transform(transformMatrix)
+    // todo: 画板内元素原点为画板左上角
     // if (this.group instanceof Board) {
     //   return point.subtract(this.group.getRelativeXY())
     // }
@@ -102,7 +101,6 @@ const mixin = {
   setLeftTop(point: Point) {
     if (this.group) {
       point = point.transform(util.invertTransform(this.group.calcTransformMatrix()))
-
       // if (this.group instanceof Board) {
       //   point = point.add(this.group.getRelativeXY())
       // }
@@ -210,6 +208,7 @@ const mixin = {
       filler.isImageSource()
     ) {
       // 计算缩放比例和偏移量
+      filler.repeat = 'no-repeat'
       const objScale = this.getObjectScaling()
       const { naturalHeight, naturalWidth } = filler.source
       const { x: objWidth, y: objHeight } = this.getWidthHeight()
@@ -221,7 +220,9 @@ const mixin = {
       } else {
         offsetX -= (naturalWidth * scale - objWidth) / objScale.x / 2
       }
-      ctx.transform(scale / objScale.x, 0, 0, scale / objScale.y, offsetX, offsetY)
+      filler.patternTransform = [scale / objScale.x, 0, 0, scale / objScale.y, offsetX, offsetY]
+      ctx.transform(...filler.patternTransform)
+      return { offsetX, offsetY }
     } else {
       ctx.transform(1, 0, 0, 1, offsetX, offsetY)
     }

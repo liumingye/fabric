@@ -9,6 +9,7 @@
       <a-radio value="color">纯色</a-radio>
       <a-radio value="linear">线性</a-radio>
       <a-radio value="radial">径向</a-radio>
+      <a-radio value="pattern">图案</a-radio>
     </a-radio-group>
   </div>
 </template>

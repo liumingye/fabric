@@ -27,6 +27,10 @@ export function useColor(
     let background = ''
     if (isString(color.value)) {
       background += color.value
+    } else if (util.isPattern(color.value)) {
+      if (color.value.isImageSource()) {
+        background += `url(${color.value.source.src}) center center / 14px no-repeat`
+      }
     } else if (util.isGradient(color.value)) {
       if (color.value.type === 'linear') {
         background += `linear-gradient(${convertCoordsToDeg(color.value.coords)}deg`

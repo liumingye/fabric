@@ -83,8 +83,9 @@
                 <div
                   class="w18px h18px rd-4px"
                   :style="{
-                    background: state.backgroundColor as string,
-                  }"
+                  background: state.backgroundColor as string,
+                  border: '1px solid #cccccc90',
+                }"
                 ></div>
               </template>
             </a-button>

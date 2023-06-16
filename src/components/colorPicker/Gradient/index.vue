@@ -12,34 +12,46 @@
     :type="state.gradientType"
     :change-gradient-control="changeGradientControl"
   />
-  <Area
-    :red="state.colorRed"
-    :green="state.colorGreen"
-    :blue="state.colorBlue"
-    :alpha="state.colorAlpha"
-    :hue="state.colorHue"
-    :saturation="state.colorSaturation"
-    :value="state.colorValue"
-    :update-color="updateColor"
-    :is-gradient="true"
-    :type="state.gradientType"
-    :points="state.gradientPoints"
-    :active-point-index="state.activePointIndex"
-    :change-gradient-control="changeGradientControl"
-    :change-active-point-index="changeActivePointIndex"
-    :update-gradient-left="updateGradientLeft"
-    :add-point="addPoint"
-    :remove-point="removePoint"
-  />
 
-  <Preview
-    :red="state.colorRed"
-    :green="state.colorGreen"
-    :blue="state.colorBlue"
-    :alpha="state.colorAlpha"
-    :update-color="updateColor"
-    :mode="mode"
-  />
+  <template v-if="state.gradientType === 'pattern'">
+    <div>
+      <a-select v-model="fit">
+        <a-option value="fill">填充</a-option>
+        <a-option value="padding">适应</a-option>
+        <a-option value="clip">裁剪</a-option>
+        <!-- <a-option value="repeat">平铺</a-option> -->
+      </a-select>
+    </div>
+  </template>
+  <template v-else>
+    <Area
+      :red="state.colorRed"
+      :green="state.colorGreen"
+      :blue="state.colorBlue"
+      :alpha="state.colorAlpha"
+      :hue="state.colorHue"
+      :saturation="state.colorSaturation"
+      :value="state.colorValue"
+      :update-color="updateColor"
+      :is-gradient="true"
+      :type="state.gradientType"
+      :points="state.gradientPoints"
+      :active-point-index="state.activePointIndex"
+      :change-gradient-control="changeGradientControl"
+      :change-active-point-index="changeActivePointIndex"
+      :update-gradient-left="updateGradientLeft"
+      :add-point="addPoint"
+      :remove-point="removePoint"
+    />
+    <Preview
+      :red="state.colorRed"
+      :green="state.colorGreen"
+      :blue="state.colorBlue"
+      :alpha="state.colorAlpha"
+      :update-color="updateColor"
+      :mode="mode"
+    />
+  </template>
 </template>
 
 <script lang="ts" setup>
@@ -50,6 +62,28 @@
   import { clamp } from '@vueuse/core'
   import { ColorType, Props } from '@/components/colorPicker/interface'
   import { Color, RGBA } from '@/utils/color'
+  import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
+  import { useEditor } from '@/app'
+  import { util } from '@fabric'
+
+  const { canvas, undoRedo } = useEditor()
+
+  const fill = useActiveObjectModel('fill')
+  const fit = computed({
+    get() {
+      if (util.isPattern(fill.value.modelValue)) {
+        return fill.value.modelValue.fit
+      }
+    },
+    set(value) {
+      if (util.isPattern(fill.value.modelValue) && value) {
+        fill.value.modelValue.fit = value
+        canvas.activeObject.value?._set('dirty', true)
+        canvas.requestRenderAll()
+        undoRedo.saveState()
+      }
+    },
+  })
 
   const props = defineProps<Required<Props>>()
 

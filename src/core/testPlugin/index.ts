@@ -1,7 +1,7 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
 import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
-import { Board, Gradient, Group, Rect, util, Pattern } from '@fabric'
+import { Board, Gradient, Group, Rect, util, Pattern,Triangle } from '@fabric'
 import { random } from 'lodash'
 import TestSlot from './testSlot.vue'
 
@@ -63,14 +63,14 @@ const myPlugin = createEditorPlugin((editor) => {
 
       const rects = []
 
-      const rect = new Rect({
+      const shape = new Triangle({
         top: 10,
         left: 10,
         width: 200,
         height: 200,
         fill: '',
       })
-      canvas.add(rect)
+      canvas.add(shape)
       util
         .loadImage(
           'https://img.js.design/assets/img/6486fff21a74fef8078bf782.jpg#4d6a3f65b147c75a22effca8347bc5ce',
@@ -79,12 +79,12 @@ const myPlugin = createEditorPlugin((editor) => {
           },
         )
         .then((image) => {
-          rect.fill = new Pattern({
+          shape.fill = new Pattern({
             crossOrigin: 'anonymous',
             source: image,
             fit: 'fill',
           })
-          rect.set('dirty', true)
+          shape.set('dirty', true)
           canvas.requestRenderAll()
         })
 

@@ -34,7 +34,7 @@ const positionHandlerH: Control['positionHandler'] = (
   currentControl.sizeY = size
   currentControl.touchSizeX = fabricObject.touchCornerSize
   currentControl.touchSizeY = size
-  return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
+  return positionHandler(dim, finalMatrix, fabricObject, currentControl)
 }
 
 const positionHandlerV: Control['positionHandler'] = (
@@ -48,7 +48,7 @@ const positionHandlerV: Control['positionHandler'] = (
   currentControl.sizeY = fabricObject.cornerSize
   currentControl.touchSizeX = size
   currentControl.touchSizeY = fabricObject.touchCornerSize
-  return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
+  return positionHandler(dim, finalMatrix, fabricObject, currentControl)
 }
 
 const rotateIcon = (angle: number) => {
@@ -100,10 +100,10 @@ export const createObjectDefaultControls = (): TControlSet => ({
     y: 0.5,
     cursorStyleHandler: () => '',
     offsetY: 14,
-    sizeX: 0,
-    sizeY: 0,
-    touchSizeX: 0,
-    touchSizeY: 0,
+    sizeX: 0.0001,
+    sizeY: 0.0001,
+    touchSizeX: 0.0001,
+    touchSizeY: 0.0001,
     render: (ctx, left, top, styleOverride, fabricObject: FabricObject) => {
       // todo: 支持组内反转的对象
       ctx.save()

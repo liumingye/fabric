@@ -3,7 +3,16 @@ import { Disposable } from '@/utils/lifecycle'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { ClipboardService, IClipboardService } from '@/core/clipboard/clipboardService'
 import { encode, decode } from '@/utils/steganography'
-import { ActiveSelection, CanvasEvents, FabricObject, Image, Point, Textbox, util } from '@fabric'
+import {
+  ActiveSelection,
+  CanvasEvents,
+  FabricObject,
+  Point,
+  Rect,
+  Textbox,
+  util,
+  Pattern,
+} from '@fabric'
 import { randomText } from '@/utils/strings'
 import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
@@ -88,11 +97,14 @@ export class Clipboard extends Disposable {
     const center = this.canvas.getVpCenter()
     util.loadImage(URL.createObjectURL(blob)).then((img) => {
       this.canvas.add(
-        new Image(img, {
+        new Rect({
           width: img.width,
           height: img.height,
           left: center.x - img.width / 2,
           top: center.y - img.height / 2,
+          fill: new Pattern({
+            source: img,
+          }),
         }),
       )
     })
@@ -180,7 +192,11 @@ export class Clipboard extends Disposable {
               }
               // 粘贴到中心点
               else if (pasteCenterPoint) {
-                const { x, y } = this.canvas.getVpCenter()
+                const { x, y } = object.translateToOriginPoint(
+                  this.canvas.getVpCenter(),
+                  'left',
+                  'top',
+                )
                 object.left = x
                 object.top = y
               }

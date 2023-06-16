@@ -18,6 +18,7 @@
   import IFolder from '@/assets/images/folder.svg?raw'
   import IBoard from '@/assets/images/board.svg?raw'
   import IText from '@/assets/images/text.svg?raw'
+  import IImage from '@/assets/images/image.svg?raw'
 
   interface ITreeNodeData extends TreeNodeData {
     isCollection: boolean
@@ -49,6 +50,8 @@
       return IFolder
     } else if (object.isType('Board', 'Textbox')) {
       return IBoard
+    } else if (object.isType('Image') || util.isPattern(object.fill)) {
+      return IImage
     }
     if (svgCacheMap.has(object.id)) return svgCacheMap.get(object.id)
     const { tl, tr, br, bl } = object._getCoords(true, true)

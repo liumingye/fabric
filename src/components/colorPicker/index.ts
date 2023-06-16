@@ -33,12 +33,33 @@ const openDialog = (
 
   const colorValue = object && attr ? object[attr] : initialColor
 
+  // 渐变
   if (colorValue instanceof Gradient) {
     points = fabricGradientToPoints(colorValue)
     type = colorValue.type
-  } else if (colorValue instanceof Pattern) {
-    //
-  } else if (colorValue) {
+  }
+  // 图案
+  else if (colorValue instanceof Pattern) {
+    points = [
+      {
+        left: 0,
+        red: 255,
+        green: 255,
+        blue: 255,
+        alpha: 1,
+      },
+      {
+        left: 100,
+        red: 255,
+        green: 255,
+        blue: 255,
+        alpha: 0,
+      },
+    ]
+    type = colorValue.type as 'pattern'
+  }
+  // 纯色
+  else if (colorValue) {
     const color = new FabricColor(colorValue)
     const [red, green, blue, alpha] = color.getSource()
     points = [
