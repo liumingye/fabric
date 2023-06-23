@@ -1,9 +1,10 @@
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { CanvasEvents, Point, TMat2D, TPointerEvent, TPointerEventInfo } from '@fabric'
+import { CanvasEvents, Point, TPointerEvent, TPointerEventInfo } from '@fabric'
 import { useIntervalFn, useMagicKeys } from '@vueuse/core'
 import { Disposable, toDisposable } from '@/utils/lifecycle'
 import { useFabricSwipe } from '@/hooks/useFabricSwipe'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
+import { debounce } from 'lodash'
 
 /**
  * 画板默认滚动行为
@@ -38,7 +39,8 @@ export class HandleWheelScroll extends Disposable {
         if (newZoom > 0.97 && newZoom < 1.03) {
           newZoom = 1
         }
-        this.canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom)
+        this.canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom, true)
+        this.setViewportTransform()
         return
       }
       // 滚动画布
@@ -48,7 +50,8 @@ export class HandleWheelScroll extends Disposable {
       } else {
         deltaPoint.y = deltaY > 0 ? -20 : 20
       }
-      this.canvas.relativePan(deltaPoint)
+      this.canvas.relativePan(deltaPoint, true)
+      this.setViewportTransform()
     }
 
     this.canvas.on('mouse:wheel', mouseWheel)
@@ -58,6 +61,13 @@ export class HandleWheelScroll extends Disposable {
       }),
     )
   }
+
+  private setViewportTransform = debounce(() => {
+    const { renderOnAddRemove } = this.canvas
+    this.canvas.renderOnAddRemove = false
+    this.canvas.setViewportTransform(this.canvas.viewportTransform)
+    this.canvas.renderOnAddRemove = renderOnAddRemove
+  }, 150)
 
   /**
    * 边缘移动
@@ -113,7 +123,7 @@ export class HandleWheelScroll extends Disposable {
         pause()
         event = undefined
         if (needSetCoords) {
-          this.canvas.setViewportTransform(this.canvas.viewportTransform)
+          this.setViewportTransform()
           needSetCoords = false
         }
       },

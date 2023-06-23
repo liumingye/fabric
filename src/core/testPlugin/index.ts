@@ -88,7 +88,7 @@ const myPlugin = createEditorPlugin((editor) => {
           canvas.requestRenderAll()
         })
 
-      for (let index = 0; index < 50; index++) {
+      for (let index = 0; index < 150; index++) {
         rects.push(
           new Rect({
             top: random(100, 500),

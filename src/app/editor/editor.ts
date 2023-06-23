@@ -21,6 +21,7 @@ import { UsableSolts } from '@/core/types'
 import { toDisposable } from '@/utils/lifecycle'
 import type { DefineComponent } from 'vue'
 import { useEditor } from '@/app'
+import { runWhenIdle } from '@/utils/async'
 
 export class EditorMain extends BaseApp {
   public service!: IInstantiationService
@@ -57,6 +58,7 @@ export class EditorMain extends BaseApp {
         this._register(instance)
       })
 
+      // 插件载入
       provide('useEditor', useEditor)
       const core = getActiveCore()
       core._p.forEach((plugin) => {
@@ -74,13 +76,17 @@ export class EditorMain extends BaseApp {
     instance._id = Symbol()
     this.pluginInstance.set(instance._id, instance)
     // 生命周期
-    instance.setup?.()
-    this._register(
-      toDisposable(() => {
-        instance.dispose?.()
-        this.pluginInstance.delete(instance._id)
-      }),
-    )
+    runWhenIdle(() => {
+      // 插件安装
+      instance.setup?.()
+      this._register(
+        toDisposable(() => {
+          // 插件销毁
+          instance.dispose?.()
+          this.pluginInstance.delete(instance._id)
+        }),
+      )
+    })
   }
 
   private initServices() {

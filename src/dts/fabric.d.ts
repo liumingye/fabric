@@ -101,6 +101,7 @@ export declare module 'fabric' {
     getObjects(...types: string[]): FabricObject[]
     absolutePan(point: Point, skipSetCoords?: boolean): void
     relativePan(point: Point, skipSetCoords?: boolean): void
+    zoomToPoint(point: Point, value: number, skipSetCoords?: boolean): void
   }
 
   export declare class ActiveSelection {

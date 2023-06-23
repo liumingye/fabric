@@ -17,7 +17,8 @@ import {
   Board,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
-import { debounce, throttle, isObject } from 'lodash'
+import { runWhenIdle } from '@/utils/async'
+import { debounce, isObject } from 'lodash'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
@@ -106,20 +107,47 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.activeObject.value = value
   }
 
-  override zoomToPoint(point: Point, value: number) {
+  override zoomToPoint(point: Point, value: number, skipSetCoords?: boolean) {
     value = clamp(value, 0.02, 256)
-    super.zoomToPoint(point, value)
+    const before = point,
+      vpt: TMat2D = [...this.viewportTransform]
+    const newPoint = util.transformPoint(point, util.invertTransform(vpt))
+    vpt[0] = value
+    vpt[3] = value
+    const after = util.transformPoint(newPoint, vpt)
+    vpt[4] += before.x - after.x
+    vpt[5] += before.y - after.y
+    if (skipSetCoords) {
+      this.viewportTransform = vpt
+      this.renderOnAddRemove && this.requestRenderAll()
+    } else {
+      this.setViewportTransform(vpt)
+    }
   }
 
-  private _setCoords = throttle(() => {
+  private setCoordsStack = new LinkedList<FabricObject>()
+
+  private _setCoords = debounce(() => {
     const backgroundObject = this.backgroundImage,
       overlayObject = this.overlayImage,
       len = this._objects.length
 
-    for (let i = 0; i < len; i++) {
-      const object = this._objects[i]
-      object.group || object.setCoords()
+    if (!this.setCoordsStack.isEmpty()) {
+      this.setCoordsStack.clear()
     }
+    for (let i = 0; i < len; i++) {
+      this.setCoordsStack.push(this._objects[i])
+    }
+
+    runWhenIdle(() => {
+      while (!this.setCoordsStack.isEmpty()) {
+        const object = this.setCoordsStack.shift()
+        if (object) {
+          object.group || object.setCoords()
+        }
+      }
+    })
+
     if (backgroundObject) {
       backgroundObject.setCoords()
     }
