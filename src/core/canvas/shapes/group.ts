@@ -1,5 +1,4 @@
-import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent } from '@fabric'
-import type { GroupProps } from 'fabric/src/shapes/Group'
+import { FabricObject, classRegistry, TPointerEventInfo, TPointerEvent, GroupProps } from '@fabric'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 
 export class Group extends CommonGroup {

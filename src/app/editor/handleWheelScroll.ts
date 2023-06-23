@@ -40,7 +40,7 @@ export class HandleWheelScroll extends Disposable {
           newZoom = 1
         }
         this.canvas.zoomToPoint(new Point(offsetX, offsetY), newZoom, true)
-        this.setViewportTransform()
+        this.setCoords()
         return
       }
       // 滚动画布
@@ -51,7 +51,7 @@ export class HandleWheelScroll extends Disposable {
         deltaPoint.y = deltaY > 0 ? -20 : 20
       }
       this.canvas.relativePan(deltaPoint, true)
-      this.setViewportTransform()
+      this.setCoords()
     }
 
     this.canvas.on('mouse:wheel', mouseWheel)
@@ -62,7 +62,10 @@ export class HandleWheelScroll extends Disposable {
     )
   }
 
-  private setViewportTransform = debounce(() => {
+  /**
+   * 更新所有元素坐标
+   */
+  private setCoords = debounce(() => {
     const { renderOnAddRemove } = this.canvas
     this.canvas.renderOnAddRemove = false
     this.canvas.setViewportTransform(this.canvas.viewportTransform)
@@ -123,7 +126,7 @@ export class HandleWheelScroll extends Disposable {
         pause()
         event = undefined
         if (needSetCoords) {
-          this.setViewportTransform()
+          this.setCoords()
           needSetCoords = false
         }
       },

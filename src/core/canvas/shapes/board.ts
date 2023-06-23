@@ -1,5 +1,4 @@
-import { Rect, classRegistry, FabricObject } from '@fabric'
-import type { GroupProps } from 'fabric/src/shapes/Group'
+import { Rect, classRegistry, FabricObject, GroupProps } from '@fabric'
 import { PiBy180 } from '@/utils/constants'
 import { CommonGroup } from '@/core/canvas/shapes/commonGroup'
 

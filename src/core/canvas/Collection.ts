@@ -26,18 +26,34 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
       )
     }
 
-    override _onObjectAdded(obj: FabricObject) {
-      if (obj.noEventObjectAdded && this.fire !== noop) {
+    override _onObjectAdded(object: FabricObject) {
+      if (object.noEventObjectAdded && this.fire !== noop) {
         const fire = this.fire
         this.fire = noop
         try {
-          super._onObjectAdded(obj)
+          super._onObjectAdded(object)
         } finally {
           this.fire = fire
         }
       } else {
-        super._onObjectAdded(obj)
+        super._onObjectAdded(object)
       }
+      this.updateObjects()
+    }
+
+    override _onObjectRemoved(object: FabricObject) {
+      super._onObjectRemoved(object)
+      this.updateObjects()
+    }
+
+    override _onStackOrderChanged() {
+      super._onStackOrderChanged()
+      this.updateObjects()
+    }
+
+    private updateObjects() {
+      const ref = this.ref?.objects || this.canvas?.ref.objects
+      ref && triggerRef(ref)
     }
 
     private uniqueIds = new Map<string, number>()

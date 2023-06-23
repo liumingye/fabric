@@ -5,7 +5,7 @@ const setCoordsOrigin = Group.prototype.setCoords
 const _shouldSetNestedCoordsOrigin = Group.prototype._shouldSetNestedCoords
 
 Group.prototype.setCoords = function () {
-  if (this.isMoving || !this.interactive) {
+  if (this.isMoving) {
     FabricObject.prototype.setCoords.call(this)
   } else {
     setCoordsOrigin.call(this)

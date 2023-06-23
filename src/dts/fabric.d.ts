@@ -1,5 +1,7 @@
 import type { AlignMethod } from 'app'
 import type { FabricObject, Point, TPointerEventInfo, TPointerEvent, Rect } from '@fabric'
+import type { FabricObjectProps as FabricObjectPropsOrigin } from 'fabric/src/shapes/Object/types/FabricObjectProps'
+import type { GroupOwnProps } from 'fabric/src/shapes/Group'
 
 export declare module 'fabric' {
   export declare type ObjectRef = Pick<
@@ -121,6 +123,8 @@ export declare module 'fabric' {
   }
 
   export declare class Group {
+    id: string
+    name: string
     canvas: Canvas | undefined
     group: this | undefined
     _objects: FabricObject[]
@@ -185,6 +189,13 @@ export declare module 'fabric' {
     _objects: FabricObject[]
     getObjects(): FabricObject[]
   }
+
+  export declare interface FabricObjectProps extends FabricObjectPropsOrigin {
+    id: string
+    name: string
+  }
+
+  export declare interface GroupProps extends FabricObjectProps, GroupOwnProps {}
 }
 
 export declare namespace fabric {

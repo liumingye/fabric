@@ -18,7 +18,7 @@ import {
 } from '@fabric'
 import { clamp } from '@vueuse/core'
 import { runWhenIdle } from '@/utils/async'
-import { debounce, isObject } from 'lodash'
+import { debounce } from 'lodash'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
@@ -61,38 +61,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
     // 初始化画板
     this.initBoard()
-
-    // 响应式
-    const objectsProxy = <K extends keyof FabricCanvas['ref']>(
-      targetKey: any,
-      refKey: K,
-      setCallback?: (target: any, key: any, value: any) => void,
-    ) => {
-      return new Proxy(targetKey, {
-        get: (target, key, receiver) => {
-          const res = Reflect.get(target, key, receiver)
-          // 分组对象
-          if ((isObject(res) as any) && res._objects && !res._isRef_objects) {
-            res._isRef_objects = true
-            res._objects = objectsProxy(res._objects, 'objects', setCallback)
-          }
-          return res
-        },
-        set: (target, key, value, receiver) => {
-          const res = Reflect.set(target, key, value, receiver)
-          setCallback?.(target, key, value)
-          return res
-        },
-      })
-    }
-    const updateObjects = debounce(() => {
-      triggerRef(this.ref.objects)
-    }, 0)
-    this._objects = objectsProxy(this._objects, 'objects', (target, key) => {
-      if (key === 'length') {
-        updateObjects()
-      }
-    })
 
     this.pageId = this.workspacesService.getCurrentId()
     this.initWorkspace()
@@ -146,15 +114,14 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
           object.group || object.setCoords()
         }
       }
+      if (backgroundObject) {
+        backgroundObject.setCoords()
+      }
+      if (overlayObject) {
+        overlayObject.setCoords()
+      }
+      this.calcViewportBoundaries()
     })
-
-    if (backgroundObject) {
-      backgroundObject.setCoords()
-    }
-    if (overlayObject) {
-      overlayObject.setCoords()
-    }
-    this.calcViewportBoundaries()
   }, 50)
 
   override setViewportTransform(vpt: TMat2D) {
@@ -382,7 +349,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     if (skipSetCoords) {
       this.viewportTransform = vpt
       this._cacheBoards?.forEach((board) => {
-        board.setCoords()
+        FabricObject.prototype.setCoords.call(board)
       })
       this.requestRenderAll()
       return

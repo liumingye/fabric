@@ -280,14 +280,14 @@ export class GuideLines extends Disposable {
           }
         })
       })
-
-      this.snap({
-        activeObject,
-        draggingObjCoords: objCoordsByMovingDistance,
-        snapXPoints,
-        snapYPoints,
-      })
     }
+
+    this.snap({
+      activeObject,
+      draggingObjCoords: objCoordsByMovingDistance,
+      snapXPoints,
+      snapYPoints,
+    })
   }
 
   /**

@@ -1,8 +1,7 @@
 import { createCollectionMixin } from '@/core/canvas/Collection'
 import { Group as GroupOrigin } from 'fabric'
 import { toRefObject } from '@/core/canvas/toRefObject'
-import { FabricObject } from '@fabric'
-import type { GroupProps } from 'fabric/src/shapes/Group'
+import { FabricObject, GroupProps } from '@fabric'
 
 export class CommonGroup extends createCollectionMixin(GroupOrigin) {
   constructor(
