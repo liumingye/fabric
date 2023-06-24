@@ -41,6 +41,8 @@ Object.assign(FabricObject.ownDefaults, {
   perPixelTargetFind: true,
 } as FabricObject)
 
+const _renderControlsOrigin = FabricObject.prototype._renderControls
+
 const mixin = {
   getWidthHeight(noFixed = false) {
     const objScale = this.getObjectScaling()
@@ -171,22 +173,13 @@ const mixin = {
   isType(...types: string[]) {
     return types.includes(this._type) || types.includes(this.constructor.name)
   },
-  _renderControls(
-    ctx: CanvasRenderingContext2D,
-    styleOverride?: ControlRenderingStyleOverride,
-    childrenOverride?: ControlRenderingStyleOverride,
-  ) {
+  _renderControls(ctx: CanvasRenderingContext2D, styleOverride?: ControlRenderingStyleOverride) {
     // 移动时关闭控制渲染
     if (this.isMoving) {
       this.setCoords()
       return
     }
-    Object.getPrototypeOf(FabricObject.prototype)._renderControls.call(
-      this,
-      ctx,
-      styleOverride,
-      childrenOverride,
-    )
+    _renderControlsOrigin.call(this, ctx, styleOverride)
   },
   _applyPatternGradientTransform(ctx: CanvasRenderingContext2D, filler: TFiller) {
     if (!util.isFiller(filler)) {

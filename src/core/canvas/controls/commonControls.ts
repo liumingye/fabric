@@ -11,6 +11,9 @@ import {
 } from '@fabric'
 import { PiBy180 } from '@/utils/constants'
 
+/**
+ * 计算当前控件的位置
+ */
 const positionHandler: Control['positionHandler'] = (
   dim,
   finalMatrix,
@@ -23,38 +26,40 @@ const positionHandler: Control['positionHandler'] = (
   ).transform(finalMatrix)
 }
 
-const positionHandlerH: Control['positionHandler'] = (
-  dim,
-  finalMatrix,
-  fabricObject: FabricObject,
-  currentControl,
-) => {
-  const size = fabricObject.getBoundingRect(false, true).height
-  currentControl.sizeX = fabricObject.cornerSize
-  currentControl.sizeY = size
-  currentControl.touchSizeX = fabricObject.touchCornerSize
-  currentControl.touchSizeY = size
-  return positionHandler(dim, finalMatrix, fabricObject, currentControl)
+/**
+ * 更新ml, mr, mt, mb的控件大小
+ */
+const setCornersSize = (object: FabricObject) => {
+  if (!object.canvas) return
+  const zoom = object.canvas.getZoom()
+  const size = object.getWidthHeight().scalarMultiply(zoom)
+  const controls = object.controls
+  const cornersH = ['ml', 'mr']
+  cornersH.forEach((corner) => {
+    controls[corner].sizeX = object.cornerSize
+    controls[corner].sizeY = size.y
+    controls[corner].touchSizeX = object.touchCornerSize
+    controls[corner].touchSizeY = size.y
+  })
+  const cornersV = ['mt', 'mb']
+  cornersV.forEach((corner) => {
+    controls[corner].sizeX = size.x
+    controls[corner].sizeY = object.cornerSize
+    controls[corner].touchSizeX = size.x
+    controls[corner].touchSizeY = object.touchCornerSize
+  })
 }
 
-const positionHandlerV: Control['positionHandler'] = (
-  dim,
-  finalMatrix,
-  fabricObject: FabricObject,
-  currentControl,
-) => {
-  const size = fabricObject.getBoundingRect(false, true).width
-  currentControl.sizeX = size
-  currentControl.sizeY = fabricObject.cornerSize
-  currentControl.touchSizeX = size
-  currentControl.touchSizeY = fabricObject.touchCornerSize
-  return positionHandler(dim, finalMatrix, fabricObject, currentControl)
-}
-
+/**
+ * 旋转图标
+ */
 const rotateIcon = (angle: number) => {
   return `url("data:image/svg+xml,<svg height='20' width='20' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><g fill='none' transform='rotate(${angle} 16 16)'><path fill='white' d='M18.24 5.37C11.41 6.04 5.98 11.46 5.32 18.26L0 18.26L7.8 26L15.61 18.27L10.6 18.27C11.21 14.35 14.31 11.25 18.24 10.64L18.24 15.55L26 7.78L18.24 0L18.24 5.37Z'></path><path fill='black' d='M19.5463 6.61441C12.4063 6.68441 6.61632 12.4444 6.56632 19.5644L3.17632 19.5644L7.80632 24.1444L12.4363 19.5644L9.18632 19.5644C9.24632 13.8844 13.8563 9.28441 19.5463 9.22441L19.5463 12.3844L24.1463 7.78441L19.5463 3.16441L19.5463 6.61441Z'></path></g></svg>") 12 12,auto`
 }
 
+/**
+ * 旋转吸附，按住shift键，吸附15度角
+ */
 const rotationWithSnapping = (
   eventData: TPointerEvent,
   transform: Transform,
@@ -74,6 +79,9 @@ const rotationWithSnapping = (
   return res
 }
 
+/**
+ * 获取旋转控件
+ */
 const getRotateControl = (angle: number): Partial<Control> => ({
   sizeX: 16,
   sizeY: 16,
@@ -88,6 +96,9 @@ const getRotateControl = (angle: number): Partial<Control> => ({
   actionName: 'rotate',
 })
 
+/**
+ * 获取通用控件属性
+ */
 const getHornControl = {
   cursorStyleHandler: controlsUtils.scaleCursorStyleHandler,
   actionHandler: controlsUtils.scalingEqually,
@@ -140,7 +151,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
       ctx.fillText(text, 0, 1)
       ctx.restore()
     },
-    positionHandler: (dim, finalMatrix, fabricObject, currentControl) => {
+    positionHandler: (dim, finalMatrix, fabricObject: FabricObject, currentControl) => {
       const angle = fabricObject.getTotalAngle()
 
       const angleInRadians = angle * PiBy180
@@ -162,7 +173,10 @@ export const createObjectDefaultControls = (): TControlSet => ({
         currentControl.offsetY = sign * 14
       }
 
-      return positionHandler(dim, finalMatrix, fabricObject as FabricObject, currentControl)
+      // 更新其它corners大小，放到这里一起更新，来防止多次运行
+      setCornersSize(fabricObject)
+
+      return positionHandler(dim, finalMatrix, fabricObject, currentControl)
     },
   }),
 
@@ -205,7 +219,8 @@ export const createObjectDefaultControls = (): TControlSet => ({
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     actionName: 'scaling',
     render: noop,
-    positionHandler: positionHandlerH,
+    // 不在这里设置positionHandler，放到size的positionHandler一起更新
+    // positionHandler: positionHandlerH,
   }),
 
   mr: new Control({
@@ -215,7 +230,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     actionName: 'scaling',
     render: noop,
-    positionHandler: positionHandlerH,
+    // positionHandler: positionHandlerH,
   }),
 
   mb: new Control({
@@ -225,7 +240,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     actionName: 'scaling',
     render: noop,
-    positionHandler: positionHandlerV,
+    // positionHandler: positionHandlerV,
   }),
 
   mt: new Control({
@@ -235,7 +250,7 @@ export const createObjectDefaultControls = (): TControlSet => ({
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     actionName: 'scaling',
     render: noop,
-    positionHandler: positionHandlerV,
+    // positionHandler: positionHandlerV,
   }),
 
   tl: new Control({
@@ -275,7 +290,7 @@ export const createResizeControls = (): TControlSet => ({
     actionHandler: changeWidth,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     render: noop,
-    positionHandler: positionHandlerH,
+    // positionHandler: positionHandlerH,
   }),
   ml: new Control({
     x: -0.5,
@@ -283,7 +298,7 @@ export const createResizeControls = (): TControlSet => ({
     actionHandler: changeWidth,
     cursorStyleHandler: controlsUtils.scaleSkewCursorStyleHandler,
     render: noop,
-    positionHandler: positionHandlerH,
+    // positionHandler: positionHandlerH,
   }),
 })
 
