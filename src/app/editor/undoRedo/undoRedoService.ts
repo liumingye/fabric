@@ -5,6 +5,7 @@ import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusServi
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
 import { createDecorator } from '@/core/instantiation/instantiation'
 import { Disposable } from '@/utils/lifecycle'
+import { runWhenIdle } from '@/utils/async'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('editorUndoRedoService')
 
@@ -113,12 +114,15 @@ export class UndoRedoService extends Disposable {
 
   // todo jsondiffpatch https://github.com/benjamine/jsondiffpatch
   public saveState() {
-    const undoRedo = this.getUndoRedo()
-    if (!undoRedo) return
-
-    if (!undoRedo.instantiation.isTracking) return
-    this.push(undoRedo.lastState)
-    undoRedo.lastState = this.getJson()
+    const pageId = this.pageId
+    runWhenIdle(() => {
+      if (pageId !== this.pageId) return
+      const undoRedo = this.getUndoRedo()
+      if (!undoRedo) return
+      if (!undoRedo.instantiation.isTracking) return
+      this.push(undoRedo.lastState)
+      undoRedo.lastState = this.getJson()
+    })
   }
 
   // 工作区 | 页面管理
