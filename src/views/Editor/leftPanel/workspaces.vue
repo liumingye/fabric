@@ -57,8 +57,10 @@
             const workspace = workspaces.get(node.key.toString())
             if (!workspace) return
             const id = workspaces.add(workspace.name + ' 拷贝')
-            const json = canvas.getPageJSON(node.key.toString())
-            canvas.setPageJSON(id, json)
+            const page = canvas.getPageJSON(node.key.toString())
+            if (page) {
+              canvas.setPageJSON(id, page._objects)
+            }
             workspaces.setCurrentId(id)
           },
         },

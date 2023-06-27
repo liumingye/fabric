@@ -15,6 +15,7 @@ import {
   Textbox,
   util,
   Board,
+  iMatrix,
 } from '@fabric'
 import { clamp } from '@vueuse/core'
 import { runWhenIdle } from '@/utils/async'
@@ -23,6 +24,11 @@ import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 
+interface Page {
+  _objects: FabricObject[]
+  viewportTransform: TMat2D
+}
+
 export class FabricCanvas extends createCollectionMixin(Canvas) {
   declare readonly _serviceBrand: undefined
 
@@ -30,7 +36,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public pageId: string
 
-  private readonly pages: Map<string, string | undefined> = new Map()
+  private readonly pages: Map<string, Page> = new Map()
 
   public readonly ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),
@@ -56,6 +62,10 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       }),
     )
 
+    delete this._activeObject
+    // @ts-ignore
+    delete this._objects
+
     // 初始化激活选区
     this.initActiveSelection()
 
@@ -67,12 +77,26 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   }
 
   // @ts-ignore
-  override get _activeObject() {
+  public get _activeObject() {
     return this.activeObject.value
   }
 
-  override set _activeObject(value) {
+  public set _activeObject(value) {
     this.activeObject.value = value
+  }
+
+  // @ts-ignore
+  public get _objects() {
+    const id = this.workspacesService.getCurrentId()
+    if (!this.pages.has(id)) {
+      this.setPageJSON(id, [])
+    }
+    return this.pages.get(id)?._objects || []
+  }
+
+  public set _objects(value) {
+    const id = this.workspacesService.getCurrentId()
+    this.setPageJSON(id, value)
   }
 
   override zoomToPoint(point: Point, value: number, skipSetCoords?: boolean) {
@@ -256,46 +280,46 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   // 工作区 | 页面管理
   private initWorkspace() {
     this.workspacesService.all().forEach((workspace) => {
-      this.setPageJSON(workspace.id, undefined)
+      this.setPageJSON(workspace.id, [])
     })
     this.eventbus.on('workspaceAddAfter', ({ newId }) => {
-      this.setPageJSON(newId, undefined)
+      this.setPageJSON(newId, [])
     })
     this.eventbus.on('workspaceRemoveAfter', (id) => {
       this.pages.delete(id)
     })
-    this.eventbus.on('workspaceChangeBefore', ({ oldId }) => {
-      // 切换前保存当前工作区
-      if (this.pageId === oldId) {
-        this.setPageJSON(oldId, this.toObject(['viewportTransform']))
-      }
-    })
     this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
       // 切换后恢复当前工作区
       if (this.pageId !== newId) {
-        const json = this.pages.get(newId)
-        if (json) {
-          this.loadFromJSON(json).then(() => {
-            // this.requestRenderAll()
-            this.setViewportTransform(this.viewportTransform)
-          })
+        this.discardActiveObject()
+        this._objectsToRender = undefined
+        this.setViewportTransform(this.pages.get(newId)?.viewportTransform || iMatrix)
+        // 由于_objects数组改变了，需要执行调度器
+        if (this.ref.objects.effect.scheduler) {
+          this.ref.objects.effect.scheduler()
         } else {
-          this.clear()
+          this.ref.objects.effect.run()
         }
         this.pageId = newId
       }
     })
   }
 
-  public setPageJSON(id: string, json: string | undefined) {
-    this.pages.set(id, json)
+  public setPageJSON(id: string, _objects: FabricObject[]) {
+    this.pages.set(id, {
+      _objects,
+      viewportTransform: this.viewportTransform,
+    })
   }
 
-  public getPageJSON(id: string) {
+  public getPageJSON(id: string): Page | undefined {
     if (id === this.pageId) {
-      return this.toObject(['viewportTransform'])
+      return {
+        _objects: this._objects,
+        viewportTransform: this.viewportTransform,
+      }
     }
-    return this.pages.get(id) || '{}'
+    return this.pages.get(id)
   }
 
   /**
