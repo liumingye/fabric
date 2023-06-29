@@ -2,7 +2,11 @@ import { createCollectionMixin } from '@/core/canvas/Collection'
 import { toRefObject } from '@/core/canvas/toRefObject'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
 import { createDecorator } from '@/core/instantiation/instantiation'
-import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
+import {
+  IWorkspacesService,
+  WorkspacesService,
+  IWorkspace,
+} from '@/core/workspaces/workspacesService'
 import { toFixed } from '@/utils/math'
 import { LinkedList } from '@/utils/linkedList'
 import {
@@ -16,10 +20,12 @@ import {
   util,
   Board,
   iMatrix,
+  TValidToObjectMethod,
+  TFiller,
 } from '@fabric'
 import { clamp, noop } from '@vueuse/core'
 import { runWhenIdle } from '@/utils/async'
-import { debounce } from 'lodash'
+import { debounce, pick, omit } from 'lodash'
 import './mixin'
 
 export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
@@ -27,6 +33,7 @@ export const IFabricCanvas = createDecorator<FabricCanvas>('fabricCanvas')
 interface Page {
   _objects: FabricObject[]
   viewportTransform: TMat2D
+  backgroundColor: TFiller | string
 }
 
 export class FabricCanvas extends createCollectionMixin(Canvas) {
@@ -105,7 +112,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         _objects: [],
       })
     }
-    return this.pages.get(id)!._objects
+    return this.pages.get(id)?._objects || []
   }
 
   public set _objects(value) {
@@ -114,23 +121,6 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       _objects: value,
     })
   }
-
-  // _toObjectMethod(methodName: TValidToObjectMethod, propertiesToInclude?: string[]) {
-  //   const clipPath = this.clipPath
-  //   const clipPathData =
-  //     clipPath && !clipPath.excludeFromExport
-  //       ? this._toObject(clipPath, methodName, propertiesToInclude)
-  //       : null
-  //   return {
-  //     version: VERSION,
-  //     ...pick(this, propertiesToInclude as (keyof this)[]),
-  //     objects: this._objects
-  //       .filter((object) => !object.excludeFromExport)
-  //       .map((instance) => this._toObject(instance, methodName, propertiesToInclude)),
-  //     ...this.__serializeBgOverlay(methodName, propertiesToInclude),
-  //     ...(clipPathData ? { clipPath: clipPathData } : null),
-  //   }
-  // }
 
   /**
    * 缩放画布
@@ -200,6 +190,88 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       group.onActiveTarget(object)
     }
     return super.setActiveObject(object, e)
+  }
+
+  /**
+   * exportPages
+   * @param propertiesToInclude
+   * @param methodName
+   */
+  public exportPages(
+    propertiesToInclude: string[] = [],
+    methodName: TValidToObjectMethod = 'toObject',
+  ) {
+    const clipPath = this.clipPath
+    const clipPathData =
+      clipPath && !clipPath.excludeFromExport
+        ? this._toObject(clipPath as FabricObject, methodName, propertiesToInclude)
+        : null
+
+    const pages: {
+      id: string
+      viewportTransform: TMat2D
+      objects: FabricObject[]
+      background: TFiller | string
+    }[] = []
+    this.workspacesService.all().forEach((workspace) => {
+      const page = this.pages.get(workspace.id)
+      if (!page) return
+      const { _objects, viewportTransform, backgroundColor } = page
+      pages.push({
+        id: workspace.id,
+        viewportTransform,
+        objects: _objects
+          .filter((object) => !object.excludeFromExport)
+          .map((instance) =>
+            this._toObject(instance, methodName, propertiesToInclude),
+          ) as FabricObject[],
+        background: backgroundColor,
+      })
+    })
+
+    return {
+      ...pick(this, propertiesToInclude as (keyof this)[]),
+      workspaces: this.workspacesService.all(),
+      pages,
+      ...(clipPathData ? { clipPath: clipPathData } : null),
+    }
+  }
+
+  /**
+   * importPages
+   * @param json
+   */
+  public async importPages(json: any) {
+    if (!json) {
+      return Promise.reject(new Error('fabric.js: `json` is undefined'))
+    }
+
+    const serialized = typeof json === 'string' ? JSON.parse(json) : json
+
+    const {
+      workspaces,
+      pages,
+    }: {
+      workspaces: IWorkspace[]
+      pages: {
+        id: string
+        objects: FabricObject[]
+      }[]
+    } = serialized
+
+    this.workspacesService.clear()
+    this.pages.clear()
+
+    for (const { name, id } of workspaces) {
+      this.workspacesService.add(name, id)
+    }
+
+    for (const page of pages.reverse()) {
+      this.workspacesService.setCurrentId(page.id)
+      await this.loadFromJSON(omit(page, 'id'))
+    }
+
+    this.renderAll()
   }
 
   public setActiveObjects(objects: FabricObject[]) {
@@ -335,15 +407,20 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       if (!oldId || !this.pages.has(oldId)) return
       const page = this.pages.get(oldId)
       if (!page) return
-      page.viewportTransform = this.viewportTransform
+      // 切换前保存当前工作区
+      const { viewportTransform, backgroundColor } = this
+      page.viewportTransform = viewportTransform
+      page.backgroundColor = backgroundColor
     })
     this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
       // 切换后恢复当前工作区
       if (this.pageId !== newId) {
         this.discardActiveObject()
         this._objectsToRender = undefined
-        console.log(this.pages.get(newId))
-        this.setViewportTransform(this.pages.get(newId)?.viewportTransform || iMatrix)
+        const page = this.pages.get(newId)
+        const mixin = omit(page, '_objects')
+        Object.assign(this, mixin)
+        this.setViewportTransform(page?.viewportTransform || iMatrix)
         // 由于_objects数组改变了，需要执行调度器
         if (this.ref.objects.effect.scheduler) {
           this.ref.objects.effect.scheduler()
@@ -356,8 +433,10 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   }
 
   public setPageJSON(id: string, json: Partial<Page>) {
+    if (id === '') return
     this.pages.set(id, {
       viewportTransform: this.viewportTransform,
+      backgroundColor: this.backgroundColor,
       _objects: [],
       ...this.pages.get(id),
       ...json,
@@ -368,6 +447,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     if (id === this.pageId) {
       return {
         _objects: this._objects,
+        backgroundColor: this.backgroundColor,
         viewportTransform: this.viewportTransform,
       }
     }

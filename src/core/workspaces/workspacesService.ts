@@ -5,7 +5,7 @@ import { randomText } from '@/utils/strings'
 
 export const IWorkspacesService = createDecorator<WorkspacesService>('workspacesService')
 
-type IWorkspace = { id: string; name: string }
+export type IWorkspace = { id: string; name: string }
 
 export class WorkspacesService extends Disposable {
   declare readonly _serviceBrand: undefined
@@ -47,8 +47,10 @@ export class WorkspacesService extends Disposable {
     return this.workspaces.find((workspace) => workspace.id === workspaceId)
   }
 
-  public add(name: string): string {
-    const id = randomText()
+  public add(name: string, id?: string): string {
+    if (!id) {
+      id = randomText()
+    }
     const param = {
       oldId: this.currentId,
       newId: id,
@@ -78,9 +80,17 @@ export class WorkspacesService extends Disposable {
     return this.workspaces.length
   }
 
-  public dispose() {
-    super.dispose()
+  public clear() {
+    // this.workspaces.forEach(({ id }) => {
+    //   this.eventbus.emit('workspaceRemoveBefore', id)
+    //   this.eventbus.emit('workspaceRemoveAfter', id)
+    // })
     this.workspaces = []
     this.currentId = ''
+  }
+
+  public dispose() {
+    super.dispose()
+    this.clear()
   }
 }

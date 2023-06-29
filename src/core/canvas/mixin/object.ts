@@ -168,10 +168,6 @@ const mixin = {
   verticalBottom() {
     this.align('verticalBottom')
   },
-  // toObject(propertiesToInclude = []) {
-  //   propertiesToInclude.push('id', 'name')
-  //   return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
-  // },
   isType(...types: string[]) {
     return types.includes(this._type) || types.includes(this.constructor.name)
   },
