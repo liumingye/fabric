@@ -17,7 +17,7 @@ import {
   Board,
   iMatrix,
 } from '@fabric'
-import { clamp } from '@vueuse/core'
+import { clamp, noop } from '@vueuse/core'
 import { runWhenIdle } from '@/utils/async'
 import { debounce } from 'lodash'
 import './mixin'
@@ -34,10 +34,19 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   public activeObject = shallowRef<FabricObject | Textbox>()
 
+  /***
+   * 当前页面ID
+   */
   public pageId: string
 
+  /**
+   * 多页面
+   */
   private readonly pages: Map<string, Page> = new Map()
 
+  /**
+   * 响应式属性
+   */
   public readonly ref = {
     zoom: ref(toFixed(this.getZoom(), 2)),
     objects: computed(() => this._objects),
@@ -62,9 +71,10 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       }),
     )
 
-    delete this._activeObject
+    // 删除原有属性，使得重写器生效
     // @ts-ignore
     delete this._objects
+    delete this._activeObject
 
     // 初始化激活选区
     this.initActiveSelection()
@@ -73,6 +83,8 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.initBoard()
 
     this.pageId = this.workspacesService.getCurrentId()
+
+    // 初始化工作区
     this.initWorkspace()
   }
 
@@ -91,7 +103,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     if (!this.pages.has(id)) {
       this.setPageJSON(id, [])
     }
-    return this.pages.get(id)?._objects || []
+    return this.pages.get(id)!._objects
   }
 
   public set _objects(value) {
@@ -99,6 +111,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     this.setPageJSON(id, value)
   }
 
+  /**
+   * 缩放画布
+   * @param point 原点
+   * @param value 缩放级别
+   * @param skipSetCoords 跳过setCoords函数
+   */
   override zoomToPoint(point: Point, value: number, skipSetCoords?: boolean) {
     value = clamp(value, 0.02, 256)
     const before = point,
@@ -427,8 +445,10 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       if (board === this._cacheCurrentBoard) return
 
       this._cacheCurrentBoard = board
-
       if (util.isActiveSelection(target)) {
+        // 备份_onAfterObjectsChange方法
+        let _onAfterObjectsChange = undefined
+
         const hasBoard = target._objects.some((obj) => util.isBoard(obj))
         if (hasBoard) return
 
@@ -437,6 +457,11 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         for (let index = length - 1; index >= 0; index--) {
           const obj = target._objects[index]
           if (obj.__owningGroup !== board) {
+            // 置_onAfterObjectsChange为空函数，使得remove执行时跳过_onAfterObjectsChange，防止卡顿
+            if (_onAfterObjectsChange === undefined) {
+              _onAfterObjectsChange = target._onAfterObjectsChange
+              target._onAfterObjectsChange = noop
+            }
             // exit ActiveSelection
             obj.group?.remove(obj)
             // exit Group
@@ -451,6 +476,9 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
         }
         if (needSetCoords) {
           this._activeSelection.setCoords()
+        }
+        if (_onAfterObjectsChange !== undefined) {
+          target._onAfterObjectsChange = _onAfterObjectsChange
         }
         return
       }
