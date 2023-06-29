@@ -56,6 +56,10 @@ const isFiller = (filler: TFiller | string | null): filler is TFiller => {
   return !!filler && (filler as TFiller).toLive !== undefined
 }
 
+const isSerializableFiller = (filler: TFiller | string | null): filler is TFiller => {
+  return !!filler && typeof (filler as TFiller).toObject === 'function'
+}
+
 export const util = {
   ...utilOrgin,
   isBoard,
@@ -67,4 +71,5 @@ export const util = {
   isGroup,
   isNativeGroup,
   isFiller,
+  isSerializableFiller,
 }

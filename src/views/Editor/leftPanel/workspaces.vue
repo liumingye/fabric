@@ -4,6 +4,7 @@
   import type { TreeNodeData } from '@/components/tree'
   import ContextMenu from '@/components/contextMenu'
   import { iMatrix } from '@fabric'
+  import { clone, cloneDeep } from 'lodash'
 
   const number = ref(0)
 
@@ -52,16 +53,15 @@
       items: [
         {
           label: '复制',
-          onClick: () => {
+          onClick: async () => {
             if (!node.key) return
             const workspace = workspaces.get(node.key.toString())
             if (!workspace) return
+            const json = canvas.toObject()
             const id = workspaces.add(workspace.name + ' 拷贝')
-            const page = canvas.getPageJSON(node.key.toString())
-            if (page) {
-              canvas.setPageJSON(id, page._objects)
-            }
             workspaces.setCurrentId(id)
+            await canvas.loadFromJSON(json)
+            canvas.renderAll()
           },
         },
         {

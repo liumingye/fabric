@@ -125,6 +125,11 @@ export class Board extends CommonGroup {
     delete res.clipPath
     return res
   }
+
+  override toString() {
+    return `#<Board: (${this.complexity()})>`
+  }
 }
 
 classRegistry.setClass(Board)
+classRegistry.setClass(Board, 'board')

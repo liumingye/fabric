@@ -16,12 +16,14 @@ import {
   TFiller,
   Pattern,
   Gradient,
+  config,
 } from '@fabric'
 import type { ControlRenderingStyleOverride } from 'fabric/src/controls/controlRendering'
 import { AlignMethod } from 'app'
 import { createObjectDefaultControls } from '@/core/canvas/controls/commonControls'
 import { clampAngle, toFixed } from '@/utils/math'
 import NP from 'number-precision'
+import { pick } from 'lodash'
 
 Object.assign(FabricObject.ownDefaults, {
   strokeUniform: true,
@@ -166,10 +168,10 @@ const mixin = {
   verticalBottom() {
     this.align('verticalBottom')
   },
-  toObject(propertiesToInclude = []) {
-    propertiesToInclude.push('id', 'name')
-    return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
-  },
+  // toObject(propertiesToInclude = []) {
+  //   propertiesToInclude.push('id', 'name')
+  //   return Object.getPrototypeOf(FabricObject.prototype).toObject.call(this, propertiesToInclude)
+  // },
   isType(...types: string[]) {
     return types.includes(this._type) || types.includes(this.constructor.name)
   },
@@ -223,6 +225,58 @@ const mixin = {
       ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5])
     }
     return { offsetX, offsetY }
+  },
+  toObject(propertiesToInclude: any[] = []): any {
+    propertiesToInclude.push('id', 'name')
+    const NUM_FRACTION_DIGITS = config.NUM_FRACTION_DIGITS,
+      clipPathData =
+        this.clipPath && !this.clipPath.excludeFromExport
+          ? {
+              // @ts-ignore
+              ...this.clipPath.toObject(propertiesToInclude),
+              inverted: this.clipPath.inverted,
+              absolutePositioned: this.clipPath.absolutePositioned,
+            }
+          : null,
+      object = {
+        ...pick(this, propertiesToInclude),
+        type: this.type,
+        // version: VERSION,
+        originX: this.originX,
+        originY: this.originY,
+        left: toFixed(this.left, NUM_FRACTION_DIGITS),
+        top: toFixed(this.top, NUM_FRACTION_DIGITS),
+        width: toFixed(this.width, NUM_FRACTION_DIGITS),
+        height: toFixed(this.height, NUM_FRACTION_DIGITS),
+        fill: util.isSerializableFiller(this.fill) ? this.fill.toObject() : this.fill,
+        stroke: util.isSerializableFiller(this.stroke) ? this.stroke.toObject() : this.stroke,
+        strokeWidth: toFixed(this.strokeWidth, NUM_FRACTION_DIGITS),
+        strokeDashArray: this.strokeDashArray
+          ? this.strokeDashArray.concat()
+          : this.strokeDashArray,
+        strokeLineCap: this.strokeLineCap,
+        strokeDashOffset: this.strokeDashOffset,
+        strokeLineJoin: this.strokeLineJoin,
+        strokeUniform: this.strokeUniform,
+        strokeMiterLimit: toFixed(this.strokeMiterLimit, NUM_FRACTION_DIGITS),
+        scaleX: toFixed(this.scaleX, NUM_FRACTION_DIGITS),
+        scaleY: toFixed(this.scaleY, NUM_FRACTION_DIGITS),
+        angle: toFixed(this.angle, NUM_FRACTION_DIGITS),
+        flipX: this.flipX,
+        flipY: this.flipY,
+        opacity: toFixed(this.opacity, NUM_FRACTION_DIGITS),
+        shadow: this.shadow && this.shadow.toObject ? this.shadow.toObject() : this.shadow,
+        visible: this.visible,
+        backgroundColor: this.backgroundColor,
+        fillRule: this.fillRule,
+        paintFirst: this.paintFirst,
+        globalCompositeOperation: this.globalCompositeOperation,
+        skewX: toFixed(this.skewX, NUM_FRACTION_DIGITS),
+        skewY: toFixed(this.skewY, NUM_FRACTION_DIGITS),
+        ...(clipPathData ? { clipPath: clipPathData } : null),
+      }
+
+    return !this.includeDefaultValues ? this._removeDefaultValues(object) : object
   },
 } as FabricObject
 

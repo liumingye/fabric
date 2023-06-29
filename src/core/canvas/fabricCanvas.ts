@@ -101,15 +101,36 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   public get _objects() {
     const id = this.workspacesService.getCurrentId()
     if (!this.pages.has(id)) {
-      this.setPageJSON(id, [])
+      this.setPageJSON(id, {
+        _objects: [],
+      })
     }
     return this.pages.get(id)!._objects
   }
 
   public set _objects(value) {
     const id = this.workspacesService.getCurrentId()
-    this.setPageJSON(id, value)
+    this.setPageJSON(id, {
+      _objects: value,
+    })
   }
+
+  // _toObjectMethod(methodName: TValidToObjectMethod, propertiesToInclude?: string[]) {
+  //   const clipPath = this.clipPath
+  //   const clipPathData =
+  //     clipPath && !clipPath.excludeFromExport
+  //       ? this._toObject(clipPath, methodName, propertiesToInclude)
+  //       : null
+  //   return {
+  //     version: VERSION,
+  //     ...pick(this, propertiesToInclude as (keyof this)[]),
+  //     objects: this._objects
+  //       .filter((object) => !object.excludeFromExport)
+  //       .map((instance) => this._toObject(instance, methodName, propertiesToInclude)),
+  //     ...this.__serializeBgOverlay(methodName, propertiesToInclude),
+  //     ...(clipPathData ? { clipPath: clipPathData } : null),
+  //   }
+  // }
 
   /**
    * 缩放画布
@@ -298,19 +319,30 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
   // 工作区 | 页面管理
   private initWorkspace() {
     this.workspacesService.all().forEach((workspace) => {
-      this.setPageJSON(workspace.id, [])
+      this.setPageJSON(workspace.id, {
+        _objects: [],
+      })
     })
     this.eventbus.on('workspaceAddAfter', ({ newId }) => {
-      this.setPageJSON(newId, [])
+      this.setPageJSON(newId, {
+        _objects: [],
+      })
     })
     this.eventbus.on('workspaceRemoveAfter', (id) => {
       this.pages.delete(id)
+    })
+    this.eventbus.on('workspaceChangeBefore', ({ oldId }) => {
+      if (!oldId || !this.pages.has(oldId)) return
+      const page = this.pages.get(oldId)
+      if (!page) return
+      page.viewportTransform = this.viewportTransform
     })
     this.eventbus.on('workspaceChangeAfter', ({ newId }) => {
       // 切换后恢复当前工作区
       if (this.pageId !== newId) {
         this.discardActiveObject()
         this._objectsToRender = undefined
+        console.log(this.pages.get(newId))
         this.setViewportTransform(this.pages.get(newId)?.viewportTransform || iMatrix)
         // 由于_objects数组改变了，需要执行调度器
         if (this.ref.objects.effect.scheduler) {
@@ -323,10 +355,12 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
     })
   }
 
-  public setPageJSON(id: string, _objects: FabricObject[]) {
+  public setPageJSON(id: string, json: Partial<Page>) {
     this.pages.set(id, {
-      _objects,
       viewportTransform: this.viewportTransform,
+      _objects: [],
+      ...this.pages.get(id),
+      ...json,
     })
   }
 
