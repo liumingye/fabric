@@ -104,7 +104,7 @@ export class Ruler extends Disposable {
               textColor: '#444',
             }),
       }
-      this.render()
+      this.render({ ctx: this.canvas.contextContainer })
     })
 
     this.canvasEvents = {
@@ -126,7 +126,7 @@ export class Ruler extends Disposable {
     this.options.enabled = value
     if (value) {
       this.canvas.on(this.canvasEvents)
-      this.render()
+      this.render({ ctx: this.canvas.contextContainer })
     } else {
       this.canvas.off(this.canvasEvents)
       this.canvas.requestRenderAll()
@@ -143,8 +143,10 @@ export class Ruler extends Disposable {
     }
   }
 
-  private render() {
-    const { viewportTransform: vpt, contextContainer: ctx } = this.canvas
+  private render({ ctx }: { ctx: CanvasRenderingContext2D }) {
+    if (ctx !== this.canvas.contextContainer) return
+
+    const { viewportTransform: vpt } = this.canvas
 
     // 计算元素矩形
     this.calcObjectRect()

@@ -21,6 +21,7 @@ const _collectObjects = (
       object instanceof Board &&
       object.evented &&
       // 组内的元素在clipPath外边的部分不会收集
+      // todo: intersectsWithRect无效待修复
       (object.intersectsWithRect(tl, br, true) ||
         object.containsPoint(tl, undefined, true) ||
         object.containsPoint(br, undefined, true))

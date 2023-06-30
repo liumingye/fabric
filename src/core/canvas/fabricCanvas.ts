@@ -259,6 +259,10 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
       }[]
     } = serialized
 
+    if (!workspaces || !pages || workspaces.length === 0 || pages.length === 0) {
+      return Promise.reject(new Error('fabric.js: `json` is not valid'))
+    }
+
     this.workspacesService.clear()
     this.pages.clear()
 
