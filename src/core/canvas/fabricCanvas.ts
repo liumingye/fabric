@@ -97,7 +97,7 @@ export class FabricCanvas extends createCollectionMixin(Canvas) {
 
   // @ts-ignore
   public get _activeObject() {
-    return this.activeObject.value
+    return this.activeObject ? this.activeObject.value : undefined
   }
 
   public set _activeObject(value) {

@@ -152,29 +152,32 @@ export const createObjectDefaultControls = (): TControlSet => ({
       ctx.restore()
     },
     positionHandler: (dim, finalMatrix, fabricObject: FabricObject, currentControl) => {
-      const angle = fabricObject.getTotalAngle()
+      const activeObject = fabricObject.canvas?.getActiveObject()
+      if (activeObject && activeObject === fabricObject) {
+        const angle = fabricObject.getTotalAngle()
 
-      const angleInRadians = angle * PiBy180
+        const angleInRadians = angle * PiBy180
 
-      const x = Math.sin(angleInRadians)
-      const y = Math.cos(angleInRadians)
+        const x = Math.sin(angleInRadians)
+        const y = Math.cos(angleInRadians)
 
-      if (Math.abs(x) >= Math.abs(y)) {
-        const sign = Math.sign(x)
-        currentControl.x = sign / 2
-        currentControl.y = 0
-        currentControl.offsetX = sign * 14
-        currentControl.offsetY = 0
-      } else {
-        const sign = Math.sign(y)
-        currentControl.x = 0
-        currentControl.y = sign / 2
-        currentControl.offsetX = 0
-        currentControl.offsetY = sign * 14
+        if (Math.abs(x) >= Math.abs(y)) {
+          const sign = Math.sign(x)
+          currentControl.x = sign / 2
+          currentControl.y = 0
+          currentControl.offsetX = sign * 14
+          currentControl.offsetY = 0
+        } else {
+          const sign = Math.sign(y)
+          currentControl.x = 0
+          currentControl.y = sign / 2
+          currentControl.offsetX = 0
+          currentControl.offsetY = sign * 14
+        }
+
+        // 更新其它corners大小，放到这里一起更新，来防止多次运行
+        setCornersSize(fabricObject)
       }
-
-      // 更新其它corners大小，放到这里一起更新，来防止多次运行
-      setCornersSize(fabricObject)
 
       return positionHandler(dim, finalMatrix, fabricObject, currentControl)
     },
