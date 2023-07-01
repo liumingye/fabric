@@ -7,7 +7,7 @@ import { ColorPoint, ColorType } from '@/components/colorPicker/interface'
 import { gradAngleToCoords, pointsToColorStops, fabricGradientToPoints } from '@/utils/fill'
 import { isDefined } from '@vueuse/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
+import { IEditorUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { ServicesAccessor } from '@/core/instantiation/instantiation'
 import { ColorPickerOption, Props } from './interface'
 
@@ -26,7 +26,7 @@ const openDialog = (
   { object, attr, dialogOption, initialColor, ...props }: ColorPickerOption & Partial<Props>,
 ) => {
   const canvas = accessor.get(IFabricCanvas)
-  const undoRedo = accessor.get(IUndoRedoService)
+  const undoRedo = accessor.get(IEditorUndoRedoService)
 
   let points: ColorPoint[]
   let type: ColorType = 'color'

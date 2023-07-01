@@ -81,10 +81,10 @@ export class WorkspacesService extends Disposable {
   }
 
   public clear() {
-    // this.workspaces.forEach(({ id }) => {
-    //   this.eventbus.emit('workspaceRemoveBefore', id)
-    //   this.eventbus.emit('workspaceRemoveAfter', id)
-    // })
+    this.workspaces.forEach(({ id }) => {
+      this.eventbus.emit('workspaceRemoveBefore', id)
+      this.eventbus.emit('workspaceRemoveAfter', id)
+    })
     this.workspaces = []
     this.currentId = ''
   }

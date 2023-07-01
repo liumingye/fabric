@@ -1,13 +1,13 @@
 import { createEditorPlugin } from '@/core'
 import { IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
+import { IEditorUndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
 import { Board, Gradient, Group, Rect, util, Pattern, Triangle } from '@fabric'
 import { random } from 'lodash'
 import TestSlot from './testSlot.vue'
 
 const myPlugin = createEditorPlugin((editor) => {
   const [canvas, undoRedo] = editor.service.invokeFunction((accessor) => {
-    return [accessor.get(IFabricCanvas), accessor.get(IUndoRedoService)]
+    return [accessor.get(IFabricCanvas), accessor.get(IEditorUndoRedoService)]
   })
   return {
     setup() {

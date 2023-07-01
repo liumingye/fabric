@@ -1,85 +1,49 @@
 import { createDecorator } from '@/core/instantiation/instantiation'
-import { LinkedList } from '@/utils/linkedList'
+import { registerSingleton, InstantiationType } from '@/core/instantiation/extensions'
+import { UndoRedoCommand } from '@/core/undoRedo/commands'
 
 export const IUndoRedoService = createDecorator<UndoRedoService>('undoRedoService')
-
-class UndoQueue {
-  private inner_ = new LinkedList<any>()
-  private size_ = 50
-
-  pop() {
-    return this.inner_.pop()
-  }
-
-  push(e: any) {
-    this.inner_.push(e)
-    while (this.length > this.size_) {
-      this.inner_.shift()
-    }
-  }
-
-  get length(): number {
-    return this.inner_.size
-  }
-}
 
 export class UndoRedoService {
   declare readonly _serviceBrand: undefined
 
-  private undoStates: UndoQueue = new UndoQueue()
-  private redoStates: UndoQueue = new UndoQueue()
-  private isUndoing = false
-  public isTracking = true
+  private _stack: UndoRedoCommand[] = []
+  private _stackIndex = -1
 
-  constructor() {
-    this.push = this.push.bind(this)
+  public canUndo(): boolean {
+    return this._stackIndex > 0
   }
 
-  pause() {
-    this.isTracking = false
+  public canRedo(): boolean {
+    return this._stackIndex < this._stack.length && this._stack.length > 0
   }
 
-  resume() {
-    this.isTracking = true
+  public clear(): void {
+    this._stack = []
+    this._stackIndex = -1
   }
 
-  push(state: any) {
-    if (!this.isTracking) return
-    this.undoStates.push(state)
-    this.redoStates = new UndoQueue()
+  public add(cmd: UndoRedoCommand): void {
+    if (this.canRedo()) {
+      this._stack.splice(this._stackIndex, this._stack.length)
+    }
+    this._stack.push(cmd)
+    this._stackIndex = this._stack.length
   }
 
-  undo(redoState: any) {
-    if (this.isUndoing) return
-    if (!this.canUndo) throw new Error('Nothing to undo')
-    this.isUndoing = true
-    const state = this.undoStates.pop()
-    this.redoStates.push(redoState)
-    this.isUndoing = false
-    return state
+  public undo(): void {
+    if (this.canUndo()) {
+      this._stackIndex--
+      this._stack[this._stackIndex].undo()
+    }
   }
 
-  redo(undoState: any) {
-    if (this.isUndoing) return
-    if (!this.canRedo) throw new Error('Nothing to redo')
-    this.isUndoing = true
-    const state = this.redoStates.pop()
-    this.undoStates.push(undoState)
-    this.isUndoing = false
-    return state
-  }
-
-  reset() {
-    this.undoStates = new UndoQueue()
-    this.redoStates = new UndoQueue()
-    this.isUndoing = false
-  }
-
-  get canUndo(): boolean {
-    return !!this.undoStates.length
-  }
-
-  get canRedo(): boolean {
-    return !!this.redoStates.length
+  public redo(): void {
+    if (this.canRedo()) {
+      this._stack[this._stackIndex].redo()
+      this._stackIndex++
+    }
   }
 }
+
+registerSingleton(IUndoRedoService, UndoRedoService, InstantiationType.Eager)

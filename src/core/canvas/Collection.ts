@@ -2,19 +2,8 @@ import { FabricObject, util, Group, Canvas } from '@fabric'
 import { toRefObject } from '@/core/canvas/toRefObject'
 import { randomText } from '@/utils/strings'
 import { noop } from '@vueuse/core'
-import { IUndoRedoService2, UndoRedoService2, Command } from '@/core/undoRedo/undoRedoService2'
-import { getActiveCore } from '@/core'
 
 export type Constructor<T = any> = new (...args: any[]) => T
-
-class MyCommand implements Command {
-  execute() {}
-  undo() {}
-  // redo() {}
-  label() {
-    return 'Collection'
-  }
-}
 
 export function createCollectionMixin<TBase extends Constructor>(Base: TBase): TBase {
   class Collection extends (Base as Constructor<Group & Canvas>) {
@@ -25,22 +14,6 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
           return toRefObject(obj)
         }),
       )
-      return getActiveCore().service.invokeFunction((accessor) => {
-        const undoRedo = accessor.get(IUndoRedoService2)
-        const myCommand = new MyCommand()
-        myCommand.execute = () => {
-          return super.add(
-            ...objects.map((obj) => {
-              this.setDefaultAttr(obj)
-              return toRefObject(obj)
-            }),
-          )
-        }
-        myCommand.undo = () => {
-          super.remove(...objects)
-        }
-        return undoRedo.execute(myCommand) as unknown as number
-      })
     }
 
     override insertAt(index: number, ...objects: FabricObject[]): number {
@@ -51,55 +24,7 @@ export function createCollectionMixin<TBase extends Constructor>(Base: TBase): T
           return toRefObject(obj)
         }),
       )
-      return getActiveCore().service.invokeFunction((accessor) => {
-        const undoRedo = accessor.get(IUndoRedoService2)
-        const myCommand = new MyCommand()
-        myCommand.execute = () => {
-          return super.insertAt(
-            index,
-            ...objects.map((obj) => {
-              this.setDefaultAttr(obj)
-              return toRefObject(obj)
-            }),
-          )
-        }
-        myCommand.undo = () => {
-          super.remove(...objects)
-        }
-        return undoRedo.execute(myCommand) as unknown as number
-      })
     }
-
-    // override remove(...objects: FabricObject[]): FabricObject[] {
-    //   return getActiveCore().service.invokeFunction((accessor) => {
-    //     const undoRedo = accessor.get(IUndoRedoService2)
-    //     const myCommand = new MyCommand()
-    //     const objectPos: [FabricObject, number][] = []
-    //     console.log(objects)
-    //     myCommand.execute = () => {
-    //       const array = this._objects,
-    //         removed: FabricObject[] = []
-    //       objects.forEach((object) => {
-    //         const index = array.indexOf(object)
-    //         // only call onObjectRemoved if an object was actually removed
-    //         if (index !== -1) {
-    //           objectPos.push([object, index])
-    //           array.splice(index, 1)
-    //           removed.push(object)
-    //           this._onObjectRemoved(object)
-    //         }
-    //       })
-    //       console.log(objectPos)
-    //       return removed
-    //     }
-    //     myCommand.undo = () => {
-    //       objectPos.forEach(([object, index]) => {
-    //         super.insertAt(index, object)
-    //       })
-    //     }
-    //     return undoRedo.execute(myCommand) as unknown as FabricObject[]
-    //   })
-    // }
 
     override _onObjectAdded(object: FabricObject) {
       if (object.noEventObjectAdded && this.fire !== noop) {

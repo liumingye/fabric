@@ -31,7 +31,9 @@ export function useImport() {
 
   const importPages = async () => {
     if (isSupported) {
-      await open({})
+      data.value = undefined
+      await open()
+      if (!isDefined(data)) return
       canvas.importPages(data.value)
     } else {
       // 传统打开
@@ -46,6 +48,7 @@ export function useImport() {
       })
       data.value = JSON.stringify(canvas.exportPages())
       await save()
+      data.value = undefined
     } else {
       // 传统链接下载
       const blob = new Blob([JSON.stringify(canvas.exportPages())]) //  创建 blob 对象

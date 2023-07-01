@@ -14,7 +14,10 @@ import {
   Pattern,
 } from '@fabric'
 import { randomText } from '@/utils/strings'
-import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
+import {
+  IEditorUndoRedoService,
+  EditorUndoRedoService,
+} from '@/app/editor/undoRedo/undoRedoService'
 import { clamp, clone } from 'lodash'
 import { appInstance } from '@/app'
 
@@ -27,7 +30,7 @@ export class Clipboard extends Disposable {
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService readonly keybinding: KeybindingService,
     @IClipboardService private readonly clipboard: ClipboardService,
-    @IUndoRedoService private readonly undoRedo: UndoRedoService,
+    @IEditorUndoRedoService private readonly undoRedo: EditorUndoRedoService,
   ) {
     super()
 

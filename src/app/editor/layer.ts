@@ -4,7 +4,10 @@ import { Board, FabricObject, Group, util } from '@fabric'
 import type { AlignMethod } from 'app'
 import { Disposable } from '@/utils/lifecycle'
 import { EventbusService, IEventbusService } from '@/core/eventbus/eventbusService'
-import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
+import {
+  IEditorUndoRedoService,
+  EditorUndoRedoService,
+} from '@/app/editor/undoRedo/undoRedoService'
 import { keybindMap } from '@/utils/constants'
 
 export class Layer extends Disposable {
@@ -12,7 +15,7 @@ export class Layer extends Disposable {
     @IFabricCanvas private readonly canvas: FabricCanvas,
     @IKeybindingService private readonly keybinding: KeybindingService,
     @IEventbusService readonly eventbus: EventbusService,
-    @IUndoRedoService private readonly undoRedo: UndoRedoService,
+    @IEditorUndoRedoService private readonly undoRedo: EditorUndoRedoService,
   ) {
     super()
     this.keybinding.bind(['del', 'backspace'], () => {

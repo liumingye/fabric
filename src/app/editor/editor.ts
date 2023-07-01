@@ -11,8 +11,11 @@ import { SyncDescriptor } from '@/core/instantiation/descriptors'
 import { IInstantiationService, ServiceIdentifier } from '@/core/instantiation/instantiation'
 import { ServiceCollection } from '@/core/instantiation/serviceCollection'
 import { FabricCanvas, IFabricCanvas } from '@/core/canvas/fabricCanvas'
-import { IUndoRedoService, UndoRedoService } from '@/app/editor/undoRedo/undoRedoService'
-import { IUndoRedoService2, UndoRedoService2 } from '@/core/undoRedo/undoRedoService2'
+import {
+  IEditorUndoRedoService,
+  EditorUndoRedoService,
+} from '@/app/editor/undoRedo/undoRedoService'
+import { IUndoRedoService } from '@/core/undoRedo/undoRedoService'
 import { EditorPlugin, IEditorPluginContext, getActiveCore } from '@/core'
 import { IKeybindingService, KeybindingService } from '@/core/keybinding/keybindingService'
 import { IWorkspacesService, WorkspacesService } from '@/core/workspaces/workspacesService'
@@ -101,8 +104,7 @@ export class EditorMain extends BaseApp {
     define(IEventbusService, EventbusService)
     define(IWorkspacesService, WorkspacesService)
     define(IFabricCanvas, FabricCanvas)
-    define(IUndoRedoService, UndoRedoService)
-    // define(IUndoRedoService2, UndoRedoService2)
+    define(IEditorUndoRedoService, EditorUndoRedoService)
     define(IKeybindingService, KeybindingService)
 
     return this.instantiationService.createChild(services)
@@ -114,8 +116,8 @@ export class EditorMain extends BaseApp {
       super.dispose()
       this.service.invokeFunction((accessor) => {
         accessor.get(IKeybindingService).reset()
-        accessor.get(IUndoRedoService).reset()
-        accessor.get(IUndoRedoService2).reset()
+        accessor.get(IEditorUndoRedoService).reset()
+        accessor.get(IUndoRedoService).clear()
         accessor.get(IFabricCanvas).dispose()
         accessor.get(IWorkspacesService).dispose()
         accessor.get(IEventbusService).all.clear()
