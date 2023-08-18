@@ -14,14 +14,13 @@
   />
 
   <template v-if="state.gradientType === 'pattern'">
-    图片填充！！！哦哦哦
     <a-button @click="addImg">添加图片</a-button>
     <div>
       <a-select v-model="fit">
         <a-option value="fill">填充</a-option>
         <a-option value="padding">适应</a-option>
         <a-option value="clip">裁剪</a-option>
-        <!--         <a-option value="repeat">平铺</a-option>-->
+        <!-- <a-option value="repeat">平铺</a-option> -->
       </a-select>
     </div>
   </template>
