@@ -59,8 +59,20 @@ export function useImport() {
     }
   }
 
-  return {
-    importPages,
-    exportPages,
-  }
+    const exportImage = async () => {
+        // todo 导出为图片
+        const url=await canvas.exportImageUrl()
+        // 创建一个链接元素，并设置其下载属性和链接地址
+        const link = document.createElement('a');
+        link.download = 'canvas.png'; // 下载的文件名
+        link.href = url ;
+        // 模拟点击下载链接
+        link.click();
+    }
+
+    return {
+        importPages,
+        exportPages,
+        exportImage
+    }
 }

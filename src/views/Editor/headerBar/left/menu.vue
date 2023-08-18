@@ -2,7 +2,7 @@
   import ContextMenu from '@/components/contextMenu'
   import { useImport } from '@/hooks/useImport'
 
-  const { exportPages, importPages } = useImport()
+  const { exportPages, importPages, exportImage } = useImport()
 
   const showMenu = (e: MouseEvent) => {
     ContextMenu.showContextMenu({
@@ -17,6 +17,10 @@
         {
           label: '导出',
           onClick: exportPages,
+        },
+        {
+          label: '导出图片',
+          onClick: exportImage,
         },
       ],
     })

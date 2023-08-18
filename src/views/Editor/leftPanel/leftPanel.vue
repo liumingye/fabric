@@ -1,14 +1,22 @@
 <script setup lang="ts">
   import layerCatalogue from './layerCatalogue.vue'
+  import BasicModule from "@/views/Editor/settingMenu/basicModule.vue";
 </script>
 
 <template>
   <a-tabs default-active-key="1" class="leftPanel flex flex-col">
-    <a-tab-pane key="1" title="图层">
+    <a-tab-pane key="2" title="图层">
       <layerCatalogue />
     </a-tab-pane>
-    <a-tab-pane key="2" title="资源">
-      <div class="p2">资源</div>
+    <a-tab-pane key="1" title="基本组件">
+      <div class="p2">基本组件</div>
+      <basic-module></basic-module>
+    </a-tab-pane>
+    <a-tab-pane key="3" title="摄像头">
+      <div class="p2">摄像头</div>
+    </a-tab-pane>
+    <a-tab-pane key="4" title="其他">
+      <div class="p2">其他</div>
     </a-tab-pane>
   </a-tabs>
 </template>

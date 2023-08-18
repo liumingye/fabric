@@ -14,6 +14,7 @@
   />
 
   <template v-if="state.gradientType === 'pattern'">
+    <a-button @click="addImg">添加图片</a-button>
     <div>
       <a-select v-model="fit">
         <a-option value="fill">填充</a-option>
@@ -65,6 +66,7 @@
   import { useActiveObjectModel } from '@/hooks/useActiveObjectModel'
   import { useEditor } from '@/app'
   import { util } from '@fabric'
+  import {Pattern} from "fabric";
 
   const { canvas, undoRedo } = useEditor()
 
@@ -84,6 +86,26 @@
       }
     },
   })
+
+  //添加图片作为填充
+  const addImg = () => {
+    util
+      .loadImage(
+        'https://img.js.design/assets/img/6486fff21a74fef8078bf782.jpg#4d6a3f65b147c75a22effca8347bc5ce',
+        { crossOrigin: 'anonymous' })
+        .then((image)=>{
+          // console.log(canvas.activeObject.value)
+          let shape = canvas.activeObject.value
+          shape.fill=new Pattern({
+            crossOrigin: 'anonymous',
+            source: image,
+            fit: 'fill',
+          })
+          shape.set('dirty', true)
+          canvas.requestRenderAll()
+        })
+  }
+
 
   const props = defineProps<Required<Props>>()
 

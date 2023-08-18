@@ -52,6 +52,7 @@
           </template>
         </a-input>
       </a-col>
+
       <a-col :span="7" v-if="isNumber(opacity)">
         <a-inputNumber
           size="small"
