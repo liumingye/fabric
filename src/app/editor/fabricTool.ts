@@ -159,6 +159,7 @@ export class FabricTool extends Disposable {
         canvas.setActiveObject(tempObject)
         tempObject.__corner = 'br'
         canvas._setupCurrentTransform(e.e, tempObject, true)
+
       },
       onSwipeEnd: (e) => {
         if (!tempObject) return
